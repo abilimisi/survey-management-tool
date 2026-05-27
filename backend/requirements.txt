@@ -1,0 +1,33 @@
+# https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/1/
+
+
+# client redirect links
+# Complete:
+# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id={{ID}}
+
+# Terminate:
+# https://backwater-muster-repayment.ngrok-free.dev/api/terminate/?id={{ID}} or
+# https://backwater-muster-repayment.ngrok-free.dev/api/terminate/?id=RID-XXXX
+
+# Quota Full:
+# https://backwater-muster-repayment.ngrok-free.dev/api/quota-full/?id={{ID}}
+
+# Security Term:
+# https://backwater-muster-repayment.ngrok-free.dev/api/security-terminate/?id={{ID}}
+
+# vendor links
+# Complete:
+# https://vendor.com/complete?rid={{ID}}
+
+# Terminate:
+# https://vendor.com/terminate?rid={{ID}}
+
+# Quota Full:
+# https://vendor.com/quota-full?rid={{ID}}
+
+# Security Term:
+# https://vendor.com/security?rid={{ID}}
+
+
+# main client link to store 
+# https://form.jotform.com/261383078966066?rid={{ID}}
