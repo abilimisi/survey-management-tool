@@ -8,6 +8,7 @@ from .views import (
     ProjectVendorViewSet,
     RespondentViewSet,
     RedirectLogViewSet,
+    process_s2s,
     redirect_journey,
     start_survey,
     handle_survey_result,
@@ -16,6 +17,7 @@ from .views import (
     project_report,
     supplier_statistics,
     respondent_hints,
+    
 )
 
 router = routers.DefaultRouter()
@@ -43,4 +45,6 @@ urlpatterns = [
     path("projects/<int:project_id>/supplier-stats/", supplier_statistics, name="supplier-statistics"),
     path("project-vendors/<int:project_vendor_id>/hints/",respondent_hints,name="respondent-hints"),
     path("respondents/<str:respondent_id>/journey/",redirect_journey,name="redirect-journey"),
+
+    path("s2s/process/", process_s2s, name="process-s2s"),
 ]

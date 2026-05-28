@@ -1,72 +1,462 @@
 from django.db import models
+import secrets
 
+
+# class Client(models.Model):
+#     name = models.CharField(max_length=150)
+#     email = models.EmailField(blank=True, null=True)
+#     company_name = models.CharField(max_length=150, blank=True, null=True)
+
+#     test_link = models.URLField(max_length=1000, blank=True, null=True)
+#     live_link = models.URLField(max_length=1000)
+
+#     rid_parameter = models.CharField(max_length=50, default="RID")
+#     our_parameter = models.CharField(max_length=50, default="ID")
+
+#     status = models.BooleanField(default=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return self.name
 
 class Client(models.Model):
-    name = models.CharField(max_length=150)
-    email = models.EmailField(blank=True, null=True)
-    company_name = models.CharField(max_length=150, blank=True, null=True)
 
-    test_link = models.URLField(max_length=1000, blank=True, null=True)
-    live_link = models.URLField(max_length=1000)
+    COMPANY_TYPES = [
+        ("client", "Client"),
+        ("internal_company", "Internal Company"),
+        ("affiliate_partner", "Affiliates Partner"),
+        ("api_partner", "API Partner"),
+        ("router_partner", "Router Partner"),
+    ]
 
-    rid_parameter = models.CharField(max_length=50, default="RID")
-    our_parameter = models.CharField(max_length=50, default="ID")
+    INVOICE_METHODS = [
+        ("monthly_basis", "Monthly Basis"),
+        ("project_basis", "Project Basis"),
+    ]
+
+    PAYMENT_TERMS = [
+        ("15", "15 Days"),
+        ("30", "30 Days"),
+        ("45", "45 Days"),
+        ("60", "60 Days"),
+    ]
+
+    company_type = models.CharField(
+        max_length=50,
+        choices=COMPANY_TYPES,
+        default="client"
+    )
+
+    name = models.CharField(max_length=255)
+
+    abrv_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    contact_number = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True
+    )
+
+    email = models.EmailField(
+        blank=True,
+        null=True
+    )
+
+    invoice_email = models.EmailField(
+        blank=True,
+        null=True
+    )
+
+    tax_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    address = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    invoicing_method = models.CharField(
+        max_length=50,
+        choices=INVOICE_METHODS,
+        blank=True,
+        null=True
+    )
+
+    payment_terms = models.CharField(
+        max_length=50,
+        choices=PAYMENT_TERMS,
+        blank=True,
+        null=True
+    )
+
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    zip_code = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    state = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
 
     status = models.BooleanField(default=True)
+
+    check_proxy = models.BooleanField(default=True)
+
+    is_diy = models.BooleanField(default=True)
+
+    # Survey Links
+
+    test_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    live_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    # RID Mapping
+
+    rid_parameter = models.CharField(
+        max_length=50,
+        default="RID"
+    )
+
+    our_parameter = models.CharField(
+        max_length=50,
+        default="ID"
+    )
+
+    # Notes / API Details
+
+    api_details = models.TextField(
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
 class Vendor(models.Model):
-    name = models.CharField(max_length=150)
-    email = models.EmailField(blank=True, null=True)
-    contact_person = models.CharField(max_length=150, blank=True, null=True)
 
-    complete_link = models.URLField(max_length=1000, blank=True, null=True)
-    terminate_link = models.URLField(max_length=1000, blank=True, null=True)
-    quota_full_link = models.URLField(max_length=1000, blank=True, null=True)
-    security_terminate_link = models.URLField(max_length=1000, blank=True, null=True)
+    INVOICE_METHODS = [
+        ("monthly_basis", "Monthly Basis"),
+        ("project_basis", "Project Basis"),
+    ]
 
-    cpc = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    PAYMENT_TERMS = [
+        ("15", "15 Days"),
+        ("30", "30 Days"),
+        ("45", "45 Days"),
+        ("60", "60 Days"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    abrv_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    contact_number = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True
+    )
+
+    email = models.EmailField(
+        blank=True,
+        null=True
+    )
+
+    invoice_email = models.EmailField(
+        blank=True,
+        null=True
+    )
+
+    tax_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    address = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    invoicing_method = models.CharField(
+        max_length=50,
+        choices=INVOICE_METHODS,
+        blank=True,
+        null=True
+    )
+
+    payment_terms = models.CharField(
+        max_length=50,
+        choices=PAYMENT_TERMS,
+        blank=True,
+        null=True
+    )
+
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    zip_code = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    state = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    complete_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    terminate_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    quota_full_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    security_terminate_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    api_details = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    s2s_token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True
+    )
+
+    cpc = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
     status = models.BooleanField(default=True)
+
+    check_proxy = models.BooleanField(default=True)
+
+    is_diy = models.BooleanField(default=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.s2s_token:
+            self.s2s_token = secrets.token_hex(64)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
 
 class Project(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="projects")
 
-    name = models.CharField(max_length=200)
-    country = models.CharField(max_length=100)
-    target = models.IntegerField(default=0)
-    cpc = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    loi = models.IntegerField(default=0)
-    ir = models.IntegerField(default=0)
+    STUDY_TYPES = [
+        ("B2B", "B2B"),
+        ("B2C", "B2C"),
+        ("CATI", "CATI"),
+        ("Data Processing", "Data Processing"),
+        ("Doctor", "Doctor"),
+        ("Focus Group", "Focus Group"),
+        ("Health care", "Health care"),
+        ("IDI", "IDI"),
+        ("IHUT", "IHUT"),
+        ("In-depth telephone interviews(TDIs)", "In-depth telephone interviews(TDIs)"),
+        ("Online Board", "Online Board"),
+        ("Online Community Recruitment", "Online Community Recruitment"),
+        ("panel build up", "Panel Build Up"),
+        ("programming", "Programming"),
+        ("TDI", "TDI"),
+    ]
 
-    test_link = models.URLField(max_length=1000, blank=True, null=True)
-    live_link = models.URLField(max_length=1000)
+    STATUS_CHOICES = [
+        ("bidding", "Bidding"),
+        ("api_staging", "API Staging"),
+        ("running", "Running"),
+        ("testing", "Testing"),
+        ("on_hold", "On Hold"),
+        ("awaiting_ids", "Awaiting ID's"),
+        ("completed", "Completed"),
+        ("closed", "Closed"),
+    ]
+
+    parent_project = models.CharField(
+        max_length=100,
+        default="Self Parent"
+    )
+
+    name = models.CharField(max_length=255)
+
+    study_type = models.CharField(
+        max_length=100,
+        choices=STUDY_TYPES,
+        blank=True,
+        null=True
+    )
+
+    country = models.CharField(max_length=100, blank=True, null=True)
+
+    language = models.CharField(max_length=100, blank=True, null=True)
+
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="projects"
+    )
+
+    client_contact = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True
+    )
+
+    project_manager = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True
+    )
+
+    sales_person = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True
+    )
+
+    target = models.PositiveIntegerField(default=0)
+
+    max_completes = models.PositiveIntegerField(default=0)
+
+    cpc = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    loi = models.PositiveIntegerField(default=0)
+
+    ir = models.PositiveIntegerField(default=0)
+
+    reward_points = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    supported_devices = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    live_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    test_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True
+    )
+
+    start_date = models.DateField(blank=True, null=True)
+
+    end_date = models.DateField(blank=True, null=True)
+
+    notes = models.TextField(blank=True, null=True)
+
+    project_brief = models.TextField(blank=True, null=True)
 
     status = models.CharField(
-        max_length=20,
-        choices=[
-            ("active", "Active"),
-            ("paused", "Paused"),
-            ("closed", "Closed"),
-        ],
-        default="active"
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default="bidding"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.name
 
-
 class ProjectVendor(models.Model):
+
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("paused", "Paused"),
+        ("closed", "Closed"),
+    ]
+
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_vendors")
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="vendor_projects")
 
@@ -78,7 +468,7 @@ class ProjectVendor(models.Model):
     quota_full_link = models.URLField(max_length=1000, blank=True, null=True)
     security_terminate_link = models.URLField(max_length=1000, blank=True, null=True)
 
-    status = models.BooleanField(default=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -121,6 +511,11 @@ class Respondent(models.Model):
     vendor_panelist_id = models.CharField(max_length=255, blank=True, null=True)
     panel_misc_data = models.TextField(blank=True, null=True)
     reconnect_id = models.CharField(max_length=255, blank=True, null=True)
+
+    email = models.EmailField(blank=True, null=True)
+    zip_code = models.CharField(max_length=50, blank=True, null=True)
+    age = models.CharField(max_length=50, blank=True, null=True)
+    gender = models.CharField(max_length=50, blank=True, null=True)
 
     ip_address = models.GenericIPAddressField(blank=True, null=True)
     user_agent = models.TextField(blank=True, null=True)

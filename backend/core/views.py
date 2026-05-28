@@ -61,25 +61,57 @@ def replace_tokens(url, respondent):
     if not url:
         return ""
 
+    vendor = respondent.vendor
+    project = respondent.project
+    client = project.client if project else None
+
     replacements = {
+        # Main respondent ID / OBID
         "{{ID}}": respondent.respondent_id,
         "{ID}": respondent.respondent_id,
+
+        "{{OBID}}": respondent.respondent_id,
+        "{OBID}": respondent.respondent_id,
 
         "{{RID}}": respondent.respondent_id,
         "{RID}": respondent.respondent_id,
         "{rid}": respondent.respondent_id,
 
-        "{{PASSTHRU}}": respondent.respondent_id,
-        "{PASSTHRU}": respondent.respondent_id,
+        # Pass-through
+        "{{PASSTHRU}}": respondent.panel_misc_data or respondent.respondent_id,
+        "{PASSTHRU}": respondent.panel_misc_data or respondent.respondent_id,
 
-        "{{PID}}": respondent.respondent_id,
-        "{PID}": respondent.respondent_id,
+        # Reconnect
+        "{{RECONNECTID}}": respondent.reconnect_id or "",
+        "{RECONNECTID}": respondent.reconnect_id or "",
+
+        # Vendor panelist id
+        "{{panellist_id}}": respondent.vendor_panelist_id or "",
+        "{panellist_id}": respondent.vendor_panelist_id or "",
 
         "{{panelist_id}}": respondent.vendor_panelist_id or "",
         "{panelist_id}": respondent.vendor_panelist_id or "",
 
-        "{{reconnect_id}}": respondent.reconnect_id or "",
-        "{reconnect_id}": respondent.reconnect_id or "",
+        # Client fields
+        "{{Email}}": respondent.email or "",
+        "{Email}": respondent.email or "",
+
+        "{{Zip}}": respondent.zip_code or "",
+        "{Zip}": respondent.zip_code or "",
+
+        "{{Age}}": respondent.age or "",
+        "{Age}": respondent.age or "",
+
+        "{{Gender}}": respondent.gender or "",
+        "{Gender}": respondent.gender or "",
+
+        # Auth token / S2S token
+        "{{authToken}}": vendor.s2s_token if vendor and vendor.s2s_token else "",
+        "{authToken}": vendor.s2s_token if vendor and vendor.s2s_token else "",
+
+        # Client key
+        "{{CLIENTKEY}}": str(client.id) if client else "",
+        "{CLIENTKEY}": str(client.id) if client else "",
     }
 
     for token, value in replacements.items():
@@ -89,7 +121,11 @@ def replace_tokens(url, respondent):
 
 
 def start_survey(request, project_vendor_id):
-    project_vendor = get_object_or_404(ProjectVendor, id=project_vendor_id, status=True)
+    project_vendor = get_object_or_404(
+        ProjectVendor,
+        id=project_vendor_id,
+        status=True
+    )
 
     respondent_code = "RID-" + uuid.uuid4().hex[:12].upper()
 
@@ -98,9 +134,30 @@ def start_survey(request, project_vendor_id):
         project=project_vendor.project,
         vendor=project_vendor.vendor,
         project_vendor=project_vendor,
-        vendor_panelist_id=request.GET.get("panelist_id"),
-        panel_misc_data=request.GET.get("misc"),
-        reconnect_id=request.GET.get("reconnect_id"),
+
+        vendor_panelist_id=(
+            request.GET.get("panelist_id")
+            or request.GET.get("panellist_id")
+            or request.GET.get("pid")
+        ),
+
+        panel_misc_data=(
+            request.GET.get("misc")
+            or request.GET.get("PASSTHRU")
+            or request.GET.get("passthru")
+        ),
+
+        reconnect_id=(
+            request.GET.get("reconnect_id")
+            or request.GET.get("RECONNECTID")
+            or request.GET.get("reconnectid")
+        ),
+
+        email=request.GET.get("email") or request.GET.get("Email"),
+        zip_code=request.GET.get("zip") or request.GET.get("Zip"),
+        age=request.GET.get("age") or request.GET.get("Age"),
+        gender=request.GET.get("gender") or request.GET.get("Gender"),
+
         ip_address=get_client_ip(request),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
         status="started",
@@ -122,7 +179,7 @@ def start_survey(request, project_vendor_id):
         RedirectLog.objects.create(
             respondent=respondent,
             redirect_type="quota_full",
-            redirect_url=quota_link,
+            redirect_url=quota_link or "landing/quota_full.html",
         )
 
         if quota_link:
@@ -147,21 +204,27 @@ def start_survey(request, project_vendor_id):
     )
 
     return redirect(final_client_link)
-
 def handle_survey_result(request, result_type):
-    respondent_id = request.GET.get("id") or request.GET.get("rid")
+    respondent_id = (
+        request.GET.get("id")
+        or request.GET.get("rid")
+        or request.GET.get("pid")
+        or request.GET.get("OBID")
+        or request.GET.get("obid")
+    )
 
     if not respondent_id:
         return render(
             request,
             "landing/error.html",
-            {
-                "message": "Missing respondent ID."
-            },
+            {"message": "Missing respondent ID."},
             status=400
         )
 
-    respondent = get_object_or_404(Respondent, respondent_id=respondent_id)
+    respondent = get_object_or_404(
+        Respondent,
+        respondent_id=respondent_id
+    )
 
     respondent.previous_status = respondent.status
     respondent.status = result_type
@@ -398,4 +461,55 @@ def redirect_journey(request, respondent_id):
         "completed_at": respondent.completed_at,
         "total_redirects": logs.count(),
         "journey": journey,
+    })
+
+
+@api_view(["GET", "POST"])
+def process_s2s(request):
+    pid = request.GET.get("pid") or request.data.get("pid")
+    status_id = request.GET.get("status_id") or request.data.get("status_id")
+    token = request.GET.get("token") or request.data.get("token")
+
+    if not pid:
+        return Response({"error": "Missing pid"}, status=400)
+
+    if not status_id:
+        return Response({"error": "Missing status_id"}, status=400)
+
+    respondent = get_object_or_404(Respondent, respondent_id=pid)
+
+    vendor = respondent.vendor
+
+    if vendor.s2s_token and token != vendor.s2s_token:
+        return Response({"error": "Invalid S2S token"}, status=403)
+
+    status_map = {
+        "1": "complete",
+        "2": "terminate",
+        "3": "quota_full",
+        "4": "security_terminate",
+    }
+
+    result_type = status_map.get(str(status_id))
+
+    if not result_type:
+        return Response({"error": "Invalid status_id"}, status=400)
+
+    respondent.previous_status = respondent.status
+    respondent.status = result_type
+    respondent.s2s_status = True
+    respondent.completed_at = timezone.now()
+    respondent.save()
+
+    RedirectLog.objects.create(
+        respondent=respondent,
+        redirect_type=f"s2s_{result_type}",
+        redirect_url=request.build_absolute_uri(),
+    )
+
+    return Response({
+        "message": "S2S status updated successfully",
+        "respondent_id": respondent.respondent_id,
+        "status": respondent.status,
+        "s2s_status": respondent.s2s_status,
     })

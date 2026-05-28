@@ -38,12 +38,18 @@ function VendorsList() {
     }
   };
 
+  const getInvoiceLabel = (value) => {
+    if (value === "monthly_basis") return "Monthly Basis";
+    if (value === "project_basis") return "Project Basis";
+    return "-";
+  };
+
   return (
     <div>
       <div className="page-header-flex">
         <div>
           <h1>Vendors</h1>
-          <p>Manage suppliers and their redirect links</p>
+          <p>Manage supplier company details and redirect links</p>
         </div>
 
         <Link to="/vendors/add" className="primary-btn">
@@ -58,9 +64,15 @@ function VendorsList() {
             <tr>
               <th>ID</th>
               <th>Vendor Name</th>
+              <th>ABRV Name</th>
               <th>Email</th>
               <th>Contact</th>
+              <th>Country</th>
+              <th>Invoice Method</th>
+              <th>Payment Terms</th>
               <th>CPC</th>
+              <th>Check Proxy</th>
+              <th>DIY</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -70,10 +82,51 @@ function VendorsList() {
             {vendors.map((vendor) => (
               <tr key={vendor.id}>
                 <td>{vendor.id}</td>
-                <td>{vendor.name}</td>
+
+                <td>{vendor.name || "-"}</td>
+
+                <td>{vendor.abrv_name || "-"}</td>
+
                 <td>{vendor.email || "-"}</td>
-                <td>{vendor.contact_person || "-"}</td>
+
+                <td>{vendor.contact_number || "-"}</td>
+
+                <td>{vendor.country || "-"}</td>
+
+                <td>{getInvoiceLabel(vendor.invoicing_method)}</td>
+
+                <td>
+                  {vendor.payment_terms
+                    ? `${vendor.payment_terms} Days`
+                    : "-"}
+                </td>
+
                 <td>{vendor.cpc}</td>
+
+                <td>
+                  <span
+                    className={
+                      vendor.check_proxy
+                        ? "status-active"
+                        : "status-inactive"
+                    }
+                  >
+                    {vendor.check_proxy ? "Yes" : "No"}
+                  </span>
+                </td>
+
+                <td>
+                  <span
+                    className={
+                      vendor.is_diy
+                        ? "status-active"
+                        : "status-inactive"
+                    }
+                  >
+                    {vendor.is_diy ? "Yes" : "No"}
+                  </span>
+                </td>
+
                 <td>
                   <span
                     className={
@@ -108,7 +161,7 @@ function VendorsList() {
 
             {vendors.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
+                <td colSpan="13" style={{ textAlign: "center" }}>
                   No vendors found
                 </td>
               </tr>

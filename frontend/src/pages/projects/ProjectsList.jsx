@@ -11,14 +11,38 @@ function ProjectsList() {
   }, []);
 
   const fetchProjects = async () => {
-    const data = await getProjects();
-    setProjects(data);
+    try {
+      const data = await getProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this project?")) return;
-    await deleteProject(id);
-    fetchProjects();
+
+    try {
+      await deleteProject(id);
+      fetchProjects();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      bidding: "Bidding",
+      api_staging: "API Staging",
+      running: "Running",
+      testing: "Testing",
+      on_hold: "On Hold",
+      awaiting_ids: "Awaiting ID's",
+      completed: "Completed",
+      closed: "Closed",
+    };
+
+    return labels[status] || status || "-";
   };
 
   return (
@@ -42,8 +66,11 @@ function ProjectsList() {
               <th>ID</th>
               <th>Project</th>
               <th>Client</th>
+              <th>Study Type</th>
               <th>Country</th>
-              <th>Target</th>
+              <th>Language</th>
+              <th>Req. Completes</th>
+              <th>Max. Completes</th>
               <th>CPC</th>
               <th>LOI</th>
               <th>IR</th>
@@ -56,25 +83,43 @@ function ProjectsList() {
             {projects.map((project) => (
               <tr key={project.id}>
                 <td>{project.id}</td>
-                <td>{project.name}</td>
-                <td>{project.client_name}</td>
-                <td>{project.country}</td>
+
+                <td>{project.name || "-"}</td>
+
+                <td>{project.client_name || "-"}</td>
+
+                <td>{project.study_type || "-"}</td>
+
+                <td>{project.country || "-"}</td>
+
+                <td>{project.language || "-"}</td>
+
                 <td>{project.target}</td>
+
+                <td>{project.max_completes}</td>
+
                 <td>{project.cpc}</td>
+
                 <td>{project.loi}</td>
+
                 <td>{project.ir}%</td>
+
                 <td>
                   <span className={`status-pill status-${project.status}`}>
-                    {project.status}
+                    {getStatusLabel(project.status)}
                   </span>
                 </td>
+
                 <td>
                   <div className="table-actions">
                     <Link to={`/projects/${project.id}`} className="view-btn">
                       <Eye size={16} />
                     </Link>
 
-                    <Link to={`/projects/edit/${project.id}`} className="edit-btn">
+                    <Link
+                      to={`/projects/edit/${project.id}`}
+                      className="edit-btn"
+                    >
                       <Pencil size={16} />
                     </Link>
 
@@ -91,7 +136,7 @@ function ProjectsList() {
 
             {projects.length === 0 && (
               <tr>
-                <td colSpan="10" style={{ textAlign: "center" }}>
+                <td colSpan="13" style={{ textAlign: "center" }}>
                   No projects found
                 </td>
               </tr>

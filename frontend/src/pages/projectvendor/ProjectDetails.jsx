@@ -99,11 +99,11 @@ function ProjectDetails() {
     return <p>Loading project...</p>;
   }
 
-  const completeUrl = `${backendBaseUrl}/api/complete/?id={{ID}}`;
-  const terminateUrl = `${backendBaseUrl}/api/terminate/?id={{ID}}`;
-  const quotaFullUrl = `${backendBaseUrl}/api/quota-full/?id={{ID}}`;
-  const securityUrl = `${backendBaseUrl}/api/security-terminate/?id={{ID}}`;
-
+  const completeUrl = `${backendBaseUrl}/api/complete/?id={{OBID}}`;
+  const terminateUrl = `${backendBaseUrl}/api/terminate/?id={{OBID}}`;
+  const quotaFullUrl = `${backendBaseUrl}/api/quota-full/?id={{OBID}}`;
+  const securityUrl = `${backendBaseUrl}/api/security-terminate/?id={{OBID}}`;
+  
   return (
     <div>
       <div className="page-header">

@@ -38,12 +38,30 @@ function ClientsList() {
     }
   };
 
+  const getCompanyTypeLabel = (type) => {
+    if (type === "client") return "Client";
+
+    if (type === "internal_company")
+      return "Internal Company";
+
+    if (type === "affiliate_partner")
+      return "Affiliates Partner";
+
+    if (type === "api_partner")
+      return "API Partner";
+
+    if (type === "router_partner")
+      return "Router Partner";
+
+    return type || "-";
+  };
+
   return (
     <div>
       <div className="page-header-flex">
         <div>
           <h1>Clients</h1>
-          <p>Manage survey clients</p>
+          <p>Manage client company details</p>
         </div>
 
         <Link to="/clients/add" className="primary-btn">
@@ -57,8 +75,14 @@ function ClientsList() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Client Name</th>
+              <th>Company Type</th>
+              <th>Company Name</th>
+              <th>ABRV Name</th>
               <th>Email</th>
+              <th>Contact</th>
+              <th>Country</th>
+              <th>Check Proxy</th>
+              <th>DIY</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -68,8 +92,42 @@ function ClientsList() {
             {clients.map((client) => (
               <tr key={client.id}>
                 <td>{client.id}</td>
-                <td>{client.name}</td>
-                <td>{client.email}</td>
+
+                <td>{getCompanyTypeLabel(client.company_type)}</td>
+
+                <td>{client.name || "-"}</td>
+
+                <td>{client.abrv_name || "-"}</td>
+
+                <td>{client.email || "-"}</td>
+
+                <td>{client.contact_number || "-"}</td>
+
+                <td>{client.country || "-"}</td>
+
+                <td>
+                  <span
+                    className={
+                      client.check_proxy
+                        ? "status-active"
+                        : "status-inactive"
+                    }
+                  >
+                    {client.check_proxy ? "Yes" : "No"}
+                  </span>
+                </td>
+
+                <td>
+                  <span
+                    className={
+                      client.is_diy
+                        ? "status-active"
+                        : "status-inactive"
+                    }
+                  >
+                    {client.is_diy ? "Yes" : "No"}
+                  </span>
+                </td>
 
                 <td>
                   <span
@@ -102,6 +160,14 @@ function ClientsList() {
                 </td>
               </tr>
             ))}
+
+            {clients.length === 0 && (
+              <tr>
+                <td colSpan="11" style={{ textAlign: "center" }}>
+                  No clients found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

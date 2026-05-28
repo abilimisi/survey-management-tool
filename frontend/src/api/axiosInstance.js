@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
-//   baseURL: "https://backwater-muster-repayment.ngrok-free.dev/api/"
+  baseURL: "http://127.0.0.1:8000/api/",
+  // baseURL:  https://backwater-muster-repayment.ngrok-free.dev/api/ 
 });
 
 axiosInstance.interceptors.request.use((config) => {
@@ -14,5 +14,45 @@ axiosInstance.interceptors.request.use((config) => {
 
   return config;
 });
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem("refresh_token");
+
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/token/refresh/",
+          {
+            refresh: refreshToken,
+          }
+        );
+
+        const newAccessToken = response.data.access;
+
+        localStorage.setItem("access_token", newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default axiosInstance;
