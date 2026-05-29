@@ -32,7 +32,8 @@ function MainLayout({ children }) {
 
   return (
     <div className={`app-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-      <Sidebar isCollapsed={isSidebarCollapsed} />
+      <Sidebar isCollapsed={isSidebarCollapsed}
+      toggleSidebar={toggleSidebar} />
 
       <main className="main-section">
         <Topbar toggleSidebar={toggleSidebar} />

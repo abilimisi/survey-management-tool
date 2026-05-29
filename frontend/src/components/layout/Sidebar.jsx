@@ -1,20 +1,25 @@
-// import { LayoutDashboard, Users, Building2, FolderKanban, UserPlus, BarChart3 } from "lucide-react";
+// import {
+//   LayoutDashboard,
+//   Users,
+//   Building2,
+//   FolderKanban,
+//   BarChart3,
+// } from "lucide-react";
 // import { NavLink } from "react-router-dom";
 
 // const menuItems = [
-//   { name: "Dashboard", path: "/", icon: LayoutDashboard },
+//   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
 //   { name: "Clients", path: "/clients", icon: Building2 },
 //   { name: "Vendors", path: "/vendors", icon: Users },
 //   { name: "Projects", path: "/projects", icon: FolderKanban },
-//   // { name: "Assign Suppliers", path: "/assign-suppliers", icon: UserPlus },
 //   { name: "Reports", path: "/reports", icon: BarChart3 },
 // ];
 
-// function Sidebar() {
+// function Sidebar({ isCollapsed }) {
 //   return (
-//     <aside className="sidebar">
+//     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
 //       <div className="sidebar-logo">
-//         Survey Tool
+//         {isCollapsed ? "ST" : "Survey Tool"}
 //       </div>
 
 //       <nav className="sidebar-menu">
@@ -25,12 +30,13 @@
 //             <NavLink
 //               key={item.path}
 //               to={item.path}
+//               title={item.name}
 //               className={({ isActive }) =>
 //                 isActive ? "sidebar-link active" : "sidebar-link"
 //               }
 //             >
-//               <Icon size={18} />
-//               <span>{item.name}</span>
+//               <Icon size={20} />
+//               {!isCollapsed && <span>{item.name}</span>}
 //             </NavLink>
 //           );
 //         })}
@@ -47,22 +53,38 @@ import {
   Building2,
   FolderKanban,
   BarChart3,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const menuItems = [
-  { name: "Dashboard", path: "/", icon: LayoutDashboard },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { name: "Clients", path: "/clients", icon: Building2 },
   { name: "Vendors", path: "/vendors", icon: Users },
   { name: "Projects", path: "/projects", icon: FolderKanban },
   { name: "Reports", path: "/reports", icon: BarChart3 },
 ];
 
-function Sidebar({ isCollapsed }) {
+function Sidebar({ isCollapsed, toggleSidebar }) {
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-logo">
-        {isCollapsed ? "ST" : "Survey Tool"}
+      <div className="sidebar-header">
+        <div className="sidebar-logo">
+          {isCollapsed ? "ST" : "Survey Tool"}
+        </div>
+
+        <button
+          className="sidebar-collapse-btn"
+          onClick={toggleSidebar}
+        >
+          {isCollapsed ? (
+            <ChevronRight size={18} />
+          ) : (
+            <ChevronLeft size={18} />
+          )}
+        </button>
       </div>
 
       <nav className="sidebar-menu">

@@ -28,8 +28,9 @@ function Login() {
 
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
+      localStorage.setItem("username", formData.username);
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       setError("Invalid username or password");
     }

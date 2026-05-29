@@ -36,6 +36,7 @@ function SupplierHints() {
           <thead>
             <tr>
               <th>Respondent ID</th>
+              <th>Vendor PID</th>
               <th>Project</th>
               <th>Country</th>
               <th>Vendor</th>
@@ -60,6 +61,7 @@ function SupplierHints() {
                     {item.respondent_id}
                   </Link>
                 </td>
+                <td>{item.vendor_panelist_id}</td>
                 <td>{item.project}</td>
                 <td>{item.country}</td>
                 <td>{item.vendor}</td>
@@ -72,10 +74,31 @@ function SupplierHints() {
                 <td>{item.previous_status || "-"}</td>
                 <td>{item.s2s_status ? "Yes" : "No"}</td>
                 <td>{item.ip_address || "-"}</td>
-                <td>{item.started_at}</td>
-                <td>{item.completed_at || "-"}</td>
+                <td>
+                {item.started_at
+                  ? new Date(item.started_at).toLocaleString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-"}
+                </td>
+
+                <td>
+                    {item.completed_at
+                      ? new Date(item.completed_at).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
+                </td>
               </tr>
-            ))}
+              ))}
 
             {data.respondents.length === 0 && (
               <tr>

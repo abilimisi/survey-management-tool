@@ -119,12 +119,18 @@ def replace_tokens(url, respondent):
 
     return url
 
+def get_first_query_value(request, keys):
+    for key in keys:
+        value = request.GET.get(key)
+        if value:
+            return value
+    return None
 
 def start_survey(request, project_vendor_id):
     project_vendor = get_object_or_404(
         ProjectVendor,
         id=project_vendor_id,
-        status=True
+        status="active"
     )
 
     respondent_code = "RID-" + uuid.uuid4().hex[:12].upper()
@@ -135,29 +141,56 @@ def start_survey(request, project_vendor_id):
         vendor=project_vendor.vendor,
         project_vendor=project_vendor,
 
-        vendor_panelist_id=(
-            request.GET.get("panelist_id")
-            or request.GET.get("panellist_id")
-            or request.GET.get("pid")
+        vendor_panelist_id=get_first_query_value(
+            request,
+            [
+                "panelist_id",
+                "panellist_id",
+                "panelistid",
+                "panellistid",
+                "pid",
+                "PID",
+                "uid",
+                "UID",
+                "subid",
+                "sub_id",
+                "respondent_id",
+                "rid",
+                "Lid",
+                "lid",
+                "PASSTHRU",
+                "passthru",
+            ],
         ),
 
-        panel_misc_data=(
-            request.GET.get("misc")
-            or request.GET.get("PASSTHRU")
-            or request.GET.get("passthru")
+        panel_misc_data=get_first_query_value(
+            request,
+            [
+                "misc",
+                "extra",
+                "data",
+                "PASSTHRU",
+                "passthru",
+                "subid",
+                "sub_id",
+            ],
         ),
 
-        reconnect_id=(
-            request.GET.get("reconnect_id")
-            or request.GET.get("RECONNECTID")
-            or request.GET.get("reconnectid")
+        reconnect_id=get_first_query_value(
+            request,
+            [
+                "reconnect_id",
+                "RECONNECTID",
+                "reconnectid",
+                "re_connect_id",
+                "reconnect",
+            ],
         ),
 
-        email=request.GET.get("email") or request.GET.get("Email"),
-        zip_code=request.GET.get("zip") or request.GET.get("Zip"),
-        age=request.GET.get("age") or request.GET.get("Age"),
-        gender=request.GET.get("gender") or request.GET.get("Gender"),
-
+        email=get_first_query_value(request, ["email", "Email", "EMAIL"]),
+        zip_code=get_first_query_value(request, ["zip", "Zip", "ZIP", "zipcode", "zip_code"]),
+        age=get_first_query_value(request, ["age", "Age", "AGE"]),
+        gender=get_first_query_value(request, ["gender", "Gender", "GENDER"]),
         ip_address=get_client_ip(request),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
         status="started",
@@ -383,6 +416,9 @@ def supplier_statistics(request, project_id):
             "terminate_link": pv.terminate_link,
             "quota_full_link": pv.quota_full_link,
             "security_terminate_link": pv.security_terminate_link,
+            "status": pv.status,
+            "max_redirects": pv.max_redirects,
+            "notes": pv.notes,
             # "supplier_link": request.build_absolute_uri(
             #     f"/api/survey/start/{pv.id}/"
             # ),
@@ -512,4 +548,88 @@ def process_s2s(request):
         "respondent_id": respondent.respondent_id,
         "status": respondent.status,
         "s2s_status": respondent.s2s_status,
+    })
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Project, Vendor, Respondent, ProjectVendor
+
+
+@api_view(["GET"])
+def reports_data(request):
+    project_report = []
+
+    for project in Project.objects.all():
+        respondents = Respondent.objects.filter(project=project)
+
+        hits = respondents.count()
+        completes = respondents.filter(status="complete").count()
+        terminates = respondents.filter(status="terminate").count()
+        quota_full = respondents.filter(status="quota_full").count()
+        security_term = respondents.filter(status="security_terminate").count()
+
+        ir = round((completes / hits) * 100, 2) if hits > 0 else 0
+
+        project_report.append({
+            "id": project.id,
+            "name": project.name,
+            "client": project.client.name if project.client else "-",
+            "country": project.country,
+            "hits": hits,
+            "completes": completes,
+            "terminates": terminates,
+            "quota_full": quota_full,
+            "security_term": security_term,
+            "ir": ir,
+            "loi": project.loi,
+            "status": project.status,
+        })
+
+    vendor_report = []
+
+    for vendor in Vendor.objects.all():
+        respondents = Respondent.objects.filter(vendor=vendor)
+
+        hits = respondents.count()
+        completes = respondents.filter(status="complete").count()
+        terminates = respondents.filter(status="terminate").count()
+        quota_full = respondents.filter(status="quota_full").count()
+        security_term = respondents.filter(status="security_terminate").count()
+
+        ir = round((completes / hits) * 100, 2) if hits > 0 else 0
+
+        vendor_report.append({
+            "id": vendor.id,
+            "name": vendor.name,
+            "assigned_projects": ProjectVendor.objects.filter(vendor=vendor).count(),
+            "hits": hits,
+            "completes": completes,
+            "terminates": terminates,
+            "quota_full": quota_full,
+            "security_term": security_term,
+            "ir": ir,
+            "cpc": vendor.cpc,
+        })
+
+    respondent_report = []
+
+    for respondent in Respondent.objects.select_related("project", "vendor").order_by("-started_at")[:200]:
+        respondent_report.append({
+            "id": respondent.id,
+            "respondent_id": respondent.respondent_id,
+            "project": respondent.project.name,
+            "vendor": respondent.vendor.name,
+            "vendor_panelist_id": respondent.vendor_panelist_id,
+            "status": respondent.status,
+            "previous_status": respondent.previous_status,
+            "s2s_status": respondent.s2s_status,
+            "ip_address": respondent.ip_address,
+            "started_at": respondent.started_at,
+            "completed_at": respondent.completed_at,
+        })
+
+    return Response({
+        "project_report": project_report,
+        "vendor_report": vendor_report,
+        "respondent_report": respondent_report,
     })

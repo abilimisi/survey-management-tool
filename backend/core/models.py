@@ -1,24 +1,6 @@
 from django.db import models
 import secrets
 
-
-# class Client(models.Model):
-#     name = models.CharField(max_length=150)
-#     email = models.EmailField(blank=True, null=True)
-#     company_name = models.CharField(max_length=150, blank=True, null=True)
-
-#     test_link = models.URLField(max_length=1000, blank=True, null=True)
-#     live_link = models.URLField(max_length=1000)
-
-#     rid_parameter = models.CharField(max_length=50, default="RID")
-#     our_parameter = models.CharField(max_length=50, default="ID")
-
-#     status = models.BooleanField(default=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.name
-
 class Client(models.Model):
 
     COMPANY_TYPES = [
@@ -470,6 +452,16 @@ class ProjectVendor(models.Model):
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    max_redirects = models.IntegerField(default=99999)
+    notes = models.TextField(blank=True, null=True)
+
+    ask_email = models.BooleanField(default=False)
+    ask_zip = models.BooleanField(default=False)
+    ask_age = models.BooleanField(default=False)
+    ask_gender = models.BooleanField(default=False)
+
+    qualification_required = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         if self.vendor:

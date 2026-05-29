@@ -16,3 +16,8 @@ export const getSupplierStats = async (projectId) => {
   );
   return response.data;
 };
+
+export const getReports = async () => {
+  const response = await axiosInstance.get("/reports/");
+  return response.data;
+};

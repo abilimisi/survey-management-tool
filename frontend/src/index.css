@@ -573,12 +573,6 @@ body {
   width: 82px;
 }
 
-.sidebar-logo {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 35px;
-  white-space: nowrap;
-}
 
 .sidebar.collapsed .sidebar-logo {
   font-size: 18px;
@@ -713,4 +707,87 @@ body {
   border-radius: 999px;
   cursor: pointer;
   font-weight: 600;
+}
+
+.supplier-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.checkbox-box {
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.supplier-form-actions {
+  display: flex;
+  align-items: end;
+}
+
+@media (max-width: 1000px) {
+  .form-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 22px;
+}
+
+.sidebar-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.sidebar-collapse-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  background: #2563eb;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.topbar-user span {
+  font-weight: 600;
+  color: #374151;
 }

@@ -1,0 +1,28 @@
+.project-name-cell strong {
+  display: block;
+  font-size: 14px;
+}
+
+.project-name-cell span {
+  color: #2563eb;
+  font-size: 13px;
+}
+
+.ir-good {
+  color: green;
+  font-weight: 600;
+}
+
+.ir-bad {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.custom-table th {
+  background: #6b7280;
+  color: white;
+}
+
+.custom-table td {
+  vertical-align: middle;
+}

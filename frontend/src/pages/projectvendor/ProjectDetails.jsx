@@ -14,17 +14,27 @@ function ProjectDetails() {
   const [project, setProject] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [supplierStats, setSupplierStats] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState(null);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     project: id,
     vendor: "",
     vendor_cpc: "0.00",
-    target: 0,
+    target: 1000,
+    max_redirects: 99999,
+    complete_link: "",
+    terminate_link: "",
+    quota_full_link: "",
+    security_terminate_link: "",
+    notes: "",
+    status: "active",
+    ask_email: false,
+    ask_zip: false,
+    ask_age: false,
+    ask_gender: false,
+    qualification_required: true,
   });
 
-  // const backendBaseUrl = "http://127.0.0.1:8000";
   const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
 
   useEffect(() => {
@@ -46,22 +56,25 @@ function ProjectDetails() {
   };
 
   const copyText = async (text) => {
+    if (!text || text === "-") return;
     await navigator.clipboard.writeText(text);
     alert("Copied!");
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     if (name === "vendor") {
       const vendor = vendors.find((v) => String(v.id) === value);
-
-      setSelectedVendor(vendor || null);
 
       setFormData({
         ...formData,
         vendor: value,
         vendor_cpc: vendor?.cpc || "0.00",
+        complete_link: vendor?.complete_link || "",
+        terminate_link: vendor?.terminate_link || "",
+        quota_full_link: vendor?.quota_full_link || "",
+        security_terminate_link: vendor?.security_terminate_link || "",
       });
 
       return;
@@ -69,7 +82,7 @@ function ProjectDetails() {
 
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -84,10 +97,21 @@ function ProjectDetails() {
         project: id,
         vendor: "",
         vendor_cpc: "0.00",
-        target: 0,
+        target: 1000,
+        max_redirects: 99999,
+        complete_link: "",
+        terminate_link: "",
+        quota_full_link: "",
+        security_terminate_link: "",
+        notes: "",
+        status: "active",
+        ask_email: false,
+        ask_zip: false,
+        ask_age: false,
+        ask_gender: false,
+        qualification_required: true,
       });
 
-      setSelectedVendor(null);
       fetchData();
     } catch (error) {
       console.error(error.response?.data || error);
@@ -95,29 +119,26 @@ function ProjectDetails() {
     }
   };
 
-  if (!project) {
-    return <p>Loading project...</p>;
-  }
+  if (!project) return <p>Loading project...</p>;
 
   const completeUrl = `${backendBaseUrl}/api/complete/?id={{OBID}}`;
   const terminateUrl = `${backendBaseUrl}/api/terminate/?id={{OBID}}`;
   const quotaFullUrl = `${backendBaseUrl}/api/quota-full/?id={{OBID}}`;
   const securityUrl = `${backendBaseUrl}/api/security-terminate/?id={{OBID}}`;
-  
+  const s2sUrl = `${backendBaseUrl}/api/s2s/process/?pid={{OBID}}&status_id={{status}}&token={{authToken}}`;
+
   return (
     <div>
       <div className="page-header">
         <h1>{project.name}</h1>
         <p>
-          Client: {project.client_name} | Country: {project.country} | Status:{" "}
-          {project.status}
+          Client: {project.client_name} | Country: {project.country} | Status: {project.status}
         </p>
       </div>
 
       <div className="details-grid">
         <div className="details-card">
           <h3>Project Information</h3>
-
           <p><strong>Target:</strong> {project.target}</p>
           <p><strong>CPC:</strong> {project.cpc}</p>
           <p><strong>LOI:</strong> {project.loi}</p>
@@ -129,95 +150,152 @@ function ProjectDetails() {
 
         <div className="details-card">
           <h3>Client Redirect Links</h3>
-          <p>Give these links to client.</p>
-
           <LinkRow label="Complete" value={completeUrl} onCopy={copyText} />
           <LinkRow label="Terminate" value={terminateUrl} onCopy={copyText} />
           <LinkRow label="Quota Full" value={quotaFullUrl} onCopy={copyText} />
           <LinkRow label="Security Term" value={securityUrl} onCopy={copyText} />
+          <LinkRow label="S2S Link" value={s2sUrl} onCopy={copyText} />
         </div>
       </div>
 
       <div className="section-card">
-        <h3>Assign Supplier to Project</h3>
+        <h3>Manage Suppliers</h3>
 
         {error && <div className="error-box">{error}</div>}
 
-        <form className="inline-form" onSubmit={handleAssignSupplier}>
-          <div className="form-group">
-            <label>Vendor</label>
-            <select
-              name="vendor"
-              required
-              value={formData.vendor}
-              onChange={handleChange}
-            >
-              <option value="">Select Vendor</option>
+        <form className="supplier-form" onSubmit={handleAssignSupplier}>
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label>Vendor</label>
+              <select name="vendor" required value={formData.vendor} onChange={handleChange}>
+                <option value="">Please Select</option>
+                {vendors.map((vendor) => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}
-                </option>
-              ))}
-            </select>
+            <div className="form-group">
+              <label>Status</label>
+              <select name="status" value={formData.status} onChange={handleChange}>
+                <option value="active">Testing</option>
+                <option value="paused">Paused</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>Vendor CPC</label>
-            <input
-              type="number"
-              step="0.01"
-              name="vendor_cpc"
-              value={formData.vendor_cpc}
-              onChange={handleChange}
-            />
+          <div className="form-grid-4">
+            <div className="form-group">
+              <label>Cost Per Complete</label>
+              <input
+                type="number"
+                step="0.01"
+                name="vendor_cpc"
+                value={formData.vendor_cpc}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Req. Completes</label>
+              <input
+                type="number"
+                name="target"
+                value={formData.target}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Max Redirects</label>
+              <input
+                type="number"
+                name="max_redirects"
+                value={formData.max_redirects}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Qualification Required</label>
+              <select
+                name="qualification_required"
+                value={formData.qualification_required ? "true" : "false"}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    qualification_required: e.target.value === "true",
+                  })
+                }
+              >
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>Target</label>
-            <input
-              type="number"
-              name="target"
-              value={formData.target}
-              onChange={handleChange}
-            />
+          <div className="form-grid-4">
+            <div className="form-group">
+              <label>Completion Link</label>
+              <textarea name="complete_link" value={formData.complete_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Disqualify Link</label>
+              <textarea name="terminate_link" value={formData.terminate_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Quota Full Link</label>
+              <textarea name="quota_full_link" value={formData.quota_full_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Security Term Link</label>
+              <textarea name="security_terminate_link" value={formData.security_terminate_link} onChange={handleChange} />
+            </div>
           </div>
 
-          <button type="submit" className="primary-btn">
-            Assign Supplier
-          </button>
+          <div className="form-grid-3">
+            <div className="form-group">
+              <label>Notes</label>
+              <textarea name="notes" value={formData.notes} onChange={handleChange} />
+            </div>
+
+            <div className="checkbox-box">
+              <strong>Data to Ask on Redirect:</strong>
+
+              <label>
+                <input type="checkbox" name="ask_email" checked={formData.ask_email} onChange={handleChange} />
+                Email Address
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_zip" checked={formData.ask_zip} onChange={handleChange} />
+                Zip Code
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_age" checked={formData.ask_age} onChange={handleChange} />
+                Age
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_gender" checked={formData.ask_gender} onChange={handleChange} />
+                Gender
+              </label>
+            </div>
+
+            <div className="supplier-form-actions">
+              <button type="submit" className="primary-btn">
+                Save
+              </button>
+            </div>
+          </div>
         </form>
-
-        {selectedVendor && (
-          <div className="vendor-preview-card">
-            <h4>Selected Vendor Links</h4>
-            <p>These links are auto-copied from vendor when assigning supplier.</p>
-
-            <LinkRow
-              label="Complete"
-              value={selectedVendor.complete_link || "-"}
-              onCopy={copyText}
-            />
-
-            <LinkRow
-              label="Terminate"
-              value={selectedVendor.terminate_link || "-"}
-              onCopy={copyText}
-            />
-
-            <LinkRow
-              label="Quota Full"
-              value={selectedVendor.quota_full_link || "-"}
-              onCopy={copyText}
-            />
-
-            <LinkRow
-              label="Security"
-              value={selectedVendor.security_terminate_link || "-"}
-              onCopy={copyText}
-            />
-          </div>
-        )}
       </div>
 
       <div className="section-card">
@@ -227,45 +305,74 @@ function ProjectDetails() {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>Vendor</th>
-                <th>Target</th>
+                <th>ID</th>
+                <th>Panel</th>
+                <th>Status</th>
                 <th>Hits</th>
                 <th>Completed</th>
-                <th>Terminated</th>
+                <th>Dis</th>
                 <th>Quota Full</th>
                 <th>Security Term</th>
                 <th>IR</th>
                 <th>CPC</th>
                 <th>Last Completed</th>
-                <th>Supplier Link</th>
+                <th>Action</th>
+                <th>Test Links</th>
               </tr>
             </thead>
 
             <tbody>
               {supplierStats.map((item) => (
                 <tr key={item.project_vendor_id}>
+                  <td>{item.project_vendor_id}</td>
                   <td>{item.vendor_name}</td>
-                  <td>{item.target}</td>
+                  <td>{item.status || "Testing"}</td>
 
                   <td>
                     <Link
                       to={`/project-vendors/${item.project_vendor_id}/hints`}
                       className="text-link"
                     >
-                      {item.hits}
+                      {item.hits}/{item.max_redirects || 99999}
                     </Link>
                   </td>
 
-                  {/* <td>{item.completed}</td> */}
-                  <td>
-                    {item.completed}/{item.target}
-                  </td>
+                  <td>{item.completed}/{item.target}</td>
                   <td>{item.terminated}</td>
                   <td>{item.quota_full}</td>
                   <td>{item.security_term}</td>
                   <td>{item.ir}%</td>
                   <td>{item.vendor_cpc}</td>
-                  <td>{item.last_completed || "-"}</td>
+                  {/* <td>{item.last_completed || "-"}</td> */}
+                  <td>
+                    {item.last_completed
+                      ? new Date(item.last_completed).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
+                  </td>
+
+                  <td>
+                    <div className="table-actions">
+                      <Link
+                        to={`/project-vendors/${item.project_vendor_id}/hints`}
+                        className="view-btn"
+                      >
+                        View
+                      </Link>
+
+                      <button
+                        className="small-btn"
+                        onClick={() => copyText(item.supplier_link)}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </td>
 
                   <td>
                     <button
@@ -280,7 +387,7 @@ function ProjectDetails() {
 
               {supplierStats.length === 0 && (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: "center" }}>
+                  <td colSpan="13" style={{ textAlign: "center" }}>
                     No suppliers assigned
                   </td>
                 </tr>
@@ -288,42 +395,6 @@ function ProjectDetails() {
             </tbody>
           </table>
         </div>
-
-        {supplierStats.length > 0 && (
-          <div className="assigned-links-section">
-            <h3>Assigned Vendor Redirect Links</h3>
-
-            {supplierStats.map((item) => (
-              <div className="assigned-link-card" key={item.project_vendor_id}>
-                <h4>{item.vendor_name}</h4>
-
-                <LinkRow
-                  label="Complete"
-                  value={item.complete_link || "-"}
-                  onCopy={copyText}
-                />
-
-                <LinkRow
-                  label="Terminate"
-                  value={item.terminate_link || "-"}
-                  onCopy={copyText}
-                />
-
-                <LinkRow
-                  label="Quota Full"
-                  value={item.quota_full_link || "-"}
-                  onCopy={copyText}
-                />
-
-                <LinkRow
-                  label="Security"
-                  value={item.security_terminate_link || "-"}
-                  onCopy={copyText}
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

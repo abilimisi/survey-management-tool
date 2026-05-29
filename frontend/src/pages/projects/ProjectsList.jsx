@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus, Eye } from "lucide-react";
 import { getProjects, deleteProject } from "../../api/projectApi";
+import "./ProjectList.css";
 
 function ProjectsList() {
   const [projects, setProjects] = useState([]);
@@ -64,86 +65,103 @@ function ProjectsList() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Project</th>
+              <th>Project Name</th>
               <th>Client</th>
-              <th>Study Type</th>
               <th>Country</th>
-              <th>Language</th>
-              <th>Req. Completes</th>
-              <th>Max. Completes</th>
-              <th>CPC</th>
+              <th>Start Date</th>
+              <th>Target</th>
+              <th>Hits</th>
+              <th>Comp.</th>
+              <th>QF</th>
+              <th>IR%</th>
               <th>LOI</th>
-              <th>IR</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th>Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {projects.map((project) => (
-              <tr key={project.id}>
-                <td>{project.id}</td>
+        {projects.map((project) => (
+          <tr key={project.id}>
+            <td>{project.id}</td>
 
-                <td>{project.name || "-"}</td>
+            <td>
+              <div className="project-name-cell">
+                <strong>{project.name}</strong>
+                <br />
+                <span>{project.country}</span>
+              </div>
+            </td>
 
-                <td>{project.client_name || "-"}</td>
+            <td>{project.client_name || "-"}</td>
 
-                <td>{project.study_type || "-"}</td>
+            <td>{project.country || "-"}</td>
 
-                <td>{project.country || "-"}</td>
+            <td>
+              {project.start_date
+                ? new Date(project.start_date).toLocaleDateString()
+                : "-"}
+            </td>
 
-                <td>{project.language || "-"}</td>
+            <td>{project.target || 0}</td>
 
-                <td>{project.target}</td>
+            <td>{project.hits || 0}</td>
 
-                <td>{project.max_completes}</td>
+            <td>{project.completes || 0}</td>
 
-                <td>{project.cpc}</td>
+            <td>{project.quota_full_count || 0}</td>
 
-                <td>{project.loi}</td>
+            <td>
+              <span
+                className={
+                  project.ir_percentage > 20
+                    ? "ir-good"
+                    : "ir-bad"
+                }
+              >
+                {project.ir_percentage || 0}%
+              </span>
+            </td>
 
-                <td>{project.ir}%</td>
+            <td>{project.loi || 0}</td>
 
-                <td>
-                  <span className={`status-pill status-${project.status}`}>
-                    {getStatusLabel(project.status)}
-                  </span>
-                </td>
+            <td>
+              <span
+                className={`status-pill status-${project.status}`}
+              >
+                {getStatusLabel(project.status)}
+              </span>
+            </td>
 
-                <td>
-                  <div className="table-actions">
-                    <Link to={`/projects/${project.id}`} className="view-btn">
-                      <Eye size={16} />
-                    </Link>
+            <td>
+              <div className="table-actions">
+                <Link
+                  to={`/projects/${project.id}`}
+                  className="view-btn"
+                >
+                  <Eye size={16} />
+                </Link>
 
-                    <Link
-                      to={`/projects/edit/${project.id}`}
-                      className="edit-btn"
-                    >
-                      <Pencil size={16} />
-                    </Link>
+                <Link
+                  to={`/projects/edit/${project.id}`}
+                  className="edit-btn"
+                >
+                  <Pencil size={16} />
+                </Link>
 
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(project.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-
-            {projects.length === 0 && (
-              <tr>
-                <td colSpan="13" style={{ textAlign: "center" }}>
-                  No projects found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(project.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+        </tbody>        
+      </table>
+    </div>
     </div>
   );
 }

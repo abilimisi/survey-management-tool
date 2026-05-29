@@ -10,6 +10,7 @@ from .views import (
     RedirectLogViewSet,
     process_s2s,
     redirect_journey,
+    reports_data,
     start_survey,
     handle_survey_result,
     universal_result,
@@ -47,4 +48,5 @@ urlpatterns = [
     path("respondents/<str:respondent_id>/journey/",redirect_journey,name="redirect-journey"),
 
     path("s2s/process/", process_s2s, name="process-s2s"),
+     path("reports/", reports_data, name="reports-data"),
 ]

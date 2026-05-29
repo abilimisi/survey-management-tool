@@ -17,9 +17,32 @@ class VendorSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source="client.name", read_only=True)
 
+    hits = serializers.SerializerMethodField()
+    completes = serializers.SerializerMethodField()
+    quota_full_count = serializers.SerializerMethodField()
+    ir_percentage = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
         fields = "__all__"
+
+    def get_hits(self, obj):
+        return obj.respondents.count()
+
+    def get_completes(self, obj):
+        return obj.respondents.filter(status="complete").count()
+
+    def get_quota_full_count(self, obj):
+        return obj.respondents.filter(status="quota_full").count()
+
+    def get_ir_percentage(self, obj):
+        hits = obj.respondents.count()
+        completes = obj.respondents.filter(status="complete").count()
+
+        if hits == 0:
+            return 0
+
+        return round((completes / hits) * 100, 2)
 
 
 class ProjectVendorSerializer(serializers.ModelSerializer):

@@ -1,0 +1,40 @@
+.report-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.report-info-grid div {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.report-info-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.report-info-grid strong {
+  color: #111827;
+  font-size: 16px;
+}
+
+.ir-good {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.ir-bad {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .report-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
