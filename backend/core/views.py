@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import uuid
 from django.db.models import Count, Max, Q
+from django.conf import settings
 
 from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog
 from .serializers import (
@@ -379,6 +380,7 @@ def supplier_statistics(request, project_id):
         "project", "vendor"
     )
 
+    
     data = []
 
     for pv in project_vendors:
@@ -412,17 +414,29 @@ def supplier_statistics(request, project_id):
             "security_term": security_terms,
             "ir": ir,
             "last_completed": last_completed,
+
             "complete_link": pv.complete_link,
             "terminate_link": pv.terminate_link,
             "quota_full_link": pv.quota_full_link,
             "security_terminate_link": pv.security_terminate_link,
+
             "status": pv.status,
             "max_redirects": pv.max_redirects,
             "notes": pv.notes,
-            # "supplier_link": request.build_absolute_uri(
-            #     f"/api/survey/start/{pv.id}/"
-            # ),
-            "supplier_link": f"https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/{pv.id}/",
+
+            "s2s_token": pv.s2s_token,
+
+            "s2s_link": (
+                f"{settings.PUBLIC_BACKEND_URL}"
+                f"/api/s2s/process/"
+                f"?pid={{OBID}}"
+                f"&status_id={{status}}"
+                f"&token={pv.s2s_token}"
+            ),
+
+            "supplier_link": (
+                f"https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/{pv.id}/"
+            ),
         })
 
     return Response(data)
@@ -549,10 +563,6 @@ def process_s2s(request):
         "status": respondent.status,
         "s2s_status": respondent.s2s_status,
     })
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .models import Project, Vendor, Respondent, ProjectVendor
 
 
 @api_view(["GET"])

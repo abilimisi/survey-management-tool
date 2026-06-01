@@ -461,9 +461,14 @@ class ProjectVendor(models.Model):
     ask_age = models.BooleanField(default=False)
     ask_gender = models.BooleanField(default=False)
 
+    s2s_token = models.CharField(max_length=128, blank=True, null=True, unique=True)
+
     qualification_required = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
+        if not self.s2s_token:
+            self.s2s_token = secrets.token_hex(32)
+
         if self.vendor:
             if not self.complete_link:
                 self.complete_link = self.vendor.complete_link

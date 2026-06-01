@@ -791,3 +791,23 @@ body {
   font-weight: 600;
   color: #374151;
 }
+
+/* project details page edits */
+.variables-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.variables-box span {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.variables-box strong {
+  color: #2563eb;
+}

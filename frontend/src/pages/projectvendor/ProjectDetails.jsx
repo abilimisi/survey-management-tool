@@ -157,6 +157,19 @@ function ProjectDetails() {
           <LinkRow label="S2S Link" value={s2sUrl} onCopy={copyText} />
         </div>
       </div>
+      <div className="details-card">
+        <h3>Supported Variables</h3>
+
+        <div className="variables-box">
+          <span><strong>{"{{OBID}}"}</strong> - Your respondent ID</span>
+          <span><strong>{"{{ID}}"}</strong> - Same as OBID</span>
+          <span><strong>{"{{panellist_id}}"}</strong> - Vendor panelist ID</span>
+          <span><strong>{"{{PASSTHRU}}"}</strong> - Pass-through value</span>
+          <span><strong>{"{{RECONNECTID}}"}</strong> - Reconnect ID</span>
+          <span><strong>{"{{authToken}}"}</strong> - S2S token</span>
+          <span><strong>{"{{status}}"}</strong> - S2S status code</span>
+        </div>
+      </div>
 
       <div className="section-card">
         <h3>Manage Suppliers</h3>
@@ -315,6 +328,7 @@ function ProjectDetails() {
                 <th>Security Term</th>
                 <th>IR</th>
                 <th>CPC</th>
+                <th>s2s</th>
                 <th>Last Completed</th>
                 <th>Action</th>
                 <th>Test Links</th>
@@ -343,7 +357,7 @@ function ProjectDetails() {
                   <td>{item.security_term}</td>
                   <td>{item.ir}%</td>
                   <td>{item.vendor_cpc}</td>
-                  {/* <td>{item.last_completed || "-"}</td> */}
+                  <td><button className="small-btn" onClick={() => copyText(item.s2s_link)}>Copy</button></td>
                   <td>
                     {item.last_completed
                       ? new Date(item.last_completed).toLocaleString("en-IN", {
@@ -387,7 +401,7 @@ function ProjectDetails() {
 
               {supplierStats.length === 0 && (
                 <tr>
-                  <td colSpan="13" style={{ textAlign: "center" }}>
+                  <td colSpan="14" style={{ textAlign: "center" }}>
                     No suppliers assigned
                   </td>
                 </tr>
