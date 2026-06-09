@@ -8,6 +8,8 @@ import {
   getSupplierStats,
 } from "../../api/projectVendorApi";
 
+// import { useState } from "react";
+
 function ProjectDetails() {
   const { id } = useParams();
 
@@ -15,6 +17,7 @@ function ProjectDetails() {
   const [vendors, setVendors] = useState([]);
   const [supplierStats, setSupplierStats] = useState([]);
   const [error, setError] = useState("");
+  const [showLinkCodes, setShowLinkCodes] = useState(false);
 
   const [formData, setFormData] = useState({
     project: id,
@@ -35,7 +38,7 @@ function ProjectDetails() {
     qualification_required: true,
   });
 
-  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
+  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
 
   useEffect(() => {
     fetchData();
@@ -129,11 +132,21 @@ function ProjectDetails() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>{project.name}</h1>
-        <p>
-          Client: {project.client_name} | Country: {project.country} | Status: {project.status}
-        </p>
+
+      <div className="page-header project-header-design">
+        <div>
+          <h1>{project.name}</h1>
+          <p>
+            Client: {project.client_name} | Country: {project.country} | Status: {project.status}
+          </p>
+        </div>
+
+        <button
+          className="link-codes-btn"
+          onClick={() => setShowLinkCodes(true)}
+        >
+          Link Codes
+        </button>
       </div>
 
       <div className="details-grid">
@@ -149,25 +162,14 @@ function ProjectDetails() {
         </div>
 
         <div className="details-card">
-          <h3>Client Redirect Links</h3>
+          <div className="section-header">
+            <h3>Client Redirect Links</h3>
+          </div>
           <LinkRow label="Complete" value={completeUrl} onCopy={copyText} />
           <LinkRow label="Terminate" value={terminateUrl} onCopy={copyText} />
           <LinkRow label="Quota Full" value={quotaFullUrl} onCopy={copyText} />
           <LinkRow label="Security Term" value={securityUrl} onCopy={copyText} />
           <LinkRow label="S2S Link" value={s2sUrl} onCopy={copyText} />
-        </div>
-      </div>
-      <div className="details-card">
-        <h3>Supported Variables</h3>
-
-        <div className="variables-box">
-          <span><strong>{"{{OBID}}"}</strong> - Your respondent ID</span>
-          <span><strong>{"{{ID}}"}</strong> - Same as OBID</span>
-          <span><strong>{"{{panellist_id}}"}</strong> - Vendor panelist ID</span>
-          <span><strong>{"{{PASSTHRU}}"}</strong> - Pass-through value</span>
-          <span><strong>{"{{RECONNECTID}}"}</strong> - Reconnect ID</span>
-          <span><strong>{"{{authToken}}"}</strong> - S2S token</span>
-          <span><strong>{"{{status}}"}</strong> - S2S status code</span>
         </div>
       </div>
 
@@ -409,10 +411,89 @@ function ProjectDetails() {
             </tbody>
           </table>
         </div>
-      </div>
+              </div>
+
+      {showLinkCodes && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowLinkCodes(false)}
+        >
+          <div
+            className="link-codes-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>Redirect End Pages & Variables</h2>
+
+              <button
+                className="close-btn"
+                onClick={() => setShowLinkCodes(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-content-grid">
+
+              <div>
+                <h3>Client Link Variables</h3>
+
+                <table className="variables-table">
+                  <tbody>
+                    <tr>
+                      <td>ID</td>
+                      <td>{"{{ID}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Pass Through</td>
+                      <td>{"{{PASSTHRU}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Reconnect ID</td>
+                      <td>{"{{RECONNECTID}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Auth Token</td>
+                      <td>{"{{authToken}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Status</td>
+                      <td>{"{{status}}"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div>
+                <h3>Vendor Link Variables</h3>
+
+                <table className="variables-table">
+                  <tbody>
+                    <tr>
+                      <td>Panelist ID</td>
+                      <td>{"{{panellist_id}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Pass Through</td>
+                      <td>{"{{PASSTHRU}}"}</td>
+                    </tr>
+                    <tr>
+                      <td>Reconnect ID</td>
+                      <td>{"{{RECONNECTID}}"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+     
 
 function LinkRow({ label, value, onCopy }) {
   return (
@@ -430,5 +511,6 @@ function LinkRow({ label, value, onCopy }) {
     </div>
   );
 }
+
 
 export default ProjectDetails;

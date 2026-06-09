@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> d34dd37 (frontend changes)
 import { useEffect, useState } from "react";
 import {
   MousePointerClick,
@@ -9,6 +12,7 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
+ 
 } from "lucide-react";
 
 import axiosInstance from "../../api/axiosInstance";
@@ -42,39 +46,39 @@ function Dashboard() {
       title: "Total Hits",
       value: stats.total_hits,
       icon: MousePointerClick,
-      note: "Total survey starts",
+      note: "Survey Starts",
       className: "card-blue",
     },
     {
       title: "Completes",
       value: stats.completes,
       icon: CheckCircle,
-      note: "Successful completes",
+      note: "Successful",
       className: "card-green",
     },
     {
       title: "Terminates",
       value: stats.terminates,
       icon: XCircle,
-      note: "Disqualified users",
+      note: "Disqualified",
       className: "card-red",
     },
     {
       title: "Quota Full",
       value: stats.quota_full,
       icon: AlertTriangle,
-      note: "Quota reached",
+      note: "Quota Reached",
       className: "card-orange",
     },
     {
-      title: "Security Term",
+      title: "Security",
       value: stats.security_terminates,
       icon: ShieldAlert,
-      note: "Security failures",
+      note: "Security Failures",
       className: "card-purple",
     },
     {
-      title: "IR",
+      title: "IR %",
       value: `${stats.ir}%`,
       icon: BarChart3,
       note: "Incidence Rate",
@@ -82,26 +86,40 @@ function Dashboard() {
     },
   ];
 
+  const nonCompletes =
+    Number(stats.terminates) +
+    Number(stats.quota_full) +
+    Number(stats.security_terminates);
+
+
   return (
     <div className="dashboard-page">
-      <div className="dashboard-hero">
-        <div>
-          <h1>Dashboard</h1>
-          <p>Live overview of survey traffic, performance and redirects</p>
+      
+      {/* Header */}
+      <div className="dashboard-header">
+  
+        <div className="header-content">
+        <h1>Survey Dashboard</h1>
+          <p>Monitor survey traffic, completions and respondent activity</p>
         </div>
 
-        <div className="hero-badge">
-          <Activity size={18} />
-          Active Monitoring
-        </div>
-      </div>
+      <div className="hero-badge">
+    <Activity size={16} />
+    Live Monitoring
+  </div>
 
+</div>
+
+      {/* KPI Cards */}
       <div className="dashboard-stats-grid">
         {cards.map((card) => {
           const Icon = card.icon;
 
           return (
-            <div className={`dashboard-card ${card.className}`} key={card.title}>
+            <div
+              className={`dashboard-card ${card.className}`}
+              key={card.title}
+            >
               <div className="dashboard-card-top">
                 <div>
                   <p>{card.title}</p>
@@ -109,7 +127,7 @@ function Dashboard() {
                 </div>
 
                 <div className="dashboard-icon">
-                  <Icon size={26} />
+                  <Icon size={22} />
                 </div>
               </div>
 
@@ -119,11 +137,160 @@ function Dashboard() {
         })}
       </div>
 
+
+      <div className="stats-section">
+  <h2>Today's Project Statistics</h2>
+
+  <div className="today-stats-grid">
+    <div className="today-card completed">
+      <h3>{stats.completes}</h3>
+      <span>Completed</span>
+    </div>
+
+    <div className="today-card disqualified">
+      <h3>{stats.terminates}</h3>
+      <span>Disqualified</span>
+    </div>
+
+    <div className="today-card quota">
+      <h3>{stats.quota_full}</h3>
+      <span>Quota Full</span>
+    </div>
+
+    <div className="today-card security">
+      <h3>{stats.security_terminates}</h3>
+      <span>Security Term</span>
+    </div>
+
+    <div className="today-card blocked">
+      <h3>0</h3>
+      <span>Blocked</span>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+      <div className="monthly-section">
+  <h2>Monthly Statistics</h2>
+
+  <div className="monthly-grid">
+    <div className="monthly-item">
+      <div className="monthly-header">
+        <span>Completed</span>
+        <strong>{stats.ir}%</strong>
+      </div>
+
+      <div className="progress-bar">
+        <div
+          className="progress-fill green"
+          style={{ width: `${stats.ir}%` }}
+        />
+      </div>
+
+      <small>{stats.completes}/{stats.total_hits}</small>
+    </div>
+
+    <div className="monthly-item">
+      <div className="monthly-header">
+        <span>Disqualified</span>
+        <strong>
+          {stats.total_hits
+            ? ((stats.terminates / stats.total_hits) * 100).toFixed(1)
+            : 0}
+          %
+        </strong>
+      </div>
+
+      <div className="progress-bar">
+        <div
+          className="progress-fill orange"
+          style={{
+            width: `${
+              stats.total_hits
+                ? (stats.terminates / stats.total_hits) * 100
+                : 0
+            }%`,
+          }}
+        />
+      </div>
+
+      <small>
+        {stats.terminates}/{stats.total_hits}
+      </small>
+    </div>
+
+    <div className="monthly-item">
+      <div className="monthly-header">
+        <span>Quota Full</span>
+        <strong>
+          {stats.total_hits
+            ? ((stats.quota_full / stats.total_hits) * 100).toFixed(1)
+            : 0}
+          %
+        </strong>
+      </div>
+
+      <div className="progress-bar">
+        <div
+          className="progress-fill blue"
+          style={{
+            width: `${
+              stats.total_hits
+                ? (stats.quota_full / stats.total_hits) * 100
+                : 0
+            }%`,
+          }}
+        />
+      </div>
+
+      <small>
+        {stats.quota_full}/{stats.total_hits}
+      </small>
+    </div>
+
+    <div className="monthly-item">
+      <div className="monthly-header">
+        <span>Security Term</span>
+        <strong>
+          {stats.total_hits
+            ? (
+                (stats.security_terminates / stats.total_hits) *
+                100
+              ).toFixed(1)
+            : 0}
+          %
+        </strong>
+      </div>
+
+      <div className="progress-bar">
+        <div
+          className="progress-fill red"
+          style={{
+            width: `${
+              stats.total_hits
+                ? (stats.security_terminates / stats.total_hits) * 100
+                : 0
+            }%`,
+          }}
+        />
+      </div>
+
+      <small>
+        {stats.security_terminates}/{stats.total_hits}
+      </small>
+    </div>
+  </div>
+</div>
+
+      {/* Summary + Actions */}
       <div className="dashboard-bottom-grid">
         <div className="dashboard-panel">
           <div className="panel-title">
             <h3>Performance Summary</h3>
-            <TrendingUp size={20} />
+            <TrendingUp size={18} />
           </div>
 
           <div className="summary-row">
@@ -133,23 +300,24 @@ function Dashboard() {
 
           <div className="summary-row">
             <span>Total Non-Completes</span>
-            <strong>
-              {Number(stats.terminates) +
-                Number(stats.quota_full) +
-                Number(stats.security_terminates)}
-            </strong>
+            <strong>{nonCompletes}</strong>
           </div>
 
           <div className="summary-row">
             <span>Valid Completes</span>
             <strong>{stats.completes}</strong>
           </div>
+
+          <div className="summary-row">
+            <span>Total Hits</span>
+            <strong>{stats.total_hits}</strong>
+          </div>
         </div>
 
         <div className="dashboard-panel">
           <div className="panel-title">
             <h3>Quick Actions</h3>
-            <Activity size={20} />
+            <Activity size={18} />
           </div>
 
           <div className="quick-actions">
@@ -160,6 +328,8 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+     
     </div>
   );
 }

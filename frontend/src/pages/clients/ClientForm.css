@@ -39,3 +39,138 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================
+   ACTION BUTTONS CONTAINER
+========================== */
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Shared Styles */
+
+.edit-btn,
+.delete-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition: all 0.25s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================
+   EDIT BUTTON
+========================== */
+
+.edit-btn {
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  );
+
+  color: white;
+
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.edit-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(37, 99, 235, 0.35);
+}
+
+.edit-btn:active {
+  transform: scale(0.95);
+}
+
+/* shine effect */
+
+.edit-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255,255,255,0.25);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.edit-btn:hover::before {
+  left: 140%;
+}
+
+/* ==========================
+   DELETE BUTTON
+========================== */
+
+.delete-btn {
+  background: linear-gradient(
+    135deg,
+    #111827,
+    #000000
+  );
+
+  color: white;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.20);
+}
+
+.delete-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* subtle shine */
+
+.delete-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255,255,255,0.15);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.delete-btn:hover::before {
+  left: 140%;
+}

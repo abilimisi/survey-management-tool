@@ -55,7 +55,7 @@ function ProjectsList() {
         </div>
 
         <Link to="/projects/add" className="primary-btn">
-          <Plus size={18} />
+          <Plus size={17} />
           Add Project
         </Link>
       </div>
@@ -74,7 +74,6 @@ function ProjectsList() {
               <th>Comp.</th>
               <th>QF</th>
               <th>IR%</th>
-              <th>LOI</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -87,9 +86,10 @@ function ProjectsList() {
 
             <td>
               <div className="project-name-cell">
-                <strong>{project.name}</strong>
-                <br />
-                <span>{project.country}</span>
+                <div>{project.name}</div>
+                <span className="project-country">
+                  {project.country}
+                </span>
               </div>
             </td>
 
@@ -123,8 +123,6 @@ function ProjectsList() {
               </span>
             </td>
 
-            <td>{project.loi || 0}</td>
-
             <td>
               <span
                 className={`status-pill status-${project.status}`}
@@ -139,21 +137,23 @@ function ProjectsList() {
                   to={`/projects/${project.id}`}
                   className="view-btn"
                 >
-                  <Eye size={16} />
+                  <Eye size={14} strokeWidth={2} />
                 </Link>
 
                 <Link
                   to={`/projects/edit/${project.id}`}
                   className="edit-btn"
+                  title="Edit Project"
                 >
-                  <Pencil size={16} />
+                  <Pencil size={14} strokeWidth={2} />
                 </Link>
 
                 <button
                   className="delete-btn"
                   onClick={() => handleDelete(project.id)}
+                  title="Delete Project"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} strokeWidth={2} />
                 </button>
               </div>
             </td>

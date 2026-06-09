@@ -64,15 +64,9 @@ function VendorsList() {
             <tr>
               <th>ID</th>
               <th>Vendor Name</th>
-              <th>ABRV Name</th>
               <th>Email</th>
               <th>Contact</th>
               <th>Country</th>
-              <th>Invoice Method</th>
-              <th>Payment Terms</th>
-              <th>CPC</th>
-              <th>Check Proxy</th>
-              <th>DIY</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -85,47 +79,11 @@ function VendorsList() {
 
                 <td>{vendor.name || "-"}</td>
 
-                <td>{vendor.abrv_name || "-"}</td>
-
                 <td>{vendor.email || "-"}</td>
 
                 <td>{vendor.contact_number || "-"}</td>
 
                 <td>{vendor.country || "-"}</td>
-
-                <td>{getInvoiceLabel(vendor.invoicing_method)}</td>
-
-                <td>
-                  {vendor.payment_terms
-                    ? `${vendor.payment_terms} Days`
-                    : "-"}
-                </td>
-
-                <td>{vendor.cpc}</td>
-
-                <td>
-                  <span
-                    className={
-                      vendor.check_proxy
-                        ? "status-active"
-                        : "status-inactive"
-                    }
-                  >
-                    {vendor.check_proxy ? "Yes" : "No"}
-                  </span>
-                </td>
-
-                <td>
-                  <span
-                    className={
-                      vendor.is_diy
-                        ? "status-active"
-                        : "status-inactive"
-                    }
-                  >
-                    {vendor.is_diy ? "Yes" : "No"}
-                  </span>
-                </td>
 
                 <td>
                   <span
@@ -144,15 +102,17 @@ function VendorsList() {
                     <Link
                       to={`/vendors/edit/${vendor.id}`}
                       className="edit-btn"
+                      title="Edit Vendor"
                     >
-                      <Pencil size={16} />
+                       <Pencil size={14} strokeWidth={2} />
                     </Link>
 
                     <button
                       className="delete-btn"
                       onClick={() => handleDelete(vendor.id)}
+                      title="Delete Vendor"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} strokeWidth={2} />
                     </button>
                   </div>
                 </td>
@@ -161,7 +121,7 @@ function VendorsList() {
 
             {vendors.length === 0 && (
               <tr>
-                <td colSpan="13" style={{ textAlign: "center" }}>
+                <td colSpan="7" style={{ textAlign: "center" }}>
                   No vendors found
                 </td>
               </tr>

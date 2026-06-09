@@ -1,68 +1,11 @@
-// import { Menu } from "lucide-react";
-// import { useNavigate } from "react-router-dom";
-
-// function Topbar({ toggleSidebar }) {
-//   const navigate = useNavigate();
-
-//   const username =
-//     localStorage.getItem("username") || "Admin";
-
-//   const handleLogout = () => {
-//     localStorage.removeItem("access_token");
-//     localStorage.removeItem("refresh_token");
-//     localStorage.removeItem("username");
-
-//     navigate("/login");
-//   };
-
-//   return (
-//     <header className="topbar">
-//       <div className="topbar-left">
-//         <button
-//           className="sidebar-toggle-btn"
-//           onClick={toggleSidebar}
-//         >
-//           <Menu size={22} />
-//         </button>
-
-//         <div>
-//           <h2>Survey Management System</h2>
-//           <p>
-//             Client, Vendor, Project and Respondent Tracking
-//           </p>
-//         </div>
-//       </div>
-
-//       <div
-//         style={{
-//           display: "flex",
-//           alignItems: "center",
-//           gap: "15px",
-//         }}
-//       >
-//         <span
-//           style={{
-//             fontWeight: "600",
-//             color: "#374151",
-//           }}
-//         >
-//           Welcome, {username}
-//         </span>
-
-//         <button
-//           className="logout-btn"
-//           onClick={handleLogout}
-//         >
-//           Logout
-//         </button>
-//       </div>
-//     </header>
-//   );
-// }
-
-// export default Topbar;
-
 import { useNavigate } from "react-router-dom";
+import {
+  LogOut,
+  UserCircle2,
+  CalendarDays,
+} from "lucide-react";
+
+import "./TopBar.css";
 
 function Topbar() {
   const navigate = useNavigate();
@@ -77,21 +20,37 @@ function Topbar() {
     navigate("/login");
   };
 
+  const today = new Date().toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <header className="topbar">
+
+      {/* LEFT SIDE */}
       <div className="topbar-left">
-        <div>
-          <h2>Survey Management System</h2>
-          <p>Client, Vendor, Project and Respondent Tracking</p>
-        </div>
+        <h2>Survey Management System</h2>
       </div>
 
-      <div className="topbar-user">
-        <span>Welcome, {username}</span>
+      {/* RIGHT SIDE */}
+      <div className="topbar-right">
 
+        
+        {/* WELCOME USER */}
+        <div className="welcome-text">
+          <UserCircle2 size={18} />
+          <span>
+            Welcome, <strong>{username}</strong>
+          </span>
+        </div>
+
+        {/* LOGOUT */}
         <button className="logout-btn" onClick={handleLogout}>
           Logout
         </button>
+
       </div>
     </header>
   );

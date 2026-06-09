@@ -77,12 +77,9 @@ function ClientsList() {
               <th>ID</th>
               <th>Company Type</th>
               <th>Company Name</th>
-              <th>ABRV Name</th>
               <th>Email</th>
               <th>Contact</th>
               <th>Country</th>
-              <th>Check Proxy</th>
-              <th>DIY</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -97,37 +94,11 @@ function ClientsList() {
 
                 <td>{client.name || "-"}</td>
 
-                <td>{client.abrv_name || "-"}</td>
-
                 <td>{client.email || "-"}</td>
 
                 <td>{client.contact_number || "-"}</td>
 
                 <td>{client.country || "-"}</td>
-
-                <td>
-                  <span
-                    className={
-                      client.check_proxy
-                        ? "status-active"
-                        : "status-inactive"
-                    }
-                  >
-                    {client.check_proxy ? "Yes" : "No"}
-                  </span>
-                </td>
-
-                <td>
-                  <span
-                    className={
-                      client.is_diy
-                        ? "status-active"
-                        : "status-inactive"
-                    }
-                  >
-                    {client.is_diy ? "Yes" : "No"}
-                  </span>
-                </td>
 
                 <td>
                   <span
@@ -146,15 +117,17 @@ function ClientsList() {
                     <Link
                       to={`/clients/edit/${client.id}`}
                       className="edit-btn"
+                      title="Edit Client"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={14} strokeWidth={2} />
                     </Link>
 
                     <button
                       className="delete-btn"
                       onClick={() => handleDelete(client.id)}
+                      title="Delete Client"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} strokeWidth={2} />
                     </button>
                   </div>
                 </td>
@@ -163,7 +136,7 @@ function ClientsList() {
 
             {clients.length === 0 && (
               <tr>
-                <td colSpan="11" style={{ textAlign: "center" }}>
+                <td colSpan="8" style={{ textAlign: "center" }}>
                   No clients found
                 </td>
               </tr>

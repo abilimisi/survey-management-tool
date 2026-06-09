@@ -58,37 +58,9 @@ body {
   width: calc(100% - 260px);
 }
 
-.topbar {
-  height: 80px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 16px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.topbar h2 {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.topbar p {
-  font-size: 13px;
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.topbar-user {
-  background: #eff6ff;
-  color: #2563eb;
-  padding: 10px 16px;
-  border-radius: 999px;
-  font-weight: 600;
-}
 
 .page-content {
-  padding: 28px;
+  padding: 10px;
 }
 
 .page-header {
@@ -245,33 +217,6 @@ body {
   font-size: 13px;
 }
 
-.table-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.edit-btn,
-.delete-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.edit-btn {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.delete-btn {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
 .custom-form {
   background: white;
   padding: 28px;
@@ -334,19 +279,6 @@ body {
   margin-top: 6px;
   color: #64748b;
   font-size: 12px;
-}
-
-.view-btn {
-  background: #dcfce7;
-  color: #166534;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
 }
 
 .status-pill {
@@ -699,15 +631,7 @@ body {
   justify-content: center;
 }
 
-.logout-btn {
-  background: #fee2e2;
-  color: #991b1b;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 600;
-}
+
 
 .supplier-form {
   display: flex;
@@ -743,9 +667,9 @@ body {
 
 .sidebar-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 24px 22px;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
 .sidebar-logo {
@@ -758,10 +682,13 @@ body {
 .sidebar-collapse-btn {
   width: 38px;
   height: 38px;
+
   border: none;
   border-radius: 12px;
+
   background: rgba(255,255,255,0.08);
   color: white;
+
   cursor: pointer;
 
   display: flex;
@@ -769,6 +696,8 @@ body {
   justify-content: center;
 
   transition: all 0.2s ease;
+
+  margin-top: -4px; /* move up */
 }
 
 .sidebar-collapse-btn:hover {
@@ -811,3 +740,129 @@ body {
 .variables-box strong {
   color: #2563eb;
 }
+
+/* project vendor */
+/* ==========================
+   LINK CODES
+========================== */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.link-codes-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+
+  padding: 10px 18px;
+  border-radius: 10px;
+
+  cursor: pointer;
+  font-weight: 600;
+
+  transition: all 0.25s ease;
+}
+
+.link-codes-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* ==========================
+   MODAL
+========================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+.link-codes-modal {
+  width: 900px;
+  max-width: 95%;
+
+  background: white;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 25px 50px rgba(0,0,0,.25);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 22px 28px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.close-btn {
+  border: none;
+  background: transparent;
+
+  font-size: 26px;
+
+  cursor: pointer;
+
+  color: #64748b;
+}
+
+.modal-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 30px;
+
+  padding: 28px;
+}
+
+.variables-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.variables-table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+}
+
+.variables-table td:first-child {
+  font-weight: 600;
+  background: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .modal-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.project-header-design {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+
