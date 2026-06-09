@@ -522,6 +522,8 @@ class Respondent(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(blank=True, null=True)
 
+    detected_country = models.CharField(max_length=100, blank=True, null=True)
+
     def __str__(self):
         return self.respondent_id
 
@@ -536,3 +538,27 @@ class RedirectLog(models.Model):
 
     def __str__(self):
         return f"{self.respondent.respondent_id} - {self.redirect_type}"
+    
+
+class Panelist(models.Model):
+    external_id = models.IntegerField(unique=True)
+
+    fname = models.CharField(max_length=100)
+    lname = models.CharField(max_length=100)
+
+    email = models.EmailField(unique=True)
+
+    gender = models.CharField(max_length=20, blank=True, null=True)
+    dob = models.DateField(blank=True, null=True)
+
+    country = models.CharField(max_length=100, blank=True, null=True)
+    industry = models.CharField(max_length=100, blank=True, null=True)
+
+    code = models.CharField(max_length=50, blank=True, null=True)
+
+    registered_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email

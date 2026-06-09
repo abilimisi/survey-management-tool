@@ -28,6 +28,13 @@
 # Security Term:
 # https://vendor.com/security?rid={{ID}}
 
+# this link have to be put in "complete" redirect in jotform
+# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id={rid}
 
 # main client link to store 
 # https://form.jotform.com/261383078966066?rid={{ID}}
+
+
+
+# sogolytics link to store
+# https://survey.sogolytics.com/survey/form?k=WsSSWVPYsQsPsPsP&lang=0&isURLPP=1&Q3={{ID}}

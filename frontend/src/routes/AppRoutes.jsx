@@ -23,6 +23,8 @@ import SupplierHints from "../pages/suppliers/SupplierHints";
 import RedirectJourney from "../pages/respondents/RedirectJourney";
 import Reports from "../pages/reports/Reports";
 
+import Panelists from "../pages/panelists/Panelists";
+
 function ProtectedLayout({ children }) {
   return (
     <ProtectedRoute>
@@ -160,6 +162,15 @@ function AppRoutes() {
         element={
           <ProtectedLayout>
             <Reports />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panelists"
+        element={
+          <ProtectedLayout>
+            <Panelists />
           </ProtectedLayout>
         }
       />

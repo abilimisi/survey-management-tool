@@ -1,0 +1,158 @@
+.panelists-page {
+  padding: 4px;
+}
+
+.panelist-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.panelist-stat-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.panelist-stat-card span {
+  display: block;
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.panelist-stat-card strong {
+  font-size: 30px;
+  color: #0f172a;
+}
+
+.panelist-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.panelist-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.panelist-card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.panelist-card-header span {
+  background: #eef2ff;
+  color: #2563eb;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.panelist-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.panelist-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.panelist-table td {
+  padding: 16px;
+  border-bottom: 1px solid #eef2f7;
+  color: #0f172a;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.panelist-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.panelist-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panelist-name strong {
+  display: block;
+  font-size: 15px;
+}
+
+.panelist-name small {
+  display: block;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.badge {
+  display: inline-block;
+  background: #eef2ff;
+  color: #1d4ed8;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.empty-table {
+  text-align: center;
+  color: #64748b;
+  padding: 30px;
+}
+
+.panelist-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 280px;
+}
+
+.panelist-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.panelist-fullname {
+  display: block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

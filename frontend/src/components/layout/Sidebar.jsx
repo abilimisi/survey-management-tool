@@ -65,6 +65,7 @@ const menuItems = [
   { name: "Vendors", path: "/vendors", icon: Users },
   { name: "Projects", path: "/projects", icon: FolderKanban },
   { name: "Reports", path: "/reports", icon: BarChart3 },
+  { name: "Panelists", path: "/panelists", icon: Users },
 ];
 
 function Sidebar({ isCollapsed, toggleSidebar }) {

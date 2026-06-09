@@ -7,8 +7,10 @@ from rest_framework.response import Response
 import uuid
 from django.db.models import Count, Max, Q
 from django.conf import settings
+import requests
 
-from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog
+from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist
+
 from .serializers import (
     ClientSerializer,
     VendorSerializer,
@@ -66,51 +68,47 @@ def replace_tokens(url, respondent):
     project = respondent.project
     client = project.client if project else None
 
+    respondent_id = respondent.respondent_id
+    vendor_pid = respondent.vendor_panelist_id or ""
+
     replacements = {
-        # Main respondent ID / OBID
-        "{{ID}}": respondent.respondent_id,
-        "{ID}": respondent.respondent_id,
+        "{{ID}}": respondent_id,
+        "{ID}": respondent_id,
 
-        "{{OBID}}": respondent.respondent_id,
-        "{OBID}": respondent.respondent_id,
+        "{{OBID}}": respondent_id,
+        "{OBID}": respondent_id,
 
-        "{{RID}}": respondent.respondent_id,
-        "{RID}": respondent.respondent_id,
-        "{rid}": respondent.respondent_id,
+        "{{RID}}": respondent_id,
+        "{RID}": respondent_id,
+        "{rid}": respondent_id,
 
-        # Pass-through
-        "{{PASSTHRU}}": respondent.panel_misc_data or respondent.respondent_id,
-        "{PASSTHRU}": respondent.panel_misc_data or respondent.respondent_id,
+        "{{PASSTHRU}}": respondent.panel_misc_data or respondent_id,
+        "{PASSTHRU}": respondent.panel_misc_data or respondent_id,
 
-        # Reconnect
         "{{RECONNECTID}}": respondent.reconnect_id or "",
         "{RECONNECTID}": respondent.reconnect_id or "",
 
-        # Vendor panelist id
-        "{{panellist_id}}": respondent.vendor_panelist_id or "",
-        "{panellist_id}": respondent.vendor_panelist_id or "",
+        "{{panellist_id}}": vendor_pid,
+        "{panellist_id}": vendor_pid,
 
-        "{{panelist_id}}": respondent.vendor_panelist_id or "",
-        "{panelist_id}": respondent.vendor_panelist_id or "",
+        "{{panelist_id}}": vendor_pid,
+        "{panelist_id}": vendor_pid,
 
-        # Client fields
-        "{{Email}}": respondent.email or "",
-        "{Email}": respondent.email or "",
+        "{{Email}}": getattr(respondent, "email", "") or "",
+        "{Email}": getattr(respondent, "email", "") or "",
 
-        "{{Zip}}": respondent.zip_code or "",
-        "{Zip}": respondent.zip_code or "",
+        "{{Zip}}": getattr(respondent, "zip_code", "") or "",
+        "{Zip}": getattr(respondent, "zip_code", "") or "",
 
-        "{{Age}}": respondent.age or "",
-        "{Age}": respondent.age or "",
+        "{{Age}}": getattr(respondent, "age", "") or "",
+        "{Age}": getattr(respondent, "age", "") or "",
 
-        "{{Gender}}": respondent.gender or "",
-        "{Gender}": respondent.gender or "",
+        "{{Gender}}": getattr(respondent, "gender", "") or "",
+        "{Gender}": getattr(respondent, "gender", "") or "",
 
-        # Auth token / S2S token
         "{{authToken}}": vendor.s2s_token if vendor and vendor.s2s_token else "",
         "{authToken}": vendor.s2s_token if vendor and vendor.s2s_token else "",
 
-        # Client key
         "{{CLIENTKEY}}": str(client.id) if client else "",
         "{CLIENTKEY}": str(client.id) if client else "",
     }
@@ -119,7 +117,6 @@ def replace_tokens(url, respondent):
         url = url.replace(token, str(value))
 
     return url
-
 def get_first_query_value(request, keys):
     for key in keys:
         value = request.GET.get(key)
@@ -188,15 +185,35 @@ def start_survey(request, project_vendor_id):
             ],
         ),
 
-        email=get_first_query_value(request, ["email", "Email", "EMAIL"]),
-        zip_code=get_first_query_value(request, ["zip", "Zip", "ZIP", "zipcode", "zip_code"]),
-        age=get_first_query_value(request, ["age", "Age", "AGE"]),
-        gender=get_first_query_value(request, ["gender", "Gender", "GENDER"]),
+        email=get_first_query_value(
+            request,
+            ["email", "Email", "EMAIL"]
+        ),
+
+        zip_code=get_first_query_value(
+            request,
+            ["zip", "Zip", "ZIP", "zipcode", "zip_code"]
+        ),
+
+        age=get_first_query_value(
+            request,
+            ["age", "Age", "AGE"]
+        ),
+
+        gender=get_first_query_value(
+            request,
+            ["gender", "Gender", "GENDER"]
+        ),
+
         ip_address=get_client_ip(request),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
         status="started",
     )
 
+    
+    # ------------------------------------
+    # TARGET CAP CHECK
+    # ------------------------------------
     completed_count = Respondent.objects.filter(
         project_vendor=project_vendor,
         status="complete"
@@ -208,7 +225,10 @@ def start_survey(request, project_vendor_id):
         respondent.completed_at = timezone.now()
         respondent.save()
 
-        quota_link = replace_tokens(project_vendor.quota_full_link, respondent)
+        quota_link = replace_tokens(
+            project_vendor.quota_full_link,
+            respondent
+        )
 
         RedirectLog.objects.create(
             respondent=respondent,
@@ -228,8 +248,68 @@ def start_survey(request, project_vendor_id):
             }
         )
 
+    # ------------------------------------
+    # COUNTRY VALIDATION
+    # ------------------------------------
+    test_country = request.GET.get("country")
+
+    detected_country = (
+        test_country
+        or get_country_from_ip(respondent.ip_address)
+    )
+
+    required_country = project_vendor.project.country
+
+    respondent.detected_country = detected_country
+
+    print("IP Address:", respondent.ip_address)
+    print("Detected Country:", detected_country)
+    print("Required Country:", required_country)
+
+
+    if required_country and detected_country.strip().lower() != required_country.strip().lower():
+        respondent.previous_status = respondent.status
+        respondent.status = "terminate"
+        respondent.country_validation_passed = False
+        respondent.completed_at = timezone.now()
+        respondent.save()
+
+        terminate_link = replace_tokens(
+            project_vendor.terminate_link,
+            respondent
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="country_terminate",
+            redirect_url=terminate_link or "landing/terminate.html",
+        )
+
+        if terminate_link:
+            return redirect(terminate_link)
+
+        return render(
+            request,
+            "landing/terminate.html",
+            {
+                "respondent": respondent,
+                "status": "terminate",
+                "reason": "Country mismatch",
+            }
+        )
+
+    respondent.country_validation_passed = True
+    respondent.save()
+
+    # ------------------------------------
+    # REDIRECT TO CLIENT SURVEY
+    # ------------------------------------
     client_live_link = project_vendor.project.live_link
-    final_client_link = replace_tokens(client_live_link, respondent)
+
+    final_client_link = replace_tokens(
+        client_live_link,
+        respondent
+    )
 
     RedirectLog.objects.create(
         respondent=respondent,
@@ -238,6 +318,7 @@ def start_survey(request, project_vendor_id):
     )
 
     return redirect(final_client_link)
+
 def handle_survey_result(request, result_type):
     respondent_id = (
         request.GET.get("id")
@@ -352,6 +433,7 @@ def dashboard_stats(request):
 @api_view(["GET"])
 def project_report(request, project_id):
     respondents = Respondent.objects.filter(project_id=project_id)
+    project = get_object_or_404(Project, id=project_id)
 
     total_hits = respondents.count()
     completes = respondents.filter(status="complete").count()
@@ -364,13 +446,19 @@ def project_report(request, project_id):
         ir = round((completes / total_hits) * 100, 2)
 
     return Response({
-        "project_id": project_id,
+        "project_id": project.id,
+        "project_name": project.name,
+        "client_name": project.client.name if project.client else "-",
+        "country": project.country or "-",
+        "status": project.status or "-",
+        "loi": project.loi or 0,
+        "ir": ir,
+
         "total_hits": total_hits,
         "completes": completes,
         "terminates": terminates,
         "quota_full": quota_full,
         "security_terminates": security_terminates,
-        "ir": ir,
     })
 
 
@@ -528,9 +616,9 @@ def process_s2s(request):
 
     respondent = get_object_or_404(Respondent, respondent_id=pid)
 
-    vendor = respondent.vendor
+    project_vendor = respondent.project_vendor
 
-    if vendor.s2s_token and token != vendor.s2s_token:
+    if project_vendor.s2s_token and token != project_vendor.s2s_token:
         return Response({"error": "Invalid S2S token"}, status=403)
 
     status_map = {
@@ -643,3 +731,108 @@ def reports_data(request):
         "vendor_report": vendor_report,
         "respondent_report": respondent_report,
     })
+
+@api_view(["GET", "POST"])
+def sync_panelists(request):
+
+    response = requests.get(
+        "https://ob-panel.com/api/users.php",
+        headers={
+            "X-API-KEY": "OB_PANEL_SYNC_2026@StrongKey"
+        }
+    )
+
+    data = response.json()
+
+    users = data["users"]
+
+    created = 0
+    updated = 0
+
+    for user in users:
+
+        obj, is_created = Panelist.objects.update_or_create(
+            external_id=user["id"],
+            defaults={
+                "fname": user["fname"],
+                "lname": user["lname"],
+                "email": user["email"],
+                "gender": user["gender"],
+                "dob": user["dob"],
+                "country": user["country"],
+                "industry": user["industry"],
+                "code": user["code"],
+                "registered_at": user["created_at"],
+            }
+        )
+
+        if is_created:
+            created += 1
+        else:
+            updated += 1
+
+    return Response({
+        "created": created,
+        "updated": updated
+    })
+
+
+
+@api_view(["GET"])
+def panelist_list(request):
+
+    panelists = Panelist.objects.all().order_by("-registered_at")
+
+    data = []
+
+    for p in panelists:
+        data.append({
+            "id": p.id,
+            "fname": p.fname,
+            "lname": p.lname,
+            "email": p.email,
+            "gender": p.gender,
+            "country": p.country,
+            "industry": p.industry,
+            "registered_at": p.registered_at,
+        })
+
+    return Response(data)
+
+def get_country_from_ip(ip_address):
+    if not ip_address:
+        return "Unknown"
+
+    if ip_address in ["127.0.0.1", "localhost", "::1"]:
+        return "India"
+
+    try:
+        token = "8e73ea2d451196"
+
+        response = requests.get(
+            f"https://api.ipinfo.io/lite/{ip_address}?token={token}",
+            timeout=5
+        )
+
+        data = response.json()
+
+        print("IPINFO Response:", data)
+
+        country_code = data.get("country")
+
+        country_map = {
+            "IN": "India",
+            "GB": "England",
+            "US": "USA",
+            "CA": "Canada",
+            "AU": "Australia",
+        }
+
+        return country_map.get(
+            country_code,
+            country_code or "Unknown"
+        )
+
+    except Exception as e:
+        print("IPINFO Error:", e)
+        return "Unknown"
