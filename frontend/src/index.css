@@ -162,7 +162,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #2563eb;
+  background: black;
   color: white;
   padding: 12px 18px;
   border-radius: 10px;
@@ -173,7 +173,7 @@ body {
 }
 
 .primary-btn:hover {
-  background: #1d4ed8;
+  background: #000102e5;
 }
 
 .table-wrapper {
@@ -750,11 +750,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 10px;
 }
 
 
 .link-codes-btn {
-  background: #2563eb;
+  background: black;
   color: white;
   border: none;
 
@@ -768,7 +769,7 @@ body {
 }
 
 .link-codes-btn:hover {
-  background: #1d4ed8;
+  background: black;
   transform: translateY(-2px);
 }
 
@@ -808,9 +809,9 @@ body {
   justify-content: space-between;
   align-items: center;
 
-  padding: 22px 28px;
+  padding: 30px 28px;
 
-  border-bottom: 1px solid #e5e7eb;
+  /* border-bottom: 1px solid #e5e7eb; */
 }
 
 .modal-header h2 {
@@ -864,5 +865,171 @@ body {
   align-items: center;
 }
 
+/* Assigned Suppliers */
+/* ==========================
+   VIEW BUTTON
+========================== */
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+
+  border-radius: 12px;
+
+  background: linear-gradient(
+  135deg,
+  #86efac,
+  #4ade80
+);
+
+  color: white;
+
+  box-shadow:
+    0 4px 12px rgba(22, 101, 52, 0.25);
+
+  transition: all 0.25s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover Animation */
+
+.icon-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(22, 101, 52, 0.35);
+}
+
+/* Click Animation */
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* Shine Effect */
+
+.icon-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.2);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.icon-btn:hover::before {
+  left: 140%;
+}
 
 
+
+/* updatecss */
+.add-supplier-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+
+  background-color: #0f172a;
+
+  color: white;
+
+  transition: all 0.25s ease;
+}
+
+.add-supplier-btn:hover {
+  transform: translateY(-2px);
+}
+
+.supplier-modal {
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 24px;
+}
+
+.delete-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  cursor: pointer;
+
+  border-radius: 12px;
+
+  color: #fff;
+
+  background: linear-gradient(
+    135deg,
+    #f87171,
+    #dc2626
+  );
+
+  box-shadow:
+    0 4px 12px rgba(220, 38, 38, 0.25);
+
+  transition: all 0.25s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(220, 38, 38, 0.35);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.25);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.delete-btn:hover::before {
+  left: 140%;
+}

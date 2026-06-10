@@ -3,10 +3,9 @@ import { Link, useParams } from "react-router-dom";
 
 import { getSingleProject } from "../../api/projectApi";
 import { getVendors } from "../../api/vendorApi";
-import {
-  createProjectVendor,
-  getSupplierStats,
-} from "../../api/projectVendorApi";
+// import {createProjectVendor,getSupplierStats,} from "../../api/projectVendorApi";
+import { Eye, Trash2 } from "lucide-react";
+import {createProjectVendor,getSupplierStats,deleteProjectVendor,} from "../../api/projectVendorApi";
 
 // import { useState } from "react";
 
@@ -18,6 +17,7 @@ function ProjectDetails() {
   const [supplierStats, setSupplierStats] = useState([]);
   const [error, setError] = useState("");
   const [showLinkCodes, setShowLinkCodes] = useState(false);
+  const [showAddSupplier, setShowAddSupplier] = useState(false);
 
   const [formData, setFormData] = useState({
     project: id,
@@ -88,6 +88,31 @@ function ProjectDetails() {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+
+
+  const handleDeleteSupplier = async (projectVendorId) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this supplier?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    await deleteProjectVendor(projectVendorId);
+
+    setSupplierStats((prev) =>
+      prev.filter(
+        (item) => item.project_vendor_id !== projectVendorId
+      )
+    );
+
+    alert("Supplier deleted successfully");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete supplier");
+  }
+};
+
 
   const handleAssignSupplier = async (e) => {
     e.preventDefault();
@@ -168,12 +193,12 @@ function ProjectDetails() {
           <LinkRow label="Complete" value={completeUrl} onCopy={copyText} />
           <LinkRow label="Terminate" value={terminateUrl} onCopy={copyText} />
           <LinkRow label="Quota Full" value={quotaFullUrl} onCopy={copyText} />
-          <LinkRow label="Security Term" value={securityUrl} onCopy={copyText} />
-          <LinkRow label="S2S Link" value={s2sUrl} onCopy={copyText} />
+          {/* <LinkRow label="Security Term" value={securityUrl} onCopy={copyText} />
+          <LinkRow label="S2S Link" value={s2sUrl} onCopy={copyText} /> */}
         </div>
       </div>
 
-      <div className="section-card">
+      {/* <div className="section-card">
         <h3>Manage Suppliers</h3>
 
         {error && <div className="error-box">{error}</div>}
@@ -311,10 +336,26 @@ function ProjectDetails() {
             </div>
           </div>
         </form>
-      </div>
+      </div> */}
+
+      {/* <div className="section-card">
+        <h3>Assigned Suppliers</h3> */}
 
       <div className="section-card">
-        <h3>Assigned Suppliers</h3>
+
+        <div className="section-header">
+          <h3>Assigned Suppliers</h3>
+         <button
+            className="add-supplier-btn"
+            onClick={() => {
+              console.log("Button Clicked");
+              setShowAddSupplier(true);
+            }}>
+            + Add Supplier
+          </button>
+
+          
+      </div>
 
         <div className="table-wrapper">
           <table className="custom-table">
@@ -329,11 +370,11 @@ function ProjectDetails() {
                 <th>Quota Full</th>
                 <th>Security Term</th>
                 <th>IR</th>
-                <th>CPC</th>
-                <th>s2s</th>
+                {/* <th>CPC</th> */}
+                {/* <th>s2s</th> */}
                 <th>Last Completed</th>
                 <th>Action</th>
-                <th>Test Links</th>
+                {/* <th>Test Links</th> */}
               </tr>
             </thead>
 
@@ -358,8 +399,8 @@ function ProjectDetails() {
                   <td>{item.quota_full}</td>
                   <td>{item.security_term}</td>
                   <td>{item.ir}%</td>
-                  <td>{item.vendor_cpc}</td>
-                  <td><button className="small-btn" onClick={() => copyText(item.s2s_link)}>Copy</button></td>
+                  {/* <td>{item.vendor_cpc}</td> */}
+                  {/* <td><button className="small-btn" onClick={() => copyText(item.s2s_link)}>Copy</button></td> */}
                   <td>
                     {item.last_completed
                       ? new Date(item.last_completed).toLocaleString("en-IN", {
@@ -374,36 +415,49 @@ function ProjectDetails() {
 
                   <td>
                     <div className="table-actions">
+
                       <Link
                         to={`/project-vendors/${item.project_vendor_id}/hints`}
-                        className="view-btn"
+                        className="icon-btn"
+                        title="View Details"
                       >
-                        View
+                        <Eye size={16} />
                       </Link>
-
+                      
+                        <button
+                          className="small-btn"
+                          onClick={() => copyText(item.supplier_link)}
+                        >
+                          Copy
+                        </button>
+                      
                       <button
-                        className="small-btn"
-                        onClick={() => copyText(item.supplier_link)}
+                        className="delete-btn"
+                        onClick={() =>
+                          handleDeleteSupplier(item.project_vendor_id)
+                        }
+                        title="Delete Supplier"
                       >
-                        Copy
+                        <Trash2 size={16} />
                       </button>
+
                     </div>
                   </td>
 
-                  <td>
+                  {/* <td>
                     <button
                       className="small-btn"
                       onClick={() => copyText(item.supplier_link)}
                     >
                       Copy
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
 
               {supplierStats.length === 0 && (
                 <tr>
-                  <td colSpan="14" style={{ textAlign: "center" }}>
+                  <td colSpan="11" style={{ textAlign: "center" }}>
                     No suppliers assigned
                   </td>
                 </tr>
@@ -411,7 +465,167 @@ function ProjectDetails() {
             </tbody>
           </table>
         </div>
-              </div>
+        </div>
+      
+      {showAddSupplier && (
+  <div
+    className="modal-overlay"
+    onClick={() => setShowAddSupplier(false)}
+  >
+    <div
+      className="supplier-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-header">
+        <h2>Manage Suppliers</h2>
+
+        <button
+          className="close-btn"
+          onClick={() => setShowAddSupplier(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      {error && <div className="error-box">{error}</div>}
+
+       <form className="supplier-form" onSubmit={handleAssignSupplier}>
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label>Vendor</label>
+              <select name="vendor" required value={formData.vendor} onChange={handleChange}>
+                <option value="">Please Select</option>
+                {vendors.map((vendor) => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Status</label>
+              <select name="status" value={formData.status} onChange={handleChange}>
+                <option value="active">Testing</option>
+                <option value="paused">Paused</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-grid-4">
+            <div className="form-group">
+              <label>Cost Per Complete</label>
+              <input
+                type="number"
+                step="0.01"
+                name="vendor_cpc"
+                value={formData.vendor_cpc}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Req. Completes</label>
+              <input
+                type="number"
+                name="target"
+                value={formData.target}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Max Redirects</label>
+              <input
+                type="number"
+                name="max_redirects"
+                value={formData.max_redirects}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Qualification Required</label>
+              <select
+                name="qualification_required"
+                value={formData.qualification_required ? "true" : "false"}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    qualification_required: e.target.value === "true",
+                  })
+                }
+              >
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-grid-4">
+            <div className="form-group">
+              <label>Completion Link</label>
+              <textarea name="complete_link" value={formData.complete_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Disqualify Link</label>
+              <textarea name="terminate_link" value={formData.terminate_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Quota Full Link</label>
+              <textarea name="quota_full_link" value={formData.quota_full_link} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Security Term Link</label>
+              <textarea name="security_terminate_link" value={formData.security_terminate_link} onChange={handleChange} />
+            </div>
+          </div>
+
+          <div className="form-grid-3">
+            <div className="form-group">
+              <label>Notes</label>
+              <textarea name="notes" value={formData.notes} onChange={handleChange} />
+            </div>
+
+            <div className="checkbox-box">
+              <strong>Data to Ask on Redirect:</strong>
+
+              <label>
+                <input type="checkbox" name="ask_email" checked={formData.ask_email} onChange={handleChange} />
+                Email Address
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_zip" checked={formData.ask_zip} onChange={handleChange} />
+                Zip Code
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_age" checked={formData.ask_age} onChange={handleChange} />
+                Age
+              </label>
+
+              <label>
+                <input type="checkbox" name="ask_gender" checked={formData.ask_gender} onChange={handleChange} />
+                Gender
+              </label>
+            </div>
+
+            <div className="supplier-form-actions">
+              <button type="submit" className="primary-btn">
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
+
+    </div>
+  </div>
+)}
 
       {showLinkCodes && (
         <div

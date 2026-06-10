@@ -1,7 +1,7 @@
-<<<<<<< HEAD
+// <<<<<<< HEAD
 
-=======
->>>>>>> d34dd37 (frontend changes)
+// =======
+// >>>>>>> d34dd37 (frontend changes)
 import { useEffect, useState } from "react";
 import {
   MousePointerClick,

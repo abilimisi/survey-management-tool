@@ -14,3 +14,10 @@ export const getSupplierStats = async (projectId) => {
   const response = await axiosInstance.get(`/projects/${projectId}/supplier-stats/`);
   return response.data;
 };
+
+export const deleteProjectVendor = async (id) => {
+  const response = await axiosInstance.delete(
+    `/project-vendors/${id}/`
+  );
+  return response.data;
+};
