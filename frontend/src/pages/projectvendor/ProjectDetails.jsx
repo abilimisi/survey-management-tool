@@ -7,6 +7,9 @@ import { getVendors } from "../../api/vendorApi";
 import { Eye, Trash2 } from "lucide-react";
 import {createProjectVendor,getSupplierStats,deleteProjectVendor,} from "../../api/projectVendorApi";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 // import { useState } from "react";
 
 function ProjectDetails() {
@@ -106,10 +109,10 @@ function ProjectDetails() {
       )
     );
 
-    alert("Supplier deleted successfully");
+    toast.success("Supplier deleted successfully!");
   } catch (error) {
     console.error(error);
-    alert("Failed to delete supplier");
+    toast.error("Failed to delete supplier!");
   }
 };
 
@@ -120,6 +123,11 @@ function ProjectDetails() {
 
     try {
       await createProjectVendor(formData);
+
+      toast.success("Supplier assigned successfully.");
+
+      setShowAddSupplier(false); // Close modal
+
 
       setFormData({
         project: id,
@@ -142,8 +150,9 @@ function ProjectDetails() {
 
       fetchData();
     } catch (error) {
-      console.error(error.response?.data || error);
-      setError(JSON.stringify(error.response?.data || "Supplier assignment failed"));
+      // console.error(error.response?.data || error);
+      // setError(JSON.stringify(error.response?.data || "Supplier assignment failed"));
+      toast.error("Failed to assign supplier.");
     }
   };
 
