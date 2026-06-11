@@ -40,10 +40,10 @@ function SupplierHints() {
               <th>Project</th>
               <th>Country</th>
               <th>Vendor</th>
-              <th>vCPC</th>
+              {/* <th>vCPC</th> */}
               <th>Status</th>
               <th>Previous Status</th>
-              <th>S2S</th>
+              {/* <th>S2S</th> */}
               <th>IP</th>
               <th>Started</th>
               <th>Completed</th>
@@ -65,14 +65,14 @@ function SupplierHints() {
                 <td>{item.project}</td>
                 <td>{item.country}</td>
                 <td>{item.vendor}</td>
-                <td>{item.vendor_cpc}</td>
+                {/* <td>{item.vendor_cpc}</td> */}
                 <td>
                   <span className={`status-pill status-${item.status}`}>
                     {item.status}
                   </span>
                 </td>
                 <td>{item.previous_status || "-"}</td>
-                <td>{item.s2s_status ? "Yes" : "No"}</td>
+                {/* <td>{item.s2s_status ? "Yes" : "No"}</td> */}
                 <td>{item.ip_address || "-"}</td>
                 <td>
                 {item.started_at
