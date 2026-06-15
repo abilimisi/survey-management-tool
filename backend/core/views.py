@@ -9,7 +9,7 @@ from django.db.models import Count, Max, Q
 from django.conf import settings
 import requests
 
-from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist
+from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent
 
 from .serializers import (
     ClientSerializer,
@@ -19,6 +19,7 @@ from .serializers import (
     RespondentSerializer,
     RedirectLogSerializer,
 )
+
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -523,7 +524,7 @@ def supplier_statistics(request, project_id):
             ),
 
             "supplier_link": (
-                f"https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/{pv.id}/"
+                f"https://carpenter-trodden-upstate.ngrok-free.dev/api/survey/start/{pv.id}/"
             ),
         })
 
@@ -836,3 +837,56 @@ def get_country_from_ip(ip_address):
     except Exception as e:
         print("IPINFO Error:", e)
         return "Unknown"
+    
+
+
+@api_view(["GET"])
+def recent_projects(request):
+
+    projects = Project.objects.order_by("-created_at")[:5]
+
+    data = []
+
+    for project in projects:
+
+        hits = Respondent.objects.filter(
+            project_vendor__project=project
+        ).count()
+
+        completes = Respondent.objects.filter(
+            project_vendor__project=project,
+            status="complete"
+        ).count()
+
+        terminates = Respondent.objects.filter(
+            project_vendor__project=project,
+            status="terminate"
+        ).count()
+
+        quota_full = Respondent.objects.filter(
+            project_vendor__project=project,
+            status="quota_full"
+        ).count()
+
+        security_term = Respondent.objects.filter(
+            project_vendor__project=project,
+            status="security_terminate"
+        ).count()
+
+        ir = round((completes / hits) * 100, 2) if hits else 0
+
+        data.append({
+            "id": project.id,
+            "name": project.name,
+            "country": project.country,
+            "status": project.status,
+            "target": project.target,
+            "hits": hits,
+            "completes": completes,
+            "terminates": terminates,
+            "quota_full": quota_full,
+            "security_term": security_term,
+            "ir": ir,
+        })
+
+    return Response(data)

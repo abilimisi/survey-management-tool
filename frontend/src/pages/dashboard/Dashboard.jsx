@@ -24,10 +24,13 @@ function Dashboard() {
     security_terminates: 0,
     ir: 0,
   });
+  
+  const [recentProjects, setRecentProjects] = useState([]);
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+  fetchStats();
+  fetchRecentProjects();
+}, []);
 
   const fetchStats = async () => {
     try {
@@ -35,6 +38,21 @@ function Dashboard() {
       setStats(response.data);
     } catch (error) {
       console.error("Dashboard stats error:", error);
+    }
+  };
+
+  const fetchRecentProjects = async () => {
+  try {
+    const response = await axiosInstance.get(
+      "/dashboard/recent_projects/"
+    );
+    console.log(response.data);
+
+    setRecentProjects(response.data);
+  } catch (error) {
+    console.error(
+      "Recent projects error:",
+      error);
     }
   };
 
@@ -281,6 +299,45 @@ function Dashboard() {
     </div>
   </div>
 </div>
+
+
+<div className="recent-projects-section">
+  <h2>Recent Projects</h2>
+
+  <div className="recent-projects-table">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Project</th>
+          <th>Country</th>
+          <th>Completes</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {recentProjects.map((project) => (
+          <tr key={project.id}>
+            <td>{project.id}</td>
+            <td>{project.name}</td>
+            <td>{project.country}</td>
+            <td>{project.completes}/{project.target}</td>
+            <td>
+              <span
+                className={`status-badge ${project.status}`}
+              >
+                {project.status}
+              </span>
+            </td>
+            
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
       {/* Summary + Actions */}
       <div className="dashboard-bottom-grid">

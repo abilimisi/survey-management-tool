@@ -783,3 +783,47 @@
 .hero-badge {
   animation: float 3s ease-in-out infinite;
 }
+
+
+
+/* change */
+.recent-projects-section {
+  margin-top: 24px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.recent-projects-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-projects-table th,
+.recent-projects-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.testing {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.running {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.closed {
+  background: #f8d7da;
+  color: #721c24;
+}

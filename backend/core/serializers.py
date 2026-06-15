@@ -64,7 +64,7 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
     #     return path
 
     def get_supplier_link(self, obj):
-        public_base_url = "https://backwater-muster-repayment.ngrok-free.dev"
+        public_base_url = "https://carpenter-trodden-upstate.ngrok-free.dev"
         return f"{public_base_url}/api/survey/start/{obj.id}/"
 
 

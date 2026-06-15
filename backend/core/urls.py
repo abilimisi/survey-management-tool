@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
+# from .views import recent_projects_stats
 
 from .views import (
     ClientViewSet,
@@ -20,6 +21,7 @@ from .views import (
     project_report,
     supplier_statistics,
     respondent_hints,
+    recent_projects,
     
 )
 
@@ -54,4 +56,5 @@ urlpatterns = [
 
     path("panelists/sync/", sync_panelists),
     path("panelists/", panelist_list),
+    path("dashboard/recent_projects/",recent_projects,name="recent_projects"),
 ]
