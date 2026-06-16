@@ -1033,3 +1033,14 @@ body {
 .delete-btn:hover::before {
   left: 140%;
 }
+
+/* footer css */
+.main-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+}

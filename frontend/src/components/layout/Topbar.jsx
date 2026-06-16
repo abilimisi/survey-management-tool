@@ -7,6 +7,8 @@ import {
 
 import "./TopBar.css";
 
+import logo from "../../assets/logo_ob.jpg";
+
 function Topbar() {
   const navigate = useNavigate();
 
@@ -31,7 +33,18 @@ function Topbar() {
 
       {/* LEFT SIDE */}
       <div className="topbar-left">
-        <h2>Survey Management System</h2>
+        <img
+          src={logo}
+          alt="Opinion Bunch"
+          className="topbar-logo"
+        />
+
+        {/* <div>
+          <h2>Survey Management System</h2>
+          <span className="company-name">
+            Opinion Bunch
+          </span>
+        </div> */}
       </div>
 
       {/* RIGHT SIDE */}

@@ -21,3 +21,11 @@ export const deleteProjectVendor = async (id) => {
   );
   return response.data;
 };
+
+export const updateProjectVendor = async (id, data) => {
+  const response = await axiosInstance.put(
+    `/project-vendors/${id}/`,
+    data
+  );
+  return response.data;
+};
