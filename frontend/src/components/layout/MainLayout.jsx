@@ -22,6 +22,7 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Footer from "./Footer";
 
 function MainLayout({ children }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -37,7 +38,12 @@ function MainLayout({ children }) {
 
       <main className="main-section">
         <Topbar toggleSidebar={toggleSidebar} />
-        <div className="page-content">{children}</div>
+
+        <div className="page-content">
+          {children}
+        </div>
+
+        <Footer />
       </main>
     </div>
   );
