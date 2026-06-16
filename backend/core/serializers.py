@@ -1,8 +1,24 @@
+import re
+
 from rest_framework import serializers
 from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog
 
 
 class ClientSerializer(serializers.ModelSerializer):
+
+    def validate_contact_number(self, value):
+        if not value:
+            return value
+
+        value = value.strip()
+
+        if not re.fullmatch(r"\d{10}", value):
+            raise serializers.ValidationError(
+                "Contact number must be exactly 10 digits."
+            )
+
+        return value
+
     class Meta:
         model = Client
         fields = "__all__"
@@ -64,7 +80,7 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
     #     return path
 
     def get_supplier_link(self, obj):
-        public_base_url = "https://carpenter-trodden-upstate.ngrok-free.dev"
+        public_base_url = "https://backwater-muster-repayment.ngrok-free.dev"
         return f"{public_base_url}/api/survey/start/{obj.id}/"
 
 

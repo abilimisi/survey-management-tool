@@ -409,25 +409,48 @@ def universal_result(request):
     return handle_survey_result(request, status)
 
 
+from django.utils import timezone
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 @api_view(["GET"])
 def dashboard_stats(request):
-    total_hits = Respondent.objects.count()
-    completes = Respondent.objects.filter(status="complete").count()
-    terminates = Respondent.objects.filter(status="terminate").count()
-    quota_full = Respondent.objects.filter(status="quota_full").count()
-    security_terminates = Respondent.objects.filter(status="security_terminate").count()
+    today = timezone.localdate()
+    now = timezone.now()
 
-    ir = 0
-    if total_hits > 0:
-        ir = round((completes / total_hits) * 100, 2)
+    def calculate_stats(queryset):
+        total_hits = queryset.count()
+        completes = queryset.filter(status="complete").count()
+        terminates = queryset.filter(status="terminate").count()
+        quota_full = queryset.filter(status="quota_full").count()
+        security_terminates = queryset.filter(status="security_terminate").count()
+
+        ir = round((completes / total_hits) * 100, 2) if total_hits > 0 else 0
+
+        return {
+            "total_hits": total_hits,
+            "completes": completes,
+            "terminates": terminates,
+            "quota_full": quota_full,
+            "security_terminates": security_terminates,
+            "ir": ir,
+        }
+
+    overall_qs = Respondent.objects.all()
+
+    today_qs = Respondent.objects.filter(
+        started_at__date=today
+    )
+
+    monthly_qs = Respondent.objects.filter(
+        started_at__year=now.year,
+        started_at__month=now.month
+    )
 
     return Response({
-        "total_hits": total_hits,
-        "completes": completes,
-        "terminates": terminates,
-        "quota_full": quota_full,
-        "security_terminates": security_terminates,
-        "ir": ir,
+        "overall": calculate_stats(overall_qs),
+        "today": calculate_stats(today_qs),
+        "monthly": calculate_stats(monthly_qs),
     })
 
 
@@ -524,7 +547,7 @@ def supplier_statistics(request, project_id):
             ),
 
             "supplier_link": (
-                f"https://carpenter-trodden-upstate.ngrok-free.dev/api/survey/start/{pv.id}/"
+                f"https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/{pv.id}/"
             ),
         })
 

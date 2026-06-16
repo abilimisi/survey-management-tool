@@ -142,12 +142,12 @@ function Reports() {
       </div>
 
       <div className="stats-grid">
-        <StatCard title="Total Hits" value={dashboardStats.total_hits} />
-        <StatCard title="Completes" value={dashboardStats.completes} />
-        <StatCard title="Terminates" value={dashboardStats.terminates} />
-        <StatCard title="Quota Full" value={dashboardStats.quota_full} />
-        <StatCard title="Security Term" value={dashboardStats.security_terminates} />
-        <StatCard title="Overall IR" value={`${dashboardStats.ir}%`} />
+        <StatCard title="Total Hits" value={dashboardStats.overall.total_hits} />
+        <StatCard title="Completes" value={dashboardStats.overall.completes} />
+        <StatCard title="Terminates" value={dashboardStats.overall.terminates} />
+        <StatCard title="Quota Full" value={dashboardStats.overall.quota_full} />
+        <StatCard title="Security Term" value={dashboardStats.overall.security_terminates} />
+        <StatCard title="Overall IR" value={`${dashboardStats.overall.ir}%`} />
       </div>
 
       <div className="section-card">

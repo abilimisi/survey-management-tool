@@ -16,21 +16,36 @@ import axiosInstance from "../../api/axiosInstance";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const [stats, setStats] = useState({
+ const [stats, setStats] = useState({
+  overall: {
     total_hits: 0,
     completes: 0,
     terminates: 0,
     quota_full: 0,
     security_terminates: 0,
     ir: 0,
-  });
-  
-  const [recentProjects, setRecentProjects] = useState([]);
+  },
+  today: {
+    total_hits: 0,
+    completes: 0,
+    terminates: 0,
+    quota_full: 0,
+    security_terminates: 0,
+    ir: 0,
+  },
+  monthly: {
+    total_hits: 0,
+    completes: 0,
+    terminates: 0,
+    quota_full: 0,
+    security_terminates: 0,
+    ir: 0,
+  },
+});
 
   useEffect(() => {
-  fetchStats();
-  fetchRecentProjects();
-}, []);
+    fetchStats();
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -41,60 +56,45 @@ function Dashboard() {
     }
   };
 
-  const fetchRecentProjects = async () => {
-  try {
-    const response = await axiosInstance.get(
-      "/dashboard/recent_projects/"
-    );
-    console.log(response.data);
-
-    setRecentProjects(response.data);
-  } catch (error) {
-    console.error(
-      "Recent projects error:",
-      error);
-    }
-  };
-
   const cards = [
     {
       title: "Total Hits",
-      value: stats.total_hits,
+      value: stats.overall.total_hits,
       icon: MousePointerClick,
       note: "Survey Starts",
       className: "card-blue",
     },
     {
       title: "Completes",
-      value: stats.completes,
+      value: stats.overall.completes,
       icon: CheckCircle,
       note: "Successful",
       className: "card-green",
     },
     {
       title: "Terminates",
-      value: stats.terminates,
+      value: stats.overall.terminates,
       icon: XCircle,
       note: "Disqualified",
       className: "card-red",
     },
     {
       title: "Quota Full",
-      value: stats.quota_full,
+      value: stats.overall.quota_full,
       icon: AlertTriangle,
       note: "Quota Reached",
       className: "card-orange",
     },
     {
       title: "Security",
-      value: stats.security_terminates,
+      value: stats.overall.security_terminates,
       icon: ShieldAlert,
       note: "Security Failures",
       className: "card-purple",
     },
     {
       title: "IR %",
-      value: `${stats.ir}%`,
+      value: `${stats.overall.ir}%`,
       icon: BarChart3,
       note: "Incidence Rate",
       className: "card-indigo",
@@ -102,9 +102,9 @@ function Dashboard() {
   ];
 
   const nonCompletes =
-    Number(stats.terminates) +
-    Number(stats.quota_full) +
-    Number(stats.security_terminates);
+    Number(stats.overall.terminates) +
+    Number(stats.overall.quota_full) +
+    Number(stats.overall.security_terminates);
 
 
   return (
@@ -153,27 +153,27 @@ function Dashboard() {
       </div>
 
 
-      <div className="stats-section">
+  <div className="stats-section">
   <h2>Today's Project Statistics</h2>
 
   <div className="today-stats-grid">
     <div className="today-card completed">
-      <h3>{stats.completes}</h3>
+      <h3>{stats.today.completes}</h3>
       <span>Completed</span>
     </div>
 
     <div className="today-card disqualified">
-      <h3>{stats.terminates}</h3>
+      <h3>{stats.today.terminates}</h3>
       <span>Disqualified</span>
     </div>
 
     <div className="today-card quota">
-      <h3>{stats.quota_full}</h3>
+      <h3>{stats.today.quota_full}</h3>
       <span>Quota Full</span>
     </div>
 
     <div className="today-card security">
-      <h3>{stats.security_terminates}</h3>
+      <h3>{stats.today.security_terminates}</h3>
       <span>Security Term</span>
     </div>
 
@@ -188,32 +188,32 @@ function Dashboard() {
 
 
 
-      <div className="monthly-section">
+  <div className="monthly-section">
   <h2>Monthly Statistics</h2>
 
   <div className="monthly-grid">
     <div className="monthly-item">
       <div className="monthly-header">
         <span>Completed</span>
-        <strong>{stats.ir}%</strong>
+        <strong>{stats.monthly.completes}%</strong>
       </div>
 
       <div className="progress-bar">
         <div
           className="progress-fill green"
-          style={{ width: `${stats.ir}%` }}
+          style={{ width: `${stats.monthly.completes}%` }}
         />
       </div>
 
-      <small>{stats.completes}/{stats.total_hits}</small>
+      <small>{stats.monthly.completes}/{stats.monthly.total_hits}</small>
     </div>
 
     <div className="monthly-item">
       <div className="monthly-header">
         <span>Disqualified</span>
         <strong>
-          {stats.total_hits
-            ? ((stats.terminates / stats.total_hits) * 100).toFixed(1)
+          {stats.monthly.total_hits
+            ? ((stats.monthly.terminates / stats.monthly.total_hits) * 100).toFixed(1)
             : 0}
           %
         </strong>
@@ -224,8 +224,8 @@ function Dashboard() {
           className="progress-fill orange"
           style={{
             width: `${
-              stats.total_hits
-                ? (stats.terminates / stats.total_hits) * 100
+              stats.monthly.total_hits
+                ? (stats.monthly.terminates / stats.monthly.total_hits) * 100
                 : 0
             }%`,
           }}
@@ -233,7 +233,7 @@ function Dashboard() {
       </div>
 
       <small>
-        {stats.terminates}/{stats.total_hits}
+        {stats.monthly.terminates}/{stats.monthly.total_hits}
       </small>
     </div>
 
@@ -241,8 +241,8 @@ function Dashboard() {
       <div className="monthly-header">
         <span>Quota Full</span>
         <strong>
-          {stats.total_hits
-            ? ((stats.quota_full / stats.total_hits) * 100).toFixed(1)
+          {stats.monthly.total_hits
+            ? ((stats.monthly.quota_full / stats.monthly.total_hits) * 100).toFixed(1)
             : 0}
           %
         </strong>
@@ -253,8 +253,8 @@ function Dashboard() {
           className="progress-fill blue"
           style={{
             width: `${
-              stats.total_hits
-                ? (stats.quota_full / stats.total_hits) * 100
+              stats.monthly.total_hits
+                ? (stats.monthly.quota_full / stats.monthly.total_hits) * 100
                 : 0
             }%`,
           }}
@@ -262,7 +262,7 @@ function Dashboard() {
       </div>
 
       <small>
-        {stats.quota_full}/{stats.total_hits}
+        {stats.monthly.quota_full}/{stats.monthly.total_hits}
       </small>
     </div>
 
@@ -270,9 +270,9 @@ function Dashboard() {
       <div className="monthly-header">
         <span>Security Term</span>
         <strong>
-          {stats.total_hits
+          {stats.monthly.total_hits
             ? (
-                (stats.security_terminates / stats.total_hits) *
+                (stats.monthly.security_terminates / stats.monthly.total_hits) *
                 100
               ).toFixed(1)
             : 0}
@@ -285,8 +285,8 @@ function Dashboard() {
           className="progress-fill red"
           style={{
             width: `${
-              stats.total_hits
-                ? (stats.security_terminates / stats.total_hits) * 100
+              stats.monthly.total_hits
+                ? (stats.monthly.security_terminates / stats.monthly.total_hits) * 100
                 : 0
             }%`,
           }}
@@ -294,50 +294,11 @@ function Dashboard() {
       </div>
 
       <small>
-        {stats.security_terminates}/{stats.total_hits}
+        {stats.monthly.security_terminates}/{stats.monthly.total_hits}
       </small>
     </div>
   </div>
 </div>
-
-
-<div className="recent-projects-section">
-  <h2>Recent Projects</h2>
-
-  <div className="recent-projects-table">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Project</th>
-          <th>Country</th>
-          <th>Completes</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {recentProjects.map((project) => (
-          <tr key={project.id}>
-            <td>{project.id}</td>
-            <td>{project.name}</td>
-            <td>{project.country}</td>
-            <td>{project.completes}/{project.target}</td>
-            <td>
-              <span
-                className={`status-badge ${project.status}`}
-              >
-                {project.status}
-              </span>
-            </td>
-            
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
-
 
       {/* Summary + Actions */}
       <div className="dashboard-bottom-grid">
@@ -349,7 +310,7 @@ function Dashboard() {
 
           <div className="summary-row">
             <span>Completion Rate</span>
-            <strong>{stats.ir}%</strong>
+            <strong>{stats.overall.ir}%</strong>
           </div>
 
           <div className="summary-row">
@@ -359,12 +320,12 @@ function Dashboard() {
 
           <div className="summary-row">
             <span>Valid Completes</span>
-            <strong>{stats.completes}</strong>
+            <strong>{stats.overall.completes}</strong>
           </div>
 
           <div className="summary-row">
             <span>Total Hits</span>
-            <strong>{stats.total_hits}</strong>
+            <strong>{stats.overall.total_hits}</strong>
           </div>
         </div>
 
