@@ -9,10 +9,11 @@ from django.db.models import Count, Max, Q
 from django.conf import settings
 import requests
 
-from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent
 
 from .serializers import (
     ClientSerializer,
+    CompanyContactSerializer,
     VendorSerializer,
     ProjectSerializer,
     ProjectVendorSerializer,
@@ -923,3 +924,7 @@ def recent_projects(request):
         })
 
     return Response(data)
+
+class CompanyContactViewSet(viewsets.ModelViewSet):
+    queryset = CompanyContact.objects.all().order_by("-id")
+    serializer_class = CompanyContactSerializer 

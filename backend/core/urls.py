@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 from .views import (
     ClientViewSet,
+    CompanyContactViewSet,
     VendorViewSet,
     ProjectViewSet,
     ProjectVendorViewSet,
@@ -24,6 +25,7 @@ from .views import (
     supplier_statistics,
     respondent_hints,
     recent_projects,
+    CompanyContactViewSet,
     
 )
 
@@ -34,6 +36,7 @@ router.register("projects", ProjectViewSet)
 router.register("project-vendors", ProjectVendorViewSet)
 router.register("respondents", RespondentViewSet)
 router.register("redirect-logs", RedirectLogViewSet)
+router.register("company-contacts", CompanyContactViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

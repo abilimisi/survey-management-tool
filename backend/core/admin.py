@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog
 
 
 @admin.register(Client)
@@ -120,3 +120,23 @@ class RespondentAdmin(admin.ModelAdmin):
 class RedirectLogAdmin(admin.ModelAdmin):
     list_display = ("id", "respondent", "redirect_type", "created_at")
     list_filter = ("redirect_type",)
+
+@admin.register(CompanyContact)
+class CompanyContactAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "full_name",
+        "contact_type",
+        "client",
+        "contact_no",
+        "email",
+        "country",
+        "username",
+        "status",
+    )
+
+    list_filter = ("status", "contact_type", "country", "client")
+    search_fields = ("first_name", "last_name", "email", "contact_no", "client__name")
+
+    def full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name or ''}"

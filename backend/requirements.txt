@@ -17,7 +17,8 @@
 
 # vendor links
 # Complete:
-# https://vendor.com/complete?rid={{ID}}
+# https://vendor.com/complete?rid={{ID}}  or
+# https://example.com/complete?pid={{panellist_id}}
 
 # Terminate:
 # https://vendor.com/terminate?rid={{ID}}
@@ -38,3 +39,7 @@
 
 # sogolytics link to store
 # https://survey.sogolytics.com/survey/form?k=WsSSWVPYsQsPsPsP&lang=0&isURLPP=1&Q3={{ID}}
+
+#in sogolytics thankyou page link(complete redirect)
+# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id=[[Q3]]
+

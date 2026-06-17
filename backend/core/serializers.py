@@ -1,7 +1,7 @@
 import re
 
 from rest_framework import serializers
-from .models import Client, Vendor, Project, ProjectVendor, Respondent, RedirectLog
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -99,3 +99,14 @@ class RedirectLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = RedirectLog
         fields = "__all__"
+
+class CompanyContactSerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source="client.name", read_only=True)
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CompanyContact
+        fields = "__all__"
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name or ''}".strip()

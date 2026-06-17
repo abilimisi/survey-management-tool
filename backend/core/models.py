@@ -562,3 +562,69 @@ class Panelist(models.Model):
 
     def __str__(self):
         return self.email
+    
+class CompanyContact(models.Model):
+    CONTACT_TYPE_CHOICES = [
+        ("ceo", "CEO"),
+        ("project_manager", "Project Manager"),
+        ("associate_project_manager", "Associate Project Manager"),
+        ("assistant_manager", "Assistant Manager"),
+        ("sales_person", "Sales Person"),
+        ("client_contact", "Client Contact"),
+        ("other", "Other"),
+    ]
+
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    ]
+
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("disabled", "Disabled"),
+    ]
+    
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="contacts"
+    )
+
+    contact_type = models.CharField(
+        max_length=100,
+        choices=CONTACT_TYPE_CHOICES,
+        blank=True,
+        null=True
+    )
+
+    salutation = models.CharField(max_length=20, blank=True, null=True)
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        blank=True,
+        null=True
+    )
+
+    dob = models.DateField(blank=True, null=True)
+
+    email = models.EmailField(blank=True, null=True)
+    contact_no = models.CharField(max_length=30, blank=True, null=True)
+
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+
+    username = models.CharField(max_length=150, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name or ''}"
