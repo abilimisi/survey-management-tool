@@ -1,9 +1,104 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
-    <title>Survey Quota Full</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opinion Bunch | Survey Quota Full</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f4f7fb;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.card{
+    background:#ffffff;
+    border-radius:24px;
+    padding:50px 40px;
+    width:100%;
+    max-width:520px;
+    text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,0.08);
+}
+
+.logo{
+    width:140px;
+    height:auto;
+    margin-bottom:20px;
+}
+
+h1{
+    font-size:30px;
+    color:#0f172a;
+    margin-bottom:15px;
+}
+
+.brand{
+    margin-top:35px;
+    color:#94a3b8;
+    font-size:13px;
+}
+
+.brand span{
+    color:#22c55e;
+    font-weight:700;
+}
+
+.website{
+    margin-top:10px;
+    font-size:13px;
+}
+
+.website a{
+    color:#2563eb;
+    text-decoration:none;
+}
+
+.website a:hover{
+    text-decoration:underline;
+}
+</style>
+
 </head>
+
 <body>
+
+<div class="card">
+    <img
+        src="{% static 'images/logo_ob.jpg' %}"
+        alt="Opinion Bunch"
+        class="logo"
+    >
     <h1>Survey Quota Full</h1>
+
+    <p class="message">
+        Unfortunately, this survey has reached its participant quota.
+    </p>
+
+    <div class="brand">
+        Powered by <span>Opinion Bunch</span>
+    </div>
+
+    <div class="website">
+        <a href="https://www.ob-panel.com" target="_blank">
+            www.ob-panel.com
+        </a>
+    </div>
+</div>
+
 </body>
 </html>

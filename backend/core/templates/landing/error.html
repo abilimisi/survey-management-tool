@@ -1,3 +1,136 @@
-<h1>Error</h1>
-<p>{{ error_message }}</p>
+{% load static %}
 
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opinion Bunch | Survey Unavailable</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f4f7fb;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.card{
+    background:#ffffff;
+    border-radius:24px;
+    padding:50px 40px;
+    width:100%;
+    max-width:520px;
+    text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,0.08);
+}
+
+.logo{
+    width:140px;
+    height:auto;
+    margin-bottom:20px;
+}
+
+.icon{
+    font-size:56px;
+    margin-bottom:18px;
+}
+
+h1{
+    font-size:30px;
+    color:#0f172a;
+    margin-bottom:15px;
+}
+
+.message{
+    color:#64748b;
+    line-height:1.8;
+    font-size:16px;
+}
+
+.badge{
+    display:inline-block;
+    margin-top:24px;
+    padding:10px 18px;
+    border-radius:999px;
+    background:#fef2f2;
+    color:#dc2626;
+    font-size:13px;
+    font-weight:600;
+}
+
+.brand{
+    margin-top:35px;
+    color:#94a3b8;
+    font-size:13px;
+}
+
+.brand span{
+    color:#22c55e;
+    font-weight:700;
+}
+
+.website{
+    margin-top:10px;
+    font-size:13px;
+}
+
+.website a{
+    color:#2563eb;
+    text-decoration:none;
+}
+
+.website a:hover{
+    text-decoration:underline;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<img
+    src="{% static 'images/logo_ob.jpg' %}"
+    alt="Opinion Bunch"
+    class="logo"
+>
+
+<div class="icon">🔒</div>
+
+<h1>Survey Unavailable</h1>
+
+<p class="message">
+    {{ error_message|default:"This survey is currently unavailable." }}
+</p>
+
+<div class="badge">
+    Access Restricted
+</div>
+
+<div class="brand">
+    Powered by <span>Opinion Bunch</span>
+</div>
+
+<div class="website">
+    <a href="https://www.ob-panel.com" target="_blank">
+        www.ob-panel.com
+    </a>
+</div>
+
+
+</div>
+
+</body>
+</html>

@@ -129,10 +129,8 @@ def start_survey(request, project_vendor_id):
     project_vendor = get_object_or_404(
         ProjectVendor,
         id=project_vendor_id,
-        status="active"
+        # status="active"
     )
-
-    project = project_vendor.project
 
     project = project_vendor.project
 
@@ -141,6 +139,11 @@ def start_survey(request, project_vendor_id):
     if project_status not in ["running", "testing"]:
         return render(request, "landing/error.html", {
             "error_message": "This survey is currently not available."
+        })
+    
+    if project_vendor.status != "active":
+        return render(request, "landing/error.html", {
+            "error_message": "This supplier link is currently inactive."
         })
 
     respondent_code = "RID-" + uuid.uuid4().hex[:12].upper()

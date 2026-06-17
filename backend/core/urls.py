@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 # from .views import recent_projects_stats
 
 from .views import (
@@ -58,3 +60,5 @@ urlpatterns = [
     path("panelists/", panelist_list),
     path("dashboard/recent_projects/",recent_projects,name="recent_projects"),
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,14 +1,3 @@
-// import AppRoutes from "./routes/AppRoutes";
-
-
-// function App() {
-//   return <AppRoutes />;
-// }
-
-// export default App;
-
-
-
 import AppRoutes from "./routes/AppRoutes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
