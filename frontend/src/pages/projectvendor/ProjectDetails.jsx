@@ -5,7 +5,7 @@ import { getSingleProject } from "../../api/projectApi";
 import { getVendors } from "../../api/vendorApi";
 
 import { Eye, Trash2, Pencil } from "lucide-react";
-import {createProjectVendor,getSupplierStats,deleteProjectVendor,} from "../../api/projectVendorApi";
+import {createProjectVendor,getSupplierStats,deleteProjectVendor,updateProjectVendor} from "../../api/projectVendorApi";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -143,12 +143,27 @@ function ProjectDetails() {
     setError("");
 
     try {
-      await createProjectVendor(formData);
 
-      toast.success("Supplier assigned successfully.");
+      if (editingSupplier) {
 
-      setShowAddSupplier(false); // Close modal
+        await updateProjectVendor(
+          editingSupplier.project_vendor_id,
+          formData
+        );
 
+        toast.success("Supplier updated successfully!");
+
+      } else {
+
+        await createProjectVendor(formData);
+
+        toast.success("Supplier assigned successfully!");
+
+      }
+
+      setShowAddSupplier(false);
+
+      setEditingSupplier(null);
 
       setFormData({
         project: id,
@@ -170,8 +185,10 @@ function ProjectDetails() {
       });
 
       fetchData();
+
     } catch (error) {
-      toast.error("Failed to assign supplier.");
+      console.error(error);
+      toast.error("Operation failed!");
     }
   };
 
@@ -298,6 +315,14 @@ function ProjectDetails() {
                   <td>
                     <div className="table-actions">
 
+
+                      <button
+                          className="small-btn"
+                          onClick={() => copyText(item.supplier_link)}
+                        >
+                          URL
+                        </button>
+
                       <Link
                         to={`/project-vendors/${item.project_vendor_id}/hints`}
                         className="icon-btn"
@@ -305,13 +330,6 @@ function ProjectDetails() {
                       >
                         <Eye size={16} />
                       </Link>
-                      
-                        <button
-                          className="small-btn"
-                          onClick={() => copyText(item.supplier_link)}
-                        >
-                          Copy
-                        </button>
                       
                       <button
                         className="edit-btn"
@@ -351,7 +369,10 @@ function ProjectDetails() {
       {showAddSupplier && (
   <div
     className="modal-overlay"
-    onClick={() => setShowAddSupplier(false)}
+    onClick={() => {
+    setShowAddSupplier(false);
+    setEditingSupplier(null);
+    }}
   >
     <div
       className="supplier-modal"
@@ -366,7 +387,10 @@ function ProjectDetails() {
 
         <button
           className="close-btn"
-          onClick={() => setShowAddSupplier(false)}
+          onClick={() => {
+            setShowAddSupplier(false);
+            setEditingSupplier(null);
+          }}
         >
           ✕
         </button>
