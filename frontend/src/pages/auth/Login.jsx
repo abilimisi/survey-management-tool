@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/authApi";
+import "./Login.css";
+import logo from "../../assets/logo_ob.jpg";
+
 
 function Login() {
   const navigate = useNavigate();
@@ -37,12 +40,33 @@ function Login() {
   };
 
   return (
-    <div className="login-page">
+  <div className="login-container">
+
+    {/* Left Side */}
+    <div className="login-left">
+      <div className="login-overlay">
+
+       <img src={logo} alt="Logo" className="login-logo" />
+
+        <h1>Opinion Bunch</h1>
+
+        <p>
+          Smart Survey Management Platform
+        </p>
+
+      </div>
+   </div>
+
+    {/* Right Side */}
+    <div className="login-right">
+
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>Survey Tool</h1>
+        <h2>Welcome Back</h2>
         <p>Login to continue</p>
 
-        {error && <div className="error-box">{error}</div>}
+        {error && (
+          <div className="error-box">{error}</div>
+        )}
 
         <div className="form-group">
           <label>Username</label>
@@ -66,12 +90,55 @@ function Login() {
           />
         </div>
 
-        <button type="submit" className="primary-btn full-btn">
+        <button
+          type="submit"
+          className="primary-btn full-btn"
+        >
           Login
         </button>
       </form>
+
     </div>
-  );
+
+  </div>
+);
+
+  // return (
+  //   <div className="login-page">
+  //     <form className="login-card" onSubmit={handleSubmit}>
+  //       <h1>Survey Tool</h1>
+  //       <p>Login to continue</p>
+
+  //       {error && <div className="error-box">{error}</div>}
+
+  //       <div className="form-group">
+  //         <label>Username</label>
+  //         <input
+  //           type="text"
+  //           name="username"
+  //           required
+  //           value={formData.username}
+  //           onChange={handleChange}
+  //         />
+  //       </div>
+
+  //       <div className="form-group">
+  //         <label>Password</label>
+  //         <input
+  //           type="password"
+  //           name="password"
+  //           required
+  //           value={formData.password}
+  //           onChange={handleChange}
+  //         />
+  //       </div>
+
+  //       <button type="submit" className="primary-btn full-btn">
+  //         Login
+  //       </button>
+  //     </form>
+  //   </div>
+  // );
 }
 
 export default Login;

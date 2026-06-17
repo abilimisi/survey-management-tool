@@ -600,37 +600,6 @@ body {
   }
 }
 
-/* login page styles */
-
-.login-page {
-  min-height: 100vh;
-  background: #0f172a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-card {
-  width: 420px;
-  background: white;
-  padding: 32px;
-  border-radius: 18px;
-}
-
-.login-card h1 {
-  margin-bottom: 8px;
-}
-
-.login-card p {
-  color: #64748b;
-  margin-bottom: 22px;
-}
-
-.full-btn {
-  width: 100%;
-  justify-content: center;
-}
-
 
 
 .supplier-form {
