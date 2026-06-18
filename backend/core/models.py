@@ -24,8 +24,7 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
-    
-    
+
 class Client(models.Model):
 
     COMPANY_TYPES = [

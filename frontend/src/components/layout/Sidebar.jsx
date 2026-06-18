@@ -21,6 +21,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
     { name: "Projects", path: "/projects", icon: FolderKanban },
     { name: "Reports", path: "/reports", icon: BarChart3 },
     { name: "Panelists", path: "/panelists", icon: Users },
+    { name: "Company Contacts", path: "/company-contacts", icon: Building2 },
 
     ...(isSuperuser
       ? [{ name: "Users", path: "/users", icon: Users }]

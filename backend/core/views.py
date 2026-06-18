@@ -972,8 +972,6 @@ class CompanyContactViewSet(viewsets.ModelViewSet):
     serializer_class = CompanyContactSerializer 
     
     
-    
-    
 @api_view(["GET"])
 def get_users(request):
 
