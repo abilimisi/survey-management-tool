@@ -43,3 +43,12 @@
 #in sogolytics thankyou page link(complete redirect)
 # https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id=[[Q3]]
 
+# 1. Why do we have surveyProcess.php, processS2S.php, and simpleProcess.php?
+
+# 2. What tokens do vendors expect in redirect URLs?
+
+# 3. Should quotas be project-level or vendor-level?
+
+# 4. How is fraud/security terminate handled today?
+
+# 5. What is the biggest limitation of the current PHP tool?

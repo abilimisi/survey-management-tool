@@ -45,6 +45,10 @@ function SupplierHints() {
               <th>Previous Status</th>
               {/* <th>S2S</th> */}
               <th>IP</th>
+              <th>Browser</th>
+              <th>OS</th>
+              <th>Device</th>
+              <th>Time Taken</th>
               <th>Started</th>
               <th>Completed</th>
             </tr>
@@ -74,6 +78,10 @@ function SupplierHints() {
                 <td>{item.previous_status || "-"}</td>
                 {/* <td>{item.s2s_status ? "Yes" : "No"}</td> */}
                 <td>{item.ip_address || "-"}</td>
+                <td>{item.browser}</td>
+                <td>{item.os}</td>
+                <td>{item.device}</td>
+                <td>{item.time_taken || "-"}</td>
                 <td>
                 {item.started_at
                   ? new Date(item.started_at).toLocaleString("en-IN", {

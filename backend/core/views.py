@@ -8,6 +8,7 @@ import uuid
 from django.db.models import Count, Max, Q
 from django.conf import settings
 import requests
+from user_agents import parse
 
 from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent
 
@@ -574,9 +575,37 @@ def respondent_hints(request, project_vendor_id):
         "project", "vendor", "project_vendor"
     ).order_by("-id")
 
+    
     data = []
 
     for respondent in respondents:
+        ua_string = respondent.user_agent or ""
+        ua = parse(ua_string)
+
+        browser = ua.browser.family
+        os_name = ua.os.family
+
+        if ua.is_mobile:
+            device = "Mobile"
+        elif ua.is_tablet:
+            device = "Tablet"
+        elif ua.is_pc:
+            device = "Desktop"
+        else:
+            device = "Unknown"
+
+        time_taken = None
+
+        if respondent.started_at and respondent.completed_at:
+            diff = respondent.completed_at - respondent.started_at
+
+            total_seconds = int(diff.total_seconds())
+
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+
+            time_taken = f"{minutes}m {seconds}s"
+
         data.append({
             "respondent_id": respondent.respondent_id,
             "project": respondent.project.name,
@@ -593,6 +622,10 @@ def respondent_hints(request, project_vendor_id):
             "user_agent": respondent.user_agent,
             "started_at": respondent.started_at,
             "completed_at": respondent.completed_at,
+            "browser": browser,
+            "os": os_name,
+            "device": device,
+            "time_taken": time_taken,
         })
 
     return Response({
