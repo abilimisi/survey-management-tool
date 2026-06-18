@@ -10,7 +10,9 @@ from django.conf import settings
 import requests
 from user_agents import parse
 
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile
+
+from django.contrib.auth.models import User
 
 from .serializers import (
     ClientSerializer,
@@ -20,9 +22,16 @@ from .serializers import (
     ProjectVendorSerializer,
     RespondentSerializer,
     RedirectLogSerializer,
+    UserSerializer,
 )
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import permission_classes
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all().order_by("-id")
@@ -559,7 +568,7 @@ def supplier_statistics(request, project_id):
             ),
 
             "supplier_link": (
-                f"https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/{pv.id}/"
+                f"https://carpenter-trodden-upstate.ngrok-free.dev/api/survey/start/{pv.id}/"
             ),
         })
 
@@ -961,3 +970,129 @@ def recent_projects(request):
 class CompanyContactViewSet(viewsets.ModelViewSet):
     queryset = CompanyContact.objects.all().order_by("-id")
     serializer_class = CompanyContactSerializer 
+    
+    
+    
+    
+@api_view(["GET"])
+def get_users(request):
+
+    users = User.objects.all()
+
+    data = []
+
+    for user in users:
+
+        role = "No Role"
+
+        if hasattr(user, "userprofile"):
+            role = user.userprofile.role
+
+        data.append({
+            "id": user.id,
+            "username": user.username,
+            "role": role,
+            "is_active": user.is_active,
+        })
+
+    return Response(data)
+
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def create_user(request):
+
+    serializer = UserSerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response({
+            "message": "User created successfully"
+        })
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+    
+@api_view(["PUT"])
+@permission_classes([IsAdminUser])
+def update_user(request, pk):
+
+    try:
+        user = User.objects.get(id=pk)
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+
+    user.username = request.data.get(
+        "username",
+        user.username
+    )
+
+    user.save()
+
+    role = request.data.get("role")
+
+    if role:
+
+        profile, created = UserProfile.objects.get_or_create(
+            user=user
+        )
+
+        profile.role = role
+        profile.save()
+
+    return Response({
+        "message": "User updated successfully"
+    })
+    
+@api_view(["DELETE"])
+@permission_classes([IsAdminUser])
+def delete_user(request, pk):
+
+    try:
+        user = User.objects.get(id=pk)
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+
+    user.delete()
+
+    return Response({
+        "message": "User deleted successfully"
+    })
+    
+    
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def create_user(request):
+
+    username = request.data.get("username")
+    password = request.data.get("password")
+    role = request.data.get("role")
+
+    user = User.objects.create_user(
+        username=username,
+        password=password
+    )
+
+    UserProfile.objects.create(
+        user=user,
+        role=role
+    )
+
+    return Response({
+        "message": "User created"
+    })

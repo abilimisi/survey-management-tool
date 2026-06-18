@@ -1,3 +1,5 @@
+#Adarsh----------------------------------------------------------------------------------
+
 # https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/1/
 
 
@@ -40,8 +42,16 @@
 # sogolytics link to store
 # https://survey.sogolytics.com/survey/form?k=WsSSWVPYsQsPsPsP&lang=0&isURLPP=1&Q3={{ID}}
 
+<<<<<<< Updated upstream
 #in sogolytics thankyou page link(complete redirect)
 # https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id=[[Q3]]
+=======
+
+# Divyaa-----------------------------------------------------------------------------------------------
+
+# client link(jotform link to store)
+# https://form.jotform.com/261580970317056?rid={{ID}}
+>>>>>>> Stashed changes
 
 # 1. Why do we have surveyProcess.php, processS2S.php, and simpleProcess.php?
 

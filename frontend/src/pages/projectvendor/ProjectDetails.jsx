@@ -41,7 +41,7 @@ function ProjectDetails() {
     qualification_required: true,
   });
 
-  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
+  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
 
   useEffect(() => {
     fetchData();

@@ -10,17 +10,22 @@ import {
 import { NavLink } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const menuItems = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { name: "Clients", path: "/clients", icon: Building2 },
-  { name: "Vendors", path: "/vendors", icon: Users },
-  { name: "Projects", path: "/projects", icon: FolderKanban },
-  { name: "Reports", path: "/reports", icon: BarChart3 },
-  { name: "Panelists", path: "/panelists", icon: Users },
-  { name: "Company Contacts", path: "/company-contacts", icon: Building2 },
-];
-
 function Sidebar({ isCollapsed, toggleSidebar }) {
+  const isSuperuser =
+  localStorage.getItem("is_superuser") === "true";
+
+  const menuItems = [
+    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { name: "Clients", path: "/clients", icon: Building2 },
+    { name: "Vendors", path: "/vendors", icon: Users },
+    { name: "Projects", path: "/projects", icon: FolderKanban },
+    { name: "Reports", path: "/reports", icon: BarChart3 },
+    { name: "Panelists", path: "/panelists", icon: Users },
+
+    ...(isSuperuser
+      ? [{ name: "Users", path: "/users", icon: Users }]
+      : []),
+  ];
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">

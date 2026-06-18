@@ -1,7 +1,19 @@
 import re
 
-from rest_framework import serializers
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog
+from django.contrib.auth.models import User
+
+from rest_framework import serializers 
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        data["is_superuser"] = self.user.is_superuser
+
+        return data
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -80,7 +92,7 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
     #     return path
 
     def get_supplier_link(self, obj):
-        public_base_url = "https://backwater-muster-repayment.ngrok-free.dev"
+        public_base_url = "https://carpenter-trodden-upstate.ngrok-free.dev"
         return f"{public_base_url}/api/survey/start/{obj.id}/"
 
 
@@ -110,3 +122,41 @@ class CompanyContactSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name or ''}".strip()
+    
+    
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    role = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+
+        fields = [
+            "id",
+            "username",
+            "password",
+            "role"
+        ]
+
+        extra_kwargs = {
+            "password": {"write_only": True}
+        }
+
+    def create(self, validated_data):
+
+        role = validated_data.pop("role")
+
+        user = User.objects.create_user(
+            username=validated_data["username"],
+            password=validated_data["password"]
+        )
+
+        UserProfile.objects.create(
+            user=user,
+            role=role
+        )
+
+        return user
