@@ -25,12 +25,12 @@ import Reports from "../pages/reports/Reports";
 
 import Panelists from "../pages/panelists/Panelists";
 
-
 import CompanyContactsList from "../pages/companycontacts/companycontactsList";
 import AddCompanyContact from "../pages/companycontacts/AddCompanyContact";
 import EditCompanyContact from "../pages/companycontacts/EditCompanyContact";
 
 import UsersList from "../pages/users/UsersList";
+
 
 function ProtectedLayout({ children }) {
   return (
@@ -181,7 +181,30 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
-
+      <Route
+        path="/company-contacts"
+        element={
+          <ProtectedLayout>
+            <CompanyContactsList />
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/company-contacts/add"
+        element={
+          <ProtectedLayout>
+            <AddCompanyContact />
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/company-contacts/edit/:id"
+        element={
+          <ProtectedLayout>
+            <EditCompanyContact />
+          </ProtectedLayout>
+        }
+      />
       <Route
         path="/users"
         element={
@@ -195,6 +218,11 @@ function AppRoutes() {
         }
       />
     </Routes>
+
+    
+
+    
+
   );
 }
 
