@@ -26,11 +26,6 @@ class UserProfile(models.Model):
         return self.user.username
     
     
-    
-    
-    
-    
-
 class Client(models.Model):
 
     COMPANY_TYPES = [
