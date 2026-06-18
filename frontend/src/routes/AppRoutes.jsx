@@ -25,6 +25,8 @@ import Reports from "../pages/reports/Reports";
 
 import Panelists from "../pages/panelists/Panelists";
 
+import UsersList from "../pages/users/UsersList";
+
 function ProtectedLayout({ children }) {
   return (
     <ProtectedRoute>
@@ -174,7 +176,21 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
+
+      <Route
+        path="/users"
+        element={
+          localStorage.getItem("is_superuser") === "true" ? (
+            <ProtectedLayout>
+              <UsersList />
+            </ProtectedLayout>
+          ) : (
+            <Navigate to="/dashboard" />
+          )
+        }
+      />
     </Routes>
+
   );
 }
 

@@ -3,6 +3,12 @@ from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
 # from .views import recent_projects_stats
+from .views import (
+    get_users,
+    create_user,
+    update_user,
+    delete_user
+)
 
 from .views import (
     ClientViewSet,
@@ -62,6 +68,12 @@ urlpatterns = [
     path("panelists/sync/", sync_panelists),
     path("panelists/", panelist_list),
     path("dashboard/recent_projects/",recent_projects,name="recent_projects"),
+    
+    path("users/",get_users),
+    path("users/create/",create_user),
+    path("users/<int:pk>/update/",update_user),
+    path("users/<int:pk>/delete/",delete_user),
+    path("users/create/",create_user,name="create-user"),
 ]
 
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

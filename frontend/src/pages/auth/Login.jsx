@@ -32,6 +32,7 @@ function Login() {
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
       localStorage.setItem("username", formData.username);
+      localStorage.setItem("is_superuser", data.is_superuser);
 
       navigate("/dashboard");
     } catch (error) {
@@ -103,42 +104,6 @@ function Login() {
   </div>
 );
 
-  // return (
-  //   <div className="login-page">
-  //     <form className="login-card" onSubmit={handleSubmit}>
-  //       <h1>Survey Tool</h1>
-  //       <p>Login to continue</p>
-
-  //       {error && <div className="error-box">{error}</div>}
-
-  //       <div className="form-group">
-  //         <label>Username</label>
-  //         <input
-  //           type="text"
-  //           name="username"
-  //           required
-  //           value={formData.username}
-  //           onChange={handleChange}
-  //         />
-  //       </div>
-
-  //       <div className="form-group">
-  //         <label>Password</label>
-  //         <input
-  //           type="password"
-  //           name="password"
-  //           required
-  //           value={formData.password}
-  //           onChange={handleChange}
-  //         />
-  //       </div>
-
-  //       <button type="submit" className="primary-btn full-btn">
-  //         Login
-  //       </button>
-  //     </form>
-  //   </div>
-  // );
 }
 
 export default Login;

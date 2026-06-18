@@ -45,7 +45,11 @@ function Dashboard() {
 
   useEffect(() => {
     fetchStats();
+    fetchRecentProjects();
   }, []);
+
+
+  const [recentProjects, setRecentProjects] = useState([]);
 
   const fetchStats = async () => {
     try {
@@ -55,6 +59,23 @@ function Dashboard() {
       console.error("Dashboard stats error:", error);
     }
   };
+
+
+  const fetchRecentProjects = async () => {
+  try {
+    const response = await axiosInstance.get(
+      "/dashboard/recent_projects/"
+    );
+
+    setRecentProjects(response.data);
+
+  } catch (error) {
+    console.error(
+      "Recent Projects Error:",
+      error
+    );
+  }
+};
 
   const cards = [
     {
@@ -185,6 +206,37 @@ function Dashboard() {
 </div>
 
 
+ <div className="recent-projects-section">
+
+  <h2>Recent Projects</h2>
+
+  <div className="recent-projects-table">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Project</th>
+          <th>Country</th>
+          <th>Target</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {recentProjects.map((project) => (
+          <tr key={project.id}>
+            <td>{project.id}</td>
+            <td>{project.name}</td>
+            <td>{project.country}</td>
+            <td>{project.completes}/{project.target}</td>
+            <td>{project.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+</div>
 
 
 
@@ -344,7 +396,40 @@ function Dashboard() {
         </div>
       </div>
 
-     
+    
+      {/* <div className="recent-projects-section">
+
+  <h2>Recent Projects</h2>
+
+  <div className="recent-projects-table">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Project</th>
+          <th>Country</th>
+          <th>Target</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {recentProjects.map((project) => (
+          <tr key={project.id}>
+            <td>{project.id}</td>
+            <td>{project.name}</td>
+            <td>{project.country}</td>
+            <td>{project.completes}/{project.target}</td>
+            <td>{project.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+</div> */}
+
+
     </div>
   );
 }
