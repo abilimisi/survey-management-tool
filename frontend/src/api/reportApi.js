@@ -22,3 +22,18 @@ export const getReports = async () => {
   return response.data;
 };
 
+export const getClientProjects = async (clientId) => {
+  const response = await axiosInstance.get(
+    `/clients/${clientId}/projects/`
+  );
+
+  return response.data;
+};
+
+export const getVendorProjects = async (vendorId) => {
+  const response = await axiosInstance.get(
+    `/vendors/${vendorId}/projects/`
+  );
+
+  return response.data;
+};

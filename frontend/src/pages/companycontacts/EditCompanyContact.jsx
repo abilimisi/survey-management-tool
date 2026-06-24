@@ -105,7 +105,7 @@ function EditCompanyContact() {
 
         <button
           type="button"
-          className="btn-cancel"
+          className="btn-back"
           onClick={() => navigate("/company-contacts")}
         >
           Back

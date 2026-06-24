@@ -33,7 +33,8 @@ from .views import (
     supplier_statistics,
     respondent_hints,
     recent_projects,
-    CompanyContactViewSet,
+    client_projects,
+    vendor_projects,
     
 )
 
@@ -77,9 +78,14 @@ urlpatterns = [
     path("users/<int:pk>/delete/",delete_user),
     path("users/create/",create_user,name="create-user"),
 
+
     path("survey/start/", start_survey_by_gid, name="start-survey-by-gid"),
     path("survey/start/<int:project_vendor_id>/", start_survey, name="start-survey"),
     path("simple-process/", simple_process, name="simple-process"),
+
+    path("clients/<int:client_id>/projects/",client_projects,name="client-projects"),
+    path("vendors/<int:vendor_id>/projects/",vendor_projects,name="vendor-projects",),
+
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

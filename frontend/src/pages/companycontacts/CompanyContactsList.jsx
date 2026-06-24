@@ -6,6 +6,8 @@ import {
 } from "../../api/companyContactApi";
 
 import "./CompanyContacts.css";
+import { Pencil, Trash2 } from "lucide-react";
+
 
 function CompanyContactsList() {
   const [contacts, setContacts] = useState([]);
@@ -47,7 +49,7 @@ function CompanyContactsList() {
         </div>
 
         <Link to="/company-contacts/add" className="btn btn-primary">
-          Add Contact
+          + Add Contact
         </Link>
       </div>
 
@@ -88,34 +90,39 @@ function CompanyContactsList() {
                   </span>
                 </td>
 
+        
                 <td>
                   <div className="table-actions">
                     <Link
                       to={`/company-contacts/edit/${contact.id}`}
-                      className="edit-link"
+                      className="edit-btn"
+                      title="Edit Company Contact"
                     >
-                      Edit
+                      <Pencil size={10} strokeWidth={2} />
                     </Link>
 
                     <button
                       type="button"
-                      className="delete-link"
+                      className="delete-btn"
                       onClick={() => handleDelete(contact.id)}
+                      title="Delete Company Contact"
                     >
-                      Delete
+                      <Trash2 size={10} strokeWidth={2} />
                     </button>
                   </div>
                 </td>
+
               </tr>
             ))}
 
             {contacts.length === 0 && (
               <tr>
-                <td colSpan="8" className="empty-table">
+                <td colSpan="8" style={{ textAlign: "center" }}>
                   No company contacts found
                 </td>
               </tr>
             )}
+
           </tbody>
         </table>
       </div>
