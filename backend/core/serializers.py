@@ -2,6 +2,7 @@ import re
 
 from django.contrib.auth.models import User
 
+from django.conf import settings
 from rest_framework import serializers 
 from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile
 
@@ -82,18 +83,11 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
         model = ProjectVendor
         fields = "__all__"
 
-    # def get_supplier_link(self, obj):
-    #     request = self.context.get("request")
-    #     path = f"/api/survey/start/{obj.id}/"
-
-    #     if request:
-    #         return request.build_absolute_uri(path)
-
-    #     return path
-
     def get_supplier_link(self, obj):
-        public_base_url = "https://carpenter-trodden-upstate.ngrok-free.dev"
-        return f"{public_base_url}/api/survey/start/{obj.id}/"
+        base_url = settings.PUBLIC_BACKEND_URL
+        template = obj.supplier_parameter_template or "pid={{PANELIST IDENTIFIER}}"
+
+        return f"{base_url}/api/survey/start/?gid={obj.gid}&{template}"
 
 
 class RespondentSerializer(serializers.ModelSerializer):

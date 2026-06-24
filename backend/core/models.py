@@ -1,6 +1,7 @@
 from django.db import models
 import secrets
 from django.contrib.auth.models import User
+import base64
 
 class UserProfile(models.Model):
 
@@ -489,6 +490,10 @@ class ProjectVendor(models.Model):
 
     qualification_required = models.BooleanField(default=True)
 
+    gid = models.CharField(max_length=255,unique=True, blank=True, null=True)
+
+    supplier_parameter_template = models.CharField(max_length=500,default="pid={{PANELIST IDENTIFIER}}&ext={{PANEL MISC DATA}}&reconnectID={{RECONNECTID}}")
+
     def save(self, *args, **kwargs):
         if not self.s2s_token:
             self.s2s_token = secrets.token_hex(32)
@@ -506,6 +511,11 @@ class ProjectVendor(models.Model):
                 self.vendor_cpc = self.vendor.cpc
 
         super().save(*args, **kwargs)
+        
+        if not self.gid:
+            raw_gid = f"{self.project.id}-{self.vendor.id}-{self.id}"
+            self.gid = base64.urlsafe_b64encode(raw_gid.encode()).decode()
+            super().save(update_fields=["gid"])
 
     def __str__(self):
         return f"{self.project.name} - {self.vendor.name}"

@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 from .views import (
     get_users,
     create_user,
+    simple_process,
+    start_survey_by_gid,
     update_user,
     delete_user
 )
@@ -74,6 +76,10 @@ urlpatterns = [
     path("users/<int:pk>/update/",update_user),
     path("users/<int:pk>/delete/",delete_user),
     path("users/create/",create_user,name="create-user"),
+
+    path("survey/start/", start_survey_by_gid, name="start-survey-by-gid"),
+    path("survey/start/<int:project_vendor_id>/", start_survey, name="start-survey"),
+    path("simple-process/", simple_process, name="simple-process"),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

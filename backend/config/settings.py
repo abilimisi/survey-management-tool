@@ -136,7 +136,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://carpenter-trodden-upstate.ngrok-free.dev",
+    "https://backwater-muster-repayment.ngrok-free.dev",
 ]
 
-PUBLIC_BACKEND_URL = "https://carpenter-trodden-upstate.ngrok-free.dev"
+PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
