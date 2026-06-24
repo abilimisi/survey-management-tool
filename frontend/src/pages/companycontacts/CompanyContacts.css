@@ -16,7 +16,7 @@
 }
 
 .btn-primary {
-  background: #2563eb;
+  background: #101010;
   color: #fff;
   padding: 10px 18px;
   border-radius: 8px;
@@ -27,7 +27,7 @@
 }
 
 .btn-primary:hover {
-  background: #1d4ed8;
+  background: #1e1e1e;
 }
 
 .custom-table {
@@ -60,24 +60,11 @@
   background: #f8fafc;
 }
 
-.edit-link {
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.delete-link {
-  border: none;
-  background: transparent;
-  color: #dc2626;
-  cursor: pointer;
-  font-weight: 500;
-}
-
 .form-page {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .form-page h2 {
@@ -87,8 +74,9 @@
 
 .contact-form {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(250px, 1fr));
+  gap: 24px;
+  align-items: start;
 }
 
 .form-group {
@@ -97,19 +85,23 @@
 }
 
 .form-group label {
-  margin-bottom: 6px;
-  color: #64748b;
+  margin-bottom: 8px;
+  color: #334155;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  outline: none;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
   font-size: 14px;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-group textarea {
@@ -120,43 +112,40 @@
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #2563eb;
+  border-color: #7c5cd6;
+  box-shadow: 0 0 0 3px rgba(124,92,214,0.15);
 }
 
 .full-width {
-  grid-column: span 3;
+  grid-column: 1 / -1;
 }
 
 .form-actions {
-  margin-top: 24px;
+  margin-top: 30px;
   display: flex;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 14px;
 }
 
 .btn-save {
-  background: #16a34a;
+  background: #000000;
   color: white;
   border: none;
-  padding: 12px 22px;
+  padding: 10px 16px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .btn-save:hover {
-  background: #15803d;
+  background: #1f1f1f;
 }
 
-.btn-cancel {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-cancel:hover {
-  background: #dc2626;
+.form-divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: #e5e7eb;
+  margin: 5px 0;
 }
 
 .status-active {
@@ -202,30 +191,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.company-contact-table {
-  min-width: 950px;
-}
-
-.table-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.edit-link {
-  color: #2563eb;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.delete-link {
-  color: #dc2626;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
 
 .empty-table {
   text-align: center;
@@ -253,3 +218,206 @@
     text-align: center;
   }
 }
+
+
+/* backbutton */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.form-header h2 {
+  margin: 0;
+  color: #1e293b;
+}
+
+.form-header p {
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.btn-back {
+  background: #000000;
+  color: white;
+  border: none;
+
+  padding: 8px 14px;   /* reduced size */
+
+  border-radius: 6px;
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 500;
+
+}
+
+.btn-back:hover {
+  background: #1f1f1f;
+}
+
+/* cancelbtn */
+.btn-cancel {
+  background: white;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-cancel:hover {
+  background: #fef2f2;
+}
+
+
+
+
+
+
+/* ==========================
+   ACTION BUTTONS CONTAINER
+========================== */
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Shared Styles */
+
+.edit-btn,
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 34px;
+  min-height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition: all 0.25s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.edit-btn svg,
+.delete-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ==========================
+   EDIT BUTTON
+========================== */
+
+.edit-btn {
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  );
+
+  color: white;
+
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.edit-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(37, 99, 235, 0.35);
+}
+
+.edit-btn:active {
+  transform: scale(0.95);
+}
+
+/* shine effect */
+
+.edit-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255,255,255,0.25);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.edit-btn:hover::before {
+  left: 140%;
+}
+
+/* ==========================
+   DELETE BUTTON
+========================== */
+
+.delete-btn {
+  background: linear-gradient(
+    135deg,
+    #111827,
+    #000000
+  );
+
+  color: white;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.20);
+}
+
+.delete-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* subtle shine */
+
+.delete-btn::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255,255,255,0.15);
+
+  transform: skewX(-25deg);
+
+  transition: all 0.6s ease;
+}
+
+.delete-btn:hover::before {
+  left: 140%;
+}
+

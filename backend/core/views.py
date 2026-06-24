@@ -433,6 +433,8 @@ def universal_result(request):
 from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .models import Project
+
 
 @api_view(["GET"])
 def dashboard_stats(request):
@@ -1094,3 +1096,41 @@ def create_user(request):
     return Response({
         "message": "User created"
     })
+    
+    
+# reportsection
+@api_view(["GET"])
+def client_projects(request, client_id):
+
+    projects = Project.objects.filter(
+        client_id=client_id
+    )
+
+    data = [
+        {
+            "id": project.id,
+            "name": project.name,
+        }
+        for project in projects
+    ]
+
+    return Response(data)
+
+@api_view(["GET"])
+def vendor_projects(request, vendor_id):
+
+    projects = (
+        ProjectVendor.objects
+        .filter(vendor_id=vendor_id)
+        .select_related("project")
+    )
+
+    unique_projects = {}
+
+    for item in projects:
+        unique_projects[item.project.id] = {
+            "id": item.project.id,
+            "name": item.project.name,
+        }
+
+    return Response(list(unique_projects.values()))
