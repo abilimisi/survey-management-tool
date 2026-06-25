@@ -82,45 +82,93 @@ def replace_tokens(url, respondent):
 
     respondent_id = respondent.respondent_id
     vendor_pid = respondent.vendor_panelist_id or ""
+    passthru = respondent.panel_misc_data or ""
+    reconnect_id = respondent.reconnect_id or ""
 
     replacements = {
+        # Our respondent ID / client-facing ID
         "{{ID}}": respondent_id,
         "{ID}": respondent_id,
+        "{{id}}": respondent_id,
+        "{id}": respondent_id,
 
         "{{OBID}}": respondent_id,
         "{OBID}": respondent_id,
+        "{{obid}}": respondent_id,
+        "{obid}": respondent_id,
 
         "{{RID}}": respondent_id,
         "{RID}": respondent_id,
+        "{{rid}}": respondent_id,
         "{rid}": respondent_id,
 
-        "{{PASSTHRU}}": respondent.panel_misc_data or "",
-        "{PASSTHRU}": respondent.panel_misc_data or "",
+        # Pass through / client targeted user ID
+        "{{PASSTHRU}}": passthru,
+        "{PASSTHRU}": passthru,
+        "{{passthru}}": passthru,
+        "{passthru}": passthru,
 
-        "{{RECONNECTID}}": respondent.reconnect_id or "",
-        "{RECONNECTID}": respondent.reconnect_id or "",
+        "{{PANEL MISC DATA}}": passthru,
+        "{PANEL MISC DATA}": passthru,
+        "{{PANEL_MISC_DATA}}": passthru,
+        "{PANEL_MISC_DATA}": passthru,
 
+        "{{LID}}": passthru,
+        "{LID}": passthru,
+        "{{Lid}}": passthru,
+        "{Lid}": passthru,
+
+        # Reconnect
+        "{{RECONNECTID}}": reconnect_id,
+        "{RECONNECTID}": reconnect_id,
+        "{{reconnectID}}": reconnect_id,
+        "{reconnectID}": reconnect_id,
+        "{{reconnect_id}}": reconnect_id,
+        "{reconnect_id}": reconnect_id,
+
+        # Vendor panelist ID
         "{{panellist_id}}": vendor_pid,
         "{panellist_id}": vendor_pid,
 
         "{{panelist_id}}": vendor_pid,
         "{panelist_id}": vendor_pid,
 
+        "{{panellist_list}}": vendor_pid,
+        "{panellist_list}": vendor_pid,
+
+        "{{PANELIST IDENTIFIER}}": vendor_pid,
+        "{PANELIST IDENTIFIER}": vendor_pid,
+        "{{PANELIST_IDENTIFIER}}": vendor_pid,
+        "{PANELIST_IDENTIFIER}": vendor_pid,
+
+        # Demographics / optional fields
         "{{Email}}": getattr(respondent, "email", "") or "",
         "{Email}": getattr(respondent, "email", "") or "",
+        "{{EMAIL}}": getattr(respondent, "email", "") or "",
+        "{EMAIL}": getattr(respondent, "email", "") or "",
 
         "{{Zip}}": getattr(respondent, "zip_code", "") or "",
         "{Zip}": getattr(respondent, "zip_code", "") or "",
+        "{{ZIP}}": getattr(respondent, "zip_code", "") or "",
+        "{ZIP}": getattr(respondent, "zip_code", "") or "",
 
         "{{Age}}": getattr(respondent, "age", "") or "",
         "{Age}": getattr(respondent, "age", "") or "",
+        "{{AGE}}": getattr(respondent, "age", "") or "",
+        "{AGE}": getattr(respondent, "age", "") or "",
 
         "{{Gender}}": getattr(respondent, "gender", "") or "",
         "{Gender}": getattr(respondent, "gender", "") or "",
+        "{{GENDER}}": getattr(respondent, "gender", "") or "",
+        "{GENDER}": getattr(respondent, "gender", "") or "",
 
+        # S2S/Auth token
         "{{authToken}}": vendor.s2s_token if vendor and vendor.s2s_token else "",
         "{authToken}": vendor.s2s_token if vendor and vendor.s2s_token else "",
+        "{{AUTHTOKEN}}": vendor.s2s_token if vendor and vendor.s2s_token else "",
+        "{AUTHTOKEN}": vendor.s2s_token if vendor and vendor.s2s_token else "",
 
+        # Client key
         "{{CLIENTKEY}}": str(client.id) if client else "",
         "{CLIENTKEY}": str(client.id) if client else "",
     }
@@ -129,6 +177,7 @@ def replace_tokens(url, respondent):
         url = url.replace(token, str(value))
 
     return url
+
 def get_first_query_value(request, keys):
     for key in keys:
         value = request.GET.get(key)
@@ -369,9 +418,10 @@ def start_survey_by_gid(request):
 
 #new_update-------------------------------------------
 def create_respondent_and_redirect(request, project_vendor):
+    project = project_vendor.project
     client = project.client
     vendor = project_vendor.vendor
-    project = project_vendor.project
+    
 
     if not client.status:
         return render(
@@ -939,13 +989,19 @@ def supplier_statistics(request, project_id):
 def respondent_hints(request, project_vendor_id):
     project_vendor = get_object_or_404(ProjectVendor, id=project_vendor_id)
 
+    status = request.GET.get("status")
+
     respondents = Respondent.objects.filter(
         project_vendor=project_vendor
     ).select_related(
         "project", "vendor", "project_vendor"
-    ).order_by("-id")
+    )
 
-    
+    if status:
+        respondents = respondents.filter(status=status)
+
+    respondents = respondents.order_by("-id")
+
     data = []
 
     for respondent in respondents:
@@ -997,11 +1053,13 @@ def respondent_hints(request, project_vendor_id):
             "device": device,
             "time_taken": time_taken,
         })
+    print("STATUS RECEIVED:", status)
 
     return Response({
         "project_vendor_id": project_vendor.id,
         "project_name": project_vendor.project.name,
         "vendor_name": project_vendor.vendor.name,
+        "filter_status": status or "all",
         "total_respondents": respondents.count(),
         "respondents": data
     })
