@@ -174,3 +174,47 @@
 .delete-btn:hover::before {
   left: 140%;
 }
+
+/* search and pagination */
+.search-panel {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.project-divider {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+
+.active-page {
+  background: #2563eb;
+  color: white;
+}
