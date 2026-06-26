@@ -4,8 +4,6 @@ import { Eye, Trash2, Pencil } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// import { useSearchParams } from "react-router-dom";
-
 import { getSingleProject } from "../../api/projectApi";
 import { getVendors } from "../../api/vendorApi";
 import {
@@ -22,12 +20,10 @@ function ProjectDetails() {
   const [vendors, setVendors] = useState([]);
   const [supplierStats, setSupplierStats] = useState([]);
   const [error, setError] = useState("");
-  const [showLinkCodes, setShowLinkCodes] = useState(false);
+  const [showRedirectLinks, setShowRedirectLinks] = useState(false);
+  const [showVariables, setShowVariables] = useState(false); 
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
-
-  // const [searchParams] = useSearchParams();
-  // const status = searchParams.get("status");
   
   const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
 
@@ -193,9 +189,21 @@ function ProjectDetails() {
           </p>
         </div>
 
-        <button className="link-codes-btn" onClick={() => setShowLinkCodes(true)}>
-          Link Codes
-        </button>
+        <div className="link-actions">
+          <button
+            className="link-codes-btn"
+            onClick={() => setShowRedirectLinks(true)}
+          >
+            End Pages
+          </button>
+
+          <button
+            className="link-codes-btn"
+            onClick={() => setShowVariables(true)}
+          >
+            Link Variables
+          </button>
+        </div>
       </div>
 
       <div className="section-card">
@@ -401,7 +409,7 @@ function ProjectDetails() {
                 </div>
               </div>
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label>Supplier Parameter Template</label>
                 <textarea
                   name="supplier_parameter_template"
@@ -413,7 +421,7 @@ function ProjectDetails() {
                   This will be added after gid in vendor link. Example:
                   pid=&#123;&#123;PANELIST IDENTIFIER&#125;&#125;
                 </small>
-              </div>
+              </div> */}
 
               <div className="form-grid-4">
                 <div className="form-group">
@@ -471,7 +479,7 @@ function ProjectDetails() {
                   <textarea
                     name="complete_link"
                     value={formData.complete_link}
-                    onChange={handleChange}
+                    readOnly
                   />
                 </div>
 
@@ -480,7 +488,7 @@ function ProjectDetails() {
                   <textarea
                     name="terminate_link"
                     value={formData.terminate_link}
-                    onChange={handleChange}
+                   readOnly
                   />
                 </div>
 
@@ -489,7 +497,7 @@ function ProjectDetails() {
                   <textarea
                     name="quota_full_link"
                     value={formData.quota_full_link}
-                    onChange={handleChange}
+                    readOnly
                   />
                 </div>
 
@@ -498,10 +506,14 @@ function ProjectDetails() {
                   <textarea
                     name="security_terminate_link"
                     value={formData.security_terminate_link}
-                    onChange={handleChange}
+                    readOnly
                   />
                 </div>
               </div>
+              <small className="warning-text">
+                Vendor end links are managed from Vendor Master. They are shown here only for reference.
+              </small>
+
 
               <div className="form-grid-3">
                 <div className="form-group">
@@ -568,43 +580,19 @@ function ProjectDetails() {
         </div>
       )}
 
-      {showLinkCodes && (
-        <div className="modal-overlay" onClick={() => setShowLinkCodes(false)}>
-          <div className="link-codes-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Redirect End Pages & Variables</h2>
+     {showRedirectLinks && (
+        <RedirectLinksPopup
+          onClose={() => setShowRedirectLinks(false)}
+          completeUrl={completeUrl}
+          terminateUrl={terminateUrl}
+          quotaFullUrl={quotaFullUrl}
+          securityUrl={securityUrl}
+          copyText={copyText}
+        />
+      )}
 
-              <button className="close-btn" onClick={() => setShowLinkCodes(false)}>
-                ✕
-              </button>
-            </div>
-
-            <div className="modal-content-grid">
-              <div>
-                <h3>Client Redirect Links</h3>
-                <LinkRow label="Complete" value={completeUrl} onCopy={copyText} />
-                <LinkRow label="Terminate" value={terminateUrl} onCopy={copyText} />
-                <LinkRow label="Quota Full" value={quotaFullUrl} onCopy={copyText} />
-                <LinkRow label="Security" value={securityUrl} onCopy={copyText} />
-              </div>
-
-              <div>
-                <h3>Variables</h3>
-                <table className="variables-table">
-                  <tbody>
-                    <tr><td>Our Respondent ID</td><td>{"{{ID}} / {{OBID}}"}</td></tr>
-                    <tr><td>Vendor Panelist ID</td><td>{"{{panellist_id}}"}</td></tr>
-                    <tr><td>Vendor Template PID</td><td>{"{{PANELIST IDENTIFIER}}"}</td></tr>
-                    <tr><td>Panel Misc Data</td><td>{"{{PANEL MISC DATA}}"}</td></tr>
-                    <tr><td>Pass Through</td><td>{"{{PASSTHRU}}"}</td></tr>
-                    <tr><td>Reconnect ID</td><td>{"{{RECONNECTID}}"}</td></tr>
-                    <tr><td>Status</td><td>{"{{status}}"}</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+      {showVariables && (
+        <LinkCodesPopup onClose={() => setShowVariables(false)} />
       )}
     </div>
   );
@@ -623,6 +611,96 @@ function LinkRow({ label, value, onCopy }) {
       >
         Copy
       </button>
+    </div>
+  );
+}
+
+function RedirectLinksPopup({
+      onClose,
+      completeUrl,
+      terminateUrl,
+      quotaFullUrl,
+      securityUrl,
+      copyText,
+    }) {
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="link-codes-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Client Redirect Links</h2>
+              <button className="close-btn" onClick={onClose}>✕</button>
+            </div>
+
+            <div>
+              <LinkRow label="Complete" value={completeUrl} onCopy={copyText} />
+              <LinkRow label="Terminate" value={terminateUrl} onCopy={copyText} />
+              <LinkRow label="Quota Full" value={quotaFullUrl} onCopy={copyText} />
+              <LinkRow label="Security" value={securityUrl} onCopy={copyText} />
+            </div>
+
+            <div className="modal-footer">
+              <button className="primary-btn" onClick={onClose}>Okay</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+function LinkCodesPopup({ onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="link-codes-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Link Variables</h2>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="modal-content-grid">
+          <div>
+            <h3>Client Link Variable</h3>
+            <p>
+              These variables are used only in client survey links.
+              Values will be replaced before redirecting to client survey.
+            </p>
+            <p className="warning-text">These variables are case sensitive</p>
+
+            <table className="variables-table">
+              <tbody>
+                <tr><td>ClientCode</td><td>{"{{CLIENTKEY}}"}</td></tr>
+                <tr><td>ID</td><td>{"{{ID}}"}</td></tr>
+                <tr><td>Ext</td><td>{"{{PASSTHRU}}"}</td></tr>
+                <tr><td>Re Connect ID</td><td>{"{{RECONNECTID}}"}</td></tr>
+                <tr><td>Email</td><td>{"{{Email}}"}</td></tr>
+                <tr><td>Zip</td><td>{"{{Zip}}"}</td></tr>
+                <tr><td>Age</td><td>{"{{Age}}"}</td></tr>
+                <tr><td>Gender</td><td>{"{{Gender}}"}</td></tr>
+                <tr><td>authToken</td><td>{"{{authToken}}"}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3>Vendor Link Variable</h3>
+            <p>
+              These variables are used only with vendor end pages.
+              Values will be replaced before redirecting to vendor.
+            </p>
+            <p className="warning-text">These variables are case sensitive</p>
+
+            <table className="variables-table">
+              <tbody>
+                <tr><td>Ext</td><td>{"{{PASSTHRU}}"}</td></tr>
+                <tr><td>Re Connect ID</td><td>{"{{RECONNECTID}}"}</td></tr>
+                <tr><td>Panellist ID</td><td>{"{{panellist_id}}"}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="primary-btn" onClick={onClose}>Okay</button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -457,7 +457,7 @@ def create_respondent_and_redirect(request, project_vendor):
             "error_message": "This supplier link is currently inactive."
         })
     
-    respondent_code = "RID-" + uuid.uuid4().hex[:12].upper()
+    respondent_code = uuid.uuid4().hex[:12].upper()
 
     respondent = Respondent.objects.create(
         respondent_id=respondent_code,
@@ -1053,7 +1053,6 @@ def respondent_hints(request, project_vendor_id):
             "device": device,
             "time_taken": time_taken,
         })
-    print("STATUS RECEIVED:", status)
 
     return Response({
         "project_vendor_id": project_vendor.id,
