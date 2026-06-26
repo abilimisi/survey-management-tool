@@ -4,6 +4,18 @@ import "./Panelists.css";
 
 function Panelists() {
   const [panelists, setPanelists] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [filters, setFilters] = useState({
+    country: "",
+    gender: "",
+  });
+
+  const [appliedFilters, setAppliedFilters] =
+    useState({
+      country: "",
+      gender: "",
+    });
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
@@ -37,6 +49,70 @@ function Panelists() {
       setSyncing(false);
     }
   };
+
+  const handleFilterChange = (e) => {
+    setFilters({
+      ...filters,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = () => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    const emptyFilters = {
+      country: "",
+      gender: "",
+    };
+
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setCurrentPage(1);
+  };
+
+
+  const filteredPanelists =
+    panelists.filter((p) => {
+
+      const matchesCountry =
+        !appliedFilters.country ||
+        p.country ===
+          appliedFilters.country;
+
+      const matchesGender =
+        !appliedFilters.gender ||
+        p.gender ===
+          appliedFilters.gender;
+
+      return (
+        matchesCountry &&
+        matchesGender
+      );
+    });
+
+    const recordsPerPage = 5;
+
+    const indexOfLastRecord =
+      currentPage * recordsPerPage;
+
+    const indexOfFirstRecord =
+      indexOfLastRecord - recordsPerPage;
+
+    const currentPanelists =
+      filteredPanelists.slice(
+        indexOfFirstRecord,
+        indexOfLastRecord
+      );
+
+    const totalPages = Math.ceil(
+      filteredPanelists.length /
+        recordsPerPage
+    );
+
+
 
   return (
     <div className="panelists-page">
@@ -76,10 +152,79 @@ function Panelists() {
         </div>
       </div>
 
+      <div className="search-panel">
+
+        <select
+          name="country"
+          value={filters.country}
+          onChange={handleFilterChange}
+        >
+          <option value="">
+            Select Country
+          </option>
+
+          {[...new Set(
+            panelists.map(
+              (p) => p.country
+            )
+          )].map((country) => (
+
+            <option
+              key={country}
+              value={country}
+            >
+              {country}
+            </option>
+
+          ))}
+        </select>
+
+        <select
+          name="gender"
+          value={filters.gender}
+          onChange={handleFilterChange}
+        >
+          <option value="">
+            Select Gender
+          </option>
+
+          <option value="Male">
+            Male
+          </option>
+
+          <option value="Female">
+            Female
+          </option>
+        </select>
+
+      </div>
+
+      <div className="search-actions">
+
+        <button
+          className="submit-btn"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+
+        <button
+          className="reset-btn"
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+
+      </div>
+
+      <hr className="project-divider" />
+
       <div className="panelist-card">
         <div className="panelist-card-header">
           <h3>Website Signup List</h3>
-          <span>{panelists.length} records</span>
+          <span>
+            {filteredPanelists.length} records
+          </span>
         </div>
 
         <div className="table-wrapper">
@@ -96,7 +241,7 @@ function Panelists() {
             </thead>
 
             <tbody>
-              {panelists.map((p) => (
+              {currentPanelists.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <div className="panelist-name">
@@ -127,7 +272,7 @@ function Panelists() {
                 </tr>
               ))}
 
-              {panelists.length === 0 && (
+              {filteredPanelists.length === 0 && (
                 <tr>
                   <td colSpan="6" className="empty-table">
                     No panelists found. Click Sync Website Users.
@@ -136,6 +281,67 @@ function Panelists() {
               )}
             </tbody>
           </table>
+
+          <div className="pagination-container">
+
+            <div className="pagination-info">
+
+              {filteredPanelists.length > 0
+                ? `Showing ${indexOfFirstRecord + 1}
+                  to ${Math.min(
+                    indexOfLastRecord,
+                    filteredPanelists.length
+                  )}
+                  of ${filteredPanelists.length}
+                  entries`
+                : "Showing 0 to 0 of 0 entries"}
+
+            </div>
+
+            <div className="pagination-controls">
+
+              <button
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setCurrentPage(currentPage - 1)
+                }
+              >
+                Previous
+              </button>
+
+              {[...Array(totalPages)].map(
+                (_, index) => (
+                  <button
+                    key={index + 1}
+                    className={
+                      currentPage === index + 1
+                        ? "active-page"
+                        : ""
+                    }
+                    onClick={() =>
+                      setCurrentPage(index + 1)
+                    }
+                  >
+                    {index + 1}
+                  </button>
+                )
+              )}
+
+              <button
+                disabled={
+                  currentPage === totalPages
+                }
+                onClick={() =>
+                  setCurrentPage(currentPage + 1)
+                }
+              >
+                Next
+              </button>
+
+            </div>
+
+          </div>
+          
         </div>
       </div>
     </div>

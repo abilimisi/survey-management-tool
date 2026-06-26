@@ -26,10 +26,9 @@ function ProjectDetails() {
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
 
-  // const [searchParams] = useSearchParams();
-  // const status = searchParams.get("status");
-  
-  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
+
+  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
+
 
   const initialFormData = {
     project: id,

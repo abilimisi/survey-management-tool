@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus } from "lucide-react";
-
+// import "./Clients.css";
 import {
   getClients,
   deleteClient,
@@ -10,6 +10,8 @@ import {
 function ClientsList() {
 
   const [clients, setClients] = useState([]);
+  const isSuperUser =
+    localStorage.getItem("is_superuser") === "true";
 
   const [currentPage, setCurrentPage] =
     useState(1);
@@ -332,13 +334,17 @@ function ClientsList() {
                       <Pencil size={14} strokeWidth={2} />
                     </Link>
 
+                    {isSuperUser && (
+
                     <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(client.id)}
-                      title="Delete Client"
+                        className="delete-btn"
+                        onClick={() => handleDelete(client.id)}
+                        title="Delete Client"
                     >
-                      <Trash2 size={14} strokeWidth={2} />
+                        <Trash2 size={14} strokeWidth={2}/>
                     </button>
+
+                    )}
                   </div>
                 </td>
               </tr>
