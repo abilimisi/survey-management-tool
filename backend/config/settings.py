@@ -140,3 +140,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 PUBLIC_BACKEND_URL = "https://carpenter-trodden-upstate.ngrok-free.dev"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
