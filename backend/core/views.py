@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 import uuid
 from django.db.models import Count, Max, Q
 from django.conf import settings
@@ -36,21 +37,60 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all().order_by("-id")
     serializer_class = ClientSerializer
+    
+    def destroy(self, request, *args, **kwargs):
 
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Only Superuser can delete."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all().order_by("-id")
     serializer_class = VendorSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Only Superuser can delete."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all().order_by("-id")
     serializer_class = ProjectSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Only Superuser can delete."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 
 class ProjectVendorViewSet(viewsets.ModelViewSet):
     queryset = ProjectVendor.objects.all().order_by("-id")
     serializer_class = ProjectVendorSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Only Superuser can delete."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 
 class RespondentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -185,211 +225,6 @@ def get_first_query_value(request, keys):
             return value
     return None
 
-# def start_survey(request, project_vendor_id):
-#     project_vendor = get_object_or_404(
-#         ProjectVendor,
-#         id=project_vendor_id,
-#         # status="active" --------
-#     )
-
-#     project = project_vendor.project
-
-#     project_status = (project.status or "").strip().lower()
-
-#     if project_status not in ["running", "testing"]:
-#         return render(request, "landing/error.html", {
-#             "error_message": "This survey is currently not available."
-#         })
-    
-#     if project_vendor.status != "active":
-#         return render(request, "landing/error.html", {
-#             "error_message": "This supplier link is currently inactive."
-#         })
-
-#     respondent_code = "RID-" + uuid.uuid4().hex[:12].upper()
-
-#     respondent = Respondent.objects.create(
-#         respondent_id=respondent_code,
-#         project=project_vendor.project,
-#         vendor=project_vendor.vendor,
-#         project_vendor=project_vendor,
-
-#         vendor_panelist_id=get_first_query_value(
-#             request,
-#             [
-#                 "panelist_id",
-#                 "panellist_id",
-#                 "panelistid",
-#                 "panellistid",
-#                 "pid",
-#                 "PID",
-#                 "uid",
-#                 "UID",
-#                 "subid",
-#                 "sub_id",
-#                 "respondent_id",
-#                 "rid",
-#                 "Lid",
-#                 "lid",
-#                 "PASSTHRU",
-#                 "passthru",
-#             ],
-#         ),
-
-#         panel_misc_data=get_first_query_value(
-#             request,
-#             [
-#                 "misc",
-#                 "extra",
-#                 "data",
-#                 "PASSTHRU",
-#                 "passthru",
-#                 "subid",
-#                 "sub_id",
-#             ],
-#         ),
-
-#         reconnect_id=get_first_query_value(
-#             request,
-#             [
-#                 "reconnect_id",
-#                 "RECONNECTID",
-#                 "reconnectid",
-#                 "re_connect_id",
-#                 "reconnect",
-#             ],
-#         ),
-
-#         email=get_first_query_value(
-#             request,
-#             ["email", "Email", "EMAIL"]
-#         ),
-
-#         zip_code=get_first_query_value(
-#             request,
-#             ["zip", "Zip", "ZIP", "zipcode", "zip_code"]
-#         ),
-
-#         age=get_first_query_value(
-#             request,
-#             ["age", "Age", "AGE"]
-#         ),
-
-#         gender=get_first_query_value(
-#             request,
-#             ["gender", "Gender", "GENDER"]
-#         ),
-
-#         ip_address=get_client_ip(request),
-#         user_agent=request.META.get("HTTP_USER_AGENT", ""),
-#         status="started",
-#     )
-
-    
-#     # ------------------------------------
-#     # TARGET CAP CHECK
-#     # ------------------------------------
-#     completed_count = Respondent.objects.filter(
-#         project_vendor=project_vendor,
-#         status="complete"
-#     ).count()
-
-#     if project_vendor.target and completed_count >= project_vendor.target:
-#         respondent.previous_status = respondent.status
-#         respondent.status = "quota_full"
-#         respondent.completed_at = timezone.now()
-#         respondent.save()
-
-#         quota_link = replace_tokens(
-#             project_vendor.quota_full_link,
-#             respondent
-#         )
-
-#         RedirectLog.objects.create(
-#             respondent=respondent,
-#             redirect_type="quota_full",
-#             redirect_url=quota_link or "landing/quota_full.html",
-#         )
-
-#         if quota_link:
-#             return redirect(quota_link)
-
-#         return render(
-#             request,
-#             "landing/quota_full.html",
-#             {
-#                 "respondent": respondent,
-#                 "status": "quota_full",
-#             }
-#         )
-
-#     # ------------------------------------
-#     # COUNTRY VALIDATION
-#     # ------------------------------------
-#     test_country = request.GET.get("country")
-
-#     detected_country = (
-#         test_country
-#         or get_country_from_ip(respondent.ip_address)
-#     )
-
-#     required_country = project_vendor.project.country
-
-#     respondent.detected_country = detected_country
-
-
-#     if required_country and detected_country.strip().lower() != required_country.strip().lower():
-#         respondent.previous_status = respondent.status
-#         respondent.status = "terminate"
-#         respondent.country_validation_passed = False
-#         respondent.completed_at = timezone.now()
-#         respondent.save()
-
-#         terminate_link = replace_tokens(
-#             project_vendor.terminate_link,
-#             respondent
-#         )
-
-#         RedirectLog.objects.create(
-#             respondent=respondent,
-#             redirect_type="country_terminate",
-#             redirect_url=terminate_link or "landing/terminate.html",
-#         )
-
-#         if terminate_link:
-#             return redirect(terminate_link)
-
-#         return render(
-#             request,
-#             "landing/terminate.html",
-#             {
-#                 "respondent": respondent,
-#                 "status": "terminate",
-#                 "reason": "Country mismatch",
-#             }
-#         )
-
-#     respondent.country_validation_passed = True
-#     respondent.save()
-
-#     # ------------------------------------
-#     # REDIRECT TO CLIENT SURVEY
-#     # ------------------------------------
-#     client_live_link = project_vendor.project.live_link
-
-#     final_client_link = replace_tokens(
-#         client_live_link,
-#         respondent
-#     )
-
-#     RedirectLog.objects.create(
-#         respondent=respondent,
-#         redirect_type="client_survey_start",
-#         redirect_url=final_client_link,
-#     )
-
-#     return redirect(final_client_link)
-
 
 # new_update-------------------------------------------
 def start_survey(request, project_vendor_id):
@@ -418,10 +253,10 @@ def start_survey_by_gid(request):
 
 #new_update-------------------------------------------
 def create_respondent_and_redirect(request, project_vendor):
+    vendor = project_vendor.vendor
     project = project_vendor.project
     client = project.client
-    vendor = project_vendor.vendor
-    
+
 
     if not client.status:
         return render(
@@ -842,73 +677,6 @@ def project_report(request, project_id):
     })
 
 
-# @api_view(["GET"])
-# def supplier_statistics(request, project_id):
-#     project_vendors = ProjectVendor.objects.filter(project_id=project_id).select_related(
-#         "project", "vendor"
-#     )
-
-    
-#     data = []
-
-#     for pv in project_vendors:
-#         respondents = Respondent.objects.filter(project_vendor=pv)
-
-#         hits = respondents.count()
-#         completes = respondents.filter(status="complete").count()
-#         terminates = respondents.filter(status="terminate").count()
-#         quota_full = respondents.filter(status="quota_full").count()
-#         security_terms = respondents.filter(status="security_terminate").count()
-
-#         ir = 0
-#         if hits > 0:
-#             ir = round((completes / hits) * 100, 2)
-
-#         last_completed = respondents.filter(status="complete").aggregate(
-#             last_completed=Max("completed_at")
-#         )["last_completed"]
-
-#         data.append({
-#             "project_vendor_id": pv.id,
-#             "project_name": pv.project.name,
-#             "vendor_id": pv.vendor.id,
-#             "vendor_name": pv.vendor.name,
-#             "vendor_cpc": pv.vendor_cpc,
-#             "target": pv.target,
-#             "hits": hits,
-#             "completed": completes,
-#             "terminated": terminates,
-#             "quota_full": quota_full,
-#             "security_term": security_terms,
-#             "ir": ir,
-#             "last_completed": last_completed,
-
-#             "complete_link": pv.complete_link,
-#             "terminate_link": pv.terminate_link,
-#             "quota_full_link": pv.quota_full_link,
-#             "security_terminate_link": pv.security_terminate_link,
-
-#             "status": pv.status,
-#             "max_redirects": pv.max_redirects,
-#             "notes": pv.notes,
-
-#             "s2s_token": pv.s2s_token,
-
-#             "s2s_link": (
-#                 f"{settings.PUBLIC_BACKEND_URL}"
-#                 f"/api/s2s/process/"
-#                 f"?pid={{OBID}}"
-#                 f"&status_id={{status}}"
-#                 f"&token={pv.s2s_token}"
-#             ),
-
-#             "supplier_link": (
-#                 f"{settings.PUBLIC_BACKEND_URL}/api/survey/start/{pv.id}/"
-#             ),
-#         })
-
-#     return Response(data)
-
 @api_view(["GET"])
 def supplier_statistics(request, project_id):
     project_vendors = ProjectVendor.objects.filter(project_id=project_id).select_related(
@@ -969,9 +737,6 @@ def supplier_statistics(request, project_id):
                 f"&token={pv.s2s_token}"
             ),
 
-            # "supplier_link": (
-            #     f"{settings.PUBLIC_BACKEND_URL}/api/survey/start/{pv.id}/"
-            # ),
 
             "gid": pv.gid,
             "supplier_parameter_template": pv.supplier_parameter_template,
@@ -1387,7 +1152,17 @@ def recent_projects(request):
 
 class CompanyContactViewSet(viewsets.ModelViewSet):
     queryset = CompanyContact.objects.all().order_by("-id")
-    serializer_class = CompanyContactSerializer 
+    serializer_class = CompanyContactSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Only Superuser can delete."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().destroy(request, *args, **kwargs) 
     
     
 @api_view(["GET"])

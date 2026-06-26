@@ -10,6 +10,8 @@ import {
 function VendorsList() {
 
   const [vendors, setVendors] = useState([]);
+  const isSuperUser =
+    localStorage.getItem("is_superuser") === "true";
 
   const [currentPage, setCurrentPage] =
     useState(1);
@@ -278,6 +280,8 @@ const totalPages = Math.ceil(
                        <Pencil size={14} strokeWidth={2} />
                     </Link>
 
+
+                    {isSuperUser && (
                     <button
                       className="delete-btn"
                       onClick={() => handleDelete(vendor.id)}
@@ -285,6 +289,7 @@ const totalPages = Math.ceil(
                     >
                       <Trash2 size={14} strokeWidth={2} />
                     </button>
+                    )}
                   </div>
                 </td>
               </tr>

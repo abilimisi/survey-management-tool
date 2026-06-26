@@ -6,6 +6,8 @@ import "./ProjectList.css";
 
 function ProjectsList() {
   const [projects, setProjects] = useState([]);
+  const isSuperUser =
+    localStorage.getItem("is_superuser") === "true";
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
   const [filters, setFilters] = useState({
@@ -334,6 +336,8 @@ function ProjectsList() {
                     <Pencil size={14} strokeWidth={2} />
                   </Link>
 
+
+                  {isSuperUser && (
                   <button
                     className="delete-btn"
                     onClick={() => handleDelete(project.id)}
@@ -341,6 +345,7 @@ function ProjectsList() {
                   >
                     <Trash2 size={14} strokeWidth={2} />
                   </button>
+                  )}
                 </div>
               </td>
             </tr>
