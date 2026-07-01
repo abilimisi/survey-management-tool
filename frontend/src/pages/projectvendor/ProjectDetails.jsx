@@ -25,9 +25,6 @@ function ProjectDetails() {
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
 
-  
-  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
-
 
 
   const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
