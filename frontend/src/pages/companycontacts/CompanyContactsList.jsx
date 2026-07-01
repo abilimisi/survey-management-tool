@@ -16,8 +16,6 @@ function CompanyContactsList() {
   const [currentPage, setCurrentPage] =
   useState(1);
 
-  // const rowsPerPage = 10;
-
   const [filters, setFilters] = useState({
     country: "",
     contactType: "",
@@ -149,7 +147,6 @@ function CompanyContactsList() {
         </Link>
       </div>
 
-
       <div className="search-panel">
 
         <select
@@ -206,13 +203,7 @@ function CompanyContactsList() {
       </div>
 
       <div className="search-actions">
-      {/* <div
-      style={{
-        border: "2px solid blue",
-        padding: "20px",
-      }}
-    > */}
-
+      
         <button
           className="submit-btn"
           onClick={handleSubmit}
@@ -230,8 +221,6 @@ function CompanyContactsList() {
       </div>
 
       <hr className="project-divider" />
-
-
 
       <div className="responsive-table-wrapper">
         <table className="custom-table company-contact-table">
