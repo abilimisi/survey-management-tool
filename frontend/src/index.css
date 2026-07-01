@@ -17,10 +17,11 @@ body {
 
 .page-content{
     flex:1;
-    padding:-400px;
-    margin-left: 10px;
-    width:100%;
+    padding-left:10px;
     min-width:0;
+    width:100%;
+    box-sizing:border-box;
+    margin-bottom: 10px;
 }
 
 .page-header {
@@ -875,8 +876,9 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin-left: 255px;
-  width: calc(100% - 255px);
+  margin-left:255px;
+  flex:1;
+  min-width:0;
   min-width: 0;
   transition: 0.25s;
 }
@@ -896,20 +898,21 @@ body {
 }
 .sidebar-collapsed .main-section {
   margin-left: 90px;
-  width: calc(100% - 90px);
+  flex:1;
 }
 
 @media (max-width: 900px) and (min-width: 701px) {
   .main-section {
     margin-left: 220px;
-    width: calc(100% - 220px);
+    flex: 1;
   }
 
   .sidebar-collapsed .main-section {
     margin-left: 100px;
-    width: calc(100% - 100px);
+    flex: 1;
   }
   .page-content {
-    margin-left: 10px;
+    padding-left:10px;
+    box-sizing:border-box;
   }
 }
