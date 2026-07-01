@@ -34,7 +34,6 @@ function ProjectDetails() {
   
   const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
 
-
   const initialFormData = {
     project: id,
     vendor: "",

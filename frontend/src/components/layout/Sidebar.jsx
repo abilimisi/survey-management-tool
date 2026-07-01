@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import "./Sidebar.css";
 
 function Sidebar({ isCollapsed, toggleSidebar }) {
   const isSuperuser =
