@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 from .views import (
     get_users,
     create_user,
+    map_foreign_ids,
     simple_process,
     start_survey_by_gid,
     update_user,
@@ -85,6 +86,8 @@ urlpatterns = [
 
     path("clients/<int:client_id>/projects/",client_projects,name="client-projects"),
     path("vendors/<int:vendor_id>/projects/",vendor_projects,name="vendor-projects",),
+
+    path("map-foreign-ids/", map_foreign_ids, name="map-foreign-ids"),  
 
 ]
 

@@ -4,7 +4,9 @@ import { Eye, Trash2, Pencil } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { mapForeignIds } from "../../api/mapForeignApi";
 import { getSingleProject } from "../../api/projectApi";
+
 import { getVendors } from "../../api/vendorApi";
 import {
   createProjectVendor,
@@ -25,13 +27,12 @@ function ProjectDetails() {
   const [showAddSupplier, setShowAddSupplier] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
 
+  const [showMapForeignIds, setShowMapForeignIds] = useState(false);
+  const [redirectIdsInput, setRedirectIdsInput] = useState("");
+  const [mappedResults, setMappedResults] = useState([]);
+
   
   const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
-
-
-
-  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
-
 
 
   const initialFormData = {
@@ -122,6 +123,16 @@ function ProjectDetails() {
     }
   };
 
+  const handleMapForeignIds = async () => {
+    try {
+      const data = await mapForeignIds(redirectIdsInput.trim());
+      setMappedResults(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to map IDs");
+    }
+  };
+
   const handleEditSupplier = (supplier) => {
     setEditingSupplier(supplier);
 
@@ -209,6 +220,16 @@ function ProjectDetails() {
             onClick={() => setShowVariables(true)}
           >
             Link Variables
+          </button>
+          <button
+            className="link-codes-btn"
+            onClick={() => {
+              setRedirectIdsInput("");
+              setMappedResults([]);
+              setShowMapForeignIds(true);
+            }}
+          >
+            Map Foreign IDs
           </button>
         </div>
       </div>
@@ -415,21 +436,6 @@ function ProjectDetails() {
                   </select>
                 </div>
               </div>
-
-              {/* <div className="form-group">
-                <label>Supplier Parameter Template</label>
-                <textarea
-                  name="supplier_parameter_template"
-                  value={formData.supplier_parameter_template}
-                  onChange={handleChange}
-                  placeholder="pid={{PANELIST IDENTIFIER}}&ext={{PANEL MISC DATA}}&reconnectID={{RECONNECTID}}"
-                />
-                <small>
-                  This will be added after gid in vendor link. Example:
-                  pid=&#123;&#123;PANELIST IDENTIFIER&#125;&#125;
-                </small>
-              </div> */}
-
               <div className="form-grid-4">
                 <div className="form-group">
                   <label>Cost Per Complete</label>
@@ -601,6 +607,16 @@ function ProjectDetails() {
       {showVariables && (
         <LinkCodesPopup onClose={() => setShowVariables(false)} />
       )}
+
+      {showMapForeignIds && (
+        <MapForeignIdsPopup
+          onClose={() => setShowMapForeignIds(false)}
+          redirectIdsInput={redirectIdsInput}
+          setRedirectIdsInput={setRedirectIdsInput}
+          mappedResults={mappedResults}
+          onSearch={handleMapForeignIds}
+        />
+      )}
     </div>
   );
 }
@@ -707,6 +723,89 @@ function LinkCodesPopup({ onClose }) {
         <div className="modal-footer">
           <button className="primary-btn" onClick={onClose}>Okay</button>
         </div>
+      </div>
+    </div>
+  );
+  
+}
+
+function MapForeignIdsPopup({
+  onClose,
+  redirectIdsInput,
+  setRedirectIdsInput,
+  mappedResults,
+  onSearch,
+}) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="link-codes-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Map Redirect IDs to Foreign IDs</h2>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="modal-content-grid single-column">
+          <div className="form-group">
+            <label>Redirect IDs</label>
+            <textarea
+              value={redirectIdsInput}
+              onChange={(e) => setRedirectIdsInput(e.target.value)}
+              placeholder={"A939F91FCC53"}
+            />
+          </div>
+
+          <button
+            className="primary-btn search-ids"
+            disabled={!redirectIdsInput.trim()}
+            onClick={onSearch}
+          >
+            Search IDs
+          </button>
+
+          <div className="table-wrapper">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Redirect ID</th>
+                  <th>Foreign ID</th>
+                  <th>Ext</th>
+                  <th>Reconnect ID</th>
+                  <th>Status</th>
+                  <th>Project</th>
+                  <th>Vendor</th>
+                  <th>Country</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {mappedResults.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.redirect_id}</td>
+                    <td>{item.foreign_id}</td>
+                    <td>{item.ext}</td>
+                    <td>{item.reconnect_id}</td>
+                    <td>{item.status}</td>
+                    <td>{item.project_name}</td>
+                    <td>{item.vendor_name}</td>
+                    <td>{item.country}</td>
+                  </tr>
+                ))}
+
+                {mappedResults.length === 0 && (
+                  <tr>
+                    <td colSpan="8" style={{ textAlign: "center" }}>
+                      No mapped IDs found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* <div className="modal-footer">
+          <button className="primary-btn" onClick={onClose}>Okay</button>
+        </div> */}
       </div>
     </div>
   );

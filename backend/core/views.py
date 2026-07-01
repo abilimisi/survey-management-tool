@@ -1326,3 +1326,38 @@ def vendor_projects(request, vendor_id):
 
     return Response(list(unique_projects.values()))
 
+
+@api_view(["POST"])
+def map_foreign_ids(request):
+    raw_ids = request.data.get("redirect_ids", "")
+
+    redirect_ids = [
+        item.strip()
+        for item in raw_ids.replace(",", "\n").splitlines()
+        if item.strip()
+    ]
+
+    respondents = Respondent.objects.filter(
+        respondent_id__in=redirect_ids
+    ).select_related("project", "vendor", "project_vendor")
+
+    data = []
+
+    for respondent in respondents:
+        data.append({
+            "redirect_id": respondent.respondent_id,
+            "foreign_id": respondent.vendor_panelist_id or "-",
+            "ext": respondent.panel_misc_data or "-",
+            "reconnect_id": respondent.reconnect_id or "-",
+            "status": respondent.status,
+            "loi": respondent.project.loi,
+            "project_id": respondent.project.id,
+            "project_name": respondent.project.name,
+            "vendor_name": respondent.vendor.name,
+            "vendor_cpi": respondent.project_vendor.vendor_cpc,
+            "entrant_time": respondent.started_at,
+            "completed_time": respondent.completed_at,
+            "country": respondent.project.country,
+        })
+
+    return Response(data)

@@ -38,6 +38,8 @@ function SupplierHints() {
     const headers = [
       "Respondent ID",
       "Vendor PID",
+      "Panel misc data:",
+      "reconnect_id",
       "Project",
       "Country",
       "Vendor",
@@ -57,6 +59,8 @@ function SupplierHints() {
 
       item.respondent_id,
       item.vendor_panelist_id,
+      item.panel_misc_data || "",
+      item.reconnect_id || "",
       item.project,
       item.country,
       item.vendor,
@@ -136,6 +140,8 @@ function SupplierHints() {
             <tr>
               <th>Respondent ID</th>
               <th>Vendor PID</th>
+              <th>Panel misc data:</th>
+              <th>reconnect_id</th>
               <th>Project</th>
               <th>Country</th>
               <th>Vendor</th>
@@ -165,6 +171,8 @@ function SupplierHints() {
                   </Link>
                 </td>
                 <td>{item.vendor_panelist_id}</td>
+                <td>{item.panel_misc_data || "-"}</td>
+                <td>{item.reconnect_id || "-"}</td>
                 <td>{item.project}</td>
                 <td>{item.country}</td>
                 <td>{item.vendor}</td>
@@ -209,7 +217,7 @@ function SupplierHints() {
 
             {data.respondents.length === 0 && (
               <tr>
-                <td colSpan="11" style={{ textAlign: "center" }}>
+                <td colSpan="12" style={{ textAlign: "center" }}>
                   No respondents found
                 </td>
               </tr>

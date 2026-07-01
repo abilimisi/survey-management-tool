@@ -714,6 +714,18 @@ body {
   color: #2563eb;
 }
 
+.single-column {
+  grid-template-columns: 1fr !important;
+}
+
+.search-ids {
+    /* display: flex;
+    justify-content: flex-end; */
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+
+}
 /* project vendor */
 /* ==========================
    LINK CODES
@@ -805,8 +817,8 @@ body {
 }
 
 .modal-content-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 1fr 1fr; */
   gap: 30px;
   padding: 24px;
 }
@@ -1057,3 +1069,4 @@ body {
   outline: none;
   box-shadow: none;
 }
+
