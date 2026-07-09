@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import {
   getSingleVendor,
@@ -95,24 +96,37 @@ function EditVendor() {
     alert("Copied!");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    const payload = {
-      ...formData,
-    };
-
-    delete payload.s2s_token;
-
-    try {
-      await updateVendor(id, payload);
-      navigate("/vendors");
-    } catch (error) {
-      console.error(error.response?.data || error);
-      setError(JSON.stringify(error.response?.data || "Vendor update failed"));
-    }
+  const payload = {
+    ...formData,
   };
+
+  delete payload.s2s_token;
+
+  try {
+    await updateVendor(id, payload);
+
+    toast.success("Vendor updated successfully!");
+
+    setTimeout(() => {
+      navigate("/vendors");
+    }, 1500);
+
+  } catch (error) {
+    console.error(error.response?.data || error);
+
+    setError(
+      JSON.stringify(
+        error.response?.data || "Vendor update failed"
+      )
+    );
+
+    toast.error("Vendor update failed!");
+  }
+};
 
   return (
     <div>

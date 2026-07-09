@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import { createCompanyContact } from "../../api/companyContactApi";
 import { getClients } from "../../api/clientApi";
 
@@ -60,10 +60,23 @@ function AddCompanyContact() {
 
     try {
       await createCompanyContact(formData);
-      navigate("/company-contacts");
+
+      toast.success("Company Contact created successfully!");
+
+      setTimeout(() => {
+        navigate("/company-contacts");
+      }, 1500);
+
     } catch (error) {
       console.error("Contact creation error:", error);
-      setError(JSON.stringify(error.response?.data || "Contact creation failed"));
+
+      setError(
+        JSON.stringify(
+          error.response?.data || "Contact creation failed"
+        )
+      );
+
+      toast.error("Company Contact creation failed!");
     }
   };
 

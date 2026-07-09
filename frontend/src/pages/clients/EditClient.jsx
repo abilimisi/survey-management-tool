@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./ClientForm.css";
-
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   getSingleClient,
   updateClient,
@@ -85,21 +86,29 @@ function EditClient() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      await updateClient(id, formData);
+  try {
+    await updateClient(id, formData);
+
+    toast.success("Client updated successfully!");
+
+    setTimeout(() => {
       navigate("/clients");
-    } catch (error) {
-      console.error(error.response?.data || error);
-      setError(
-        JSON.stringify(error.response?.data || "Update failed")
-      );
-    }
-  };
+    }, 1200);
 
+  } catch (error) {
+    console.error(error.response?.data || error);
+
+    setError(
+      JSON.stringify(error.response?.data || "Update failed")
+    );
+
+    toast.error("Update failed!");
+  }
+};
   return (
     <div>
       <div className="page-header">
@@ -319,67 +328,11 @@ function EditClient() {
               <label>Is DIY</label>
             </div>
           </div>
-        </div>
-
-        <div className="form-card">
-          <h3>Survey Link Details</h3>
-
-          <div className="form-group">
-            <label>Test Link</label>
-            <textarea
-              name="test_link"
-              placeholder="https://example.com/test?rid={{ID}}"
-              value={formData.test_link}
-              onChange={handleChange}
-            />
+          <div className="form-actions">
+            <button type="submit" className="primary-btn create-client-btn">
+              Update Client
+            </button>
           </div>
-
-          <div className="form-group">
-            <label>Live Link</label>
-            <textarea
-              name="live_link"
-              placeholder="https://example.com/live?rid={{ID}}"
-              value={formData.live_link}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label>Client RID Parameter</label>
-              <input
-                type="text"
-                name="rid_parameter"
-                value={formData.rid_parameter}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Our Parameter</label>
-              <input
-                type="text"
-                name="our_parameter"
-                value={formData.our_parameter}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <h3>API Details</h3>
-
-          <div className="form-group">
-            <label>API Details</label>
-            <textarea
-              name="api_details"
-              value={formData.api_details}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button type="submit" className="primary-btn">
-            Update Client
-          </button>
         </div>
       </form>
     </div>

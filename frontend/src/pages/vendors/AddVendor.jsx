@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import { createVendor } from "../../api/vendorApi";
 import "./VendorForm.css";
 
@@ -50,12 +50,23 @@ function AddVendor() {
 
     try {
       await createVendor(formData);
-      navigate("/vendors");
+
+      toast.success("Vendor created successfully!");
+
+      setTimeout(() => {
+        navigate("/vendors");
+      }, 1500);
+
     } catch (error) {
       console.error(error.response?.data || error);
+
       setError(
-        JSON.stringify(error.response?.data || "Vendor creation failed")
+        JSON.stringify(
+          error.response?.data || "Vendor creation failed"
+        )
       );
+
+      toast.error("Vendor creation failed!");
     }
   };
 

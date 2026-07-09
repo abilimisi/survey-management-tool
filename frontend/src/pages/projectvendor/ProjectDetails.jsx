@@ -258,7 +258,7 @@ function ProjectDetails() {
                 <th>Status</th>
                 <th>Hits</th>
                 <th>Completed</th>
-                <th>Disqualified</th>
+                <th>Terminates</th>
                 <th>Quota Full</th>
                 <th>Security Term</th>
                 <th>IR</th>

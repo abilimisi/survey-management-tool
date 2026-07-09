@@ -1188,26 +1188,6 @@ def get_users(request):
 
     return Response(data)
 
-@api_view(["POST"])
-@permission_classes([IsAdminUser])
-def create_user(request):
-
-    serializer = UserSerializer(
-        data=request.data
-    )
-
-    if serializer.is_valid():
-
-        serializer.save()
-
-        return Response({
-            "message": "User created successfully"
-        })
-
-    return Response(
-        serializer.errors,
-        status=400
-    )
     
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
@@ -1227,6 +1207,10 @@ def update_user(request, pk):
         "username",
         user.username
     )
+    password = request.data.get("password")
+
+    if password:
+        user.set_password(password)
 
     user.save()
 

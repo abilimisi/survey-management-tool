@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import { getSingleProject, updateProject } from "../../api/projectApi";
 import { getClients } from "../../api/clientApi";
 import "./ProjectForm.css";
@@ -126,10 +126,23 @@ function EditProject() {
 
     try {
       await updateProject(id, formData);
-      navigate("/projects");
+
+      toast.success("Project updated successfully!");
+
+      setTimeout(() => {
+        navigate("/projects");
+      }, 1500);
+
     } catch (error) {
       console.error(error.response?.data || error);
-      setError(JSON.stringify(error.response?.data || "Project update failed"));
+
+      setError(
+        JSON.stringify(
+          error.response?.data || "Project update failed"
+        )
+      );
+
+      toast.error("Project update failed!");
     }
   };
 

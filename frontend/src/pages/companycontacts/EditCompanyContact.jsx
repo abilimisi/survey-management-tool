@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import {
   getSingleCompanyContact,
   updateCompanyContact,
@@ -82,18 +82,30 @@ function EditCompanyContact() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
 
-    try {
-      await updateCompanyContact(id, formData);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    await updateCompanyContact(id, formData);
+    toast.success("Company Contact updated successfully!");
+    setTimeout(() => {
       navigate("/company-contacts");
-    } catch (error) {
-      console.error("Contact update error:", error);
-      setError(JSON.stringify(error.response?.data || "Contact update failed"));
-    }
-  };
+    }, 1500);
+
+  } catch (error) {
+    console.error(error.response?.data || error);
+
+    setError(
+      JSON.stringify(
+        error.response?.data || "Company Contact update failed"
+      )
+    );
+
+    toast.error("Company Contact update failed!");
+  }
+};
 
   return (
     <div className="form-page">
@@ -114,7 +126,7 @@ function EditCompanyContact() {
 
       {error && <div className="error-box">{error}</div>}
 
-      <form className="contact-form" onSubmit={handleSubmit}>
+      <form className="contact-form" onSubmit={handleSubmit} autoComplete="off">
         <div className="form-group">
           <label>Contact Type *</label>
           <select
@@ -176,6 +188,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="first_name"
+            autoComplete="off"
             value={formData.first_name}
             onChange={handleChange}
             required
@@ -188,6 +201,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="middle_name"
+            autoComplete="off"
             value={formData.middle_name}
             onChange={handleChange}
             placeholder="Middle Name"
@@ -199,6 +213,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="last_name"
+            autoComplete="off"
             value={formData.last_name}
             onChange={handleChange}
             required
@@ -237,6 +252,7 @@ function EditCompanyContact() {
           <input
             type="email"
             name="email"
+            autoComplete="off"
             value={formData.email}
             onChange={handleChange}
             required
@@ -249,6 +265,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="contact_no"
+            autoComplete="off"
             value={formData.contact_no}
             onChange={handleChange}
             required
@@ -262,6 +279,7 @@ function EditCompanyContact() {
           <label>Address</label>
           <textarea
             name="address"
+            autoComplete="off"
             value={formData.address}
             onChange={handleChange}
             placeholder="Address"
@@ -273,6 +291,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="city"
+            autoComplete="off"
             value={formData.city}
             onChange={handleChange}
             placeholder="City"
@@ -284,6 +303,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="zip_code"
+            autoComplete="off"
             value={formData.zip_code}
             onChange={handleChange}
             placeholder="Zip Code"
@@ -295,6 +315,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="country"
+            autoComplete="off"
             value={formData.country}
             onChange={handleChange}
             placeholder="Country"
@@ -306,6 +327,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="state"
+            autoComplete="off"
             value={formData.state}
             onChange={handleChange}
             placeholder="State"
@@ -319,6 +341,7 @@ function EditCompanyContact() {
           <input
             type="text"
             name="username"
+            autoComplete="off"
             value={formData.username}
             onChange={handleChange}
             placeholder="Username"

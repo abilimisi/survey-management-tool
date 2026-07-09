@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ClientForm.css";
 import { createClient } from "../../api/clientApi";
-
+import { toast } from "react-toastify";
 function AddClient() {
   const navigate = useNavigate();
 
@@ -24,8 +24,6 @@ function AddClient() {
     status: true,
     check_proxy: true,
     is_diy: true,
-    // test_link: "",
-    // live_link: "",
     rid_parameter: "RID",
     our_parameter: "ID",
     api_details: "",
@@ -42,19 +40,29 @@ function AddClient() {
     });
   };
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     try {
       await createClient(formData);
-      navigate("/clients");
+  
+      toast.success("Client created successfully!");
+  
+      setTimeout(() => {
+        navigate("/clients");
+      }, 1200);
+  
     } catch (error) {
       console.error(error.response?.data || error);
-      setError(JSON.stringify(error.response?.data || "Client creation failed"));
+  
+      setError(
+        JSON.stringify(error.response?.data || "Update failed")
+      );
+  
+      toast.error("Update failed!");
     }
   };
-
   return (
     <div>
       <div className="page-header">

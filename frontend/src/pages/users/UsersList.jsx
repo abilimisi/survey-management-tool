@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus, Eye } from "lucide-react";
-
+import Swal from "sweetalert2";
 import {
   getUsers,
   deleteUser,createUser,updateUser
@@ -18,7 +18,7 @@ function UsersList() {
 });
 
 const [editingUser, setEditingUser] = useState(null);
-
+const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -38,38 +38,64 @@ const [editingUser, setEditingUser] = useState(null);
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
 
-        if (editingUser) {
+      if (editingUser) {
 
         await updateUser(
-            editingUser.id,
-            formData
+          editingUser.id,
+          formData
         );
 
-        } else {
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: "User updated successfully",
+          confirmButtonText: "OK",
+        });
+
+      } else {
 
         await createUser(formData);
 
-        }
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "User created successfully",
+          confirmButtonText: "OK",
+        });
 
-        fetchUsers();
+      }
 
-        setShowModal(false);
+      await fetchUsers();
 
-        setEditingUser(null);
+      setShowModal(false);
 
-        setFormData({
+      setEditingUser(null);
+
+      setFormData({
         username: "",
         password: "",
         role: "viewer",
+      });
+
+      } catch (error) {
+        console.error(error);
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong!",
         });
 
-    } catch (error) {
-        console.error(error);
-    }
-    };
+      } finally {
+        setLoading(false);
+      }
+     };
+
+   
 
   const handleChange = (e) => {
     setFormData({
@@ -80,12 +106,40 @@ const [editingUser, setEditingUser] = useState(null);
 
   const handleDelete = async (id) => {
 
-    if (!window.confirm("Delete user?"))
-      return;
+    const result = await Swal.fire({
+      title: "Delete User?",
+      text: "Are you sure you want to delete this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Delete",
+    });
 
-    await deleteUser(id);
+    if (!result.isConfirmed) return;
 
-    fetchUsers();
+    try {
+
+      await deleteUser(id);
+
+      fetchUsers();
+
+      Swal.fire({
+        icon: "success",
+        title: "Deleted",
+        text: "User deleted successfully",
+      });
+
+    } catch (error) {
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Unable to delete user",
+      });
+
+    }
+
   };
 
   const handleEditUser = (user) => {
@@ -242,7 +296,7 @@ const [editingUser, setEditingUser] = useState(null);
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    required
+                    placeholder="Leave blank to keep current password"
                 />
                 </div>
 
@@ -261,11 +315,16 @@ const [editingUser, setEditingUser] = useState(null);
                 </div>
 
                <button
-                    type="submit"
-                    className="primary-btn"
-                    >
-                    {editingUser ? "Update User" : "Save User"}
-               </button>
+                type="submit"
+                className="primary-btn"
+                disabled={loading}
+              >
+                {loading
+                  ? "Saving..."
+                  : editingUser
+                    ? "Update User"
+                    : "Save User"}
+              </button>
 
             </form>
 

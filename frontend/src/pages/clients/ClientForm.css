@@ -1,8 +1,4 @@
-/* .company-form-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-} */
+
 
 .form-card {
   background: white;
@@ -69,9 +65,6 @@
   border-top: 1px solid #e5e7eb;
 }
 
-/* ==========================
-   ACTION BUTTONS CONTAINER
-========================== */
 
 .table-actions {
   display: flex;
@@ -79,7 +72,7 @@
   gap: 10px;
 }
 
-/* Shared Styles */
+
 
 .edit-btn,
 .delete-btn {
@@ -101,10 +94,6 @@
   position: relative;
   overflow: hidden;
 }
-
-/* ==========================
-   EDIT BUTTON
-========================== */
 
 .edit-btn {
   background: linear-gradient(
@@ -130,7 +119,7 @@
   transform: scale(0.95);
 }
 
-/* shine effect */
+
 
 .edit-btn::before {
   content: "";
@@ -153,9 +142,6 @@
   left: 140%;
 }
 
-/* ==========================
-   DELETE BUTTON
-========================== */
 
 .delete-btn {
   background: linear-gradient(
@@ -181,7 +167,7 @@
   transform: scale(0.95);
 }
 
-/* subtle shine */
+
 
 .delete-btn::before {
   content: "";
@@ -204,7 +190,6 @@
   left: 140%;
 }
 
-/* search and pagination */
 .search-panel {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -246,4 +231,7 @@
 .active-page {
   background: #2563eb;
   color: white;
-}
+} 
+ 
+
+ 

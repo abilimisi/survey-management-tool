@@ -15,7 +15,8 @@ function App() {
         closeOnClick
         pauseOnHover
         draggable
-      />
+        theme="light"
+    />
     </>
   );
 }

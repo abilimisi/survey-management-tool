@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 import { createProject } from "../../api/projectApi";
 import { getClients } from "../../api/clientApi";
 import "./ProjectForm.css";
+import { useLocation } from "react-router-dom";
 
 function AddProject() {
   const navigate = useNavigate();
@@ -85,18 +86,27 @@ function AddProject() {
       .includes(device);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      await createProject(formData);
+  try {
+    await createProject(formData);
+    
+    console.log("Project Created Successfully");
+    toast.success("Project created successfully!");
+    console.log("Toast Executed");
+    setTimeout(() => {
       navigate("/projects");
-    } catch (error) {
-      console.error(error.response?.data || error);
-      setError(JSON.stringify(error.response?.data || "Project creation failed"));
-    }
-  };
+    }, 1500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast.error("Project creation failed!");
+  }
+};
 
   return (
     <div>
