@@ -185,7 +185,7 @@ function Dashboard() {
 
     <div className="today-card disqualified">
       <h3>{stats.today.terminates}</h3>
-      <span>Disqualified</span>
+      <span>Terminates</span>
     </div>
 
     <div className="today-card quota">
@@ -195,7 +195,7 @@ function Dashboard() {
 
     <div className="today-card security">
       <h3>{stats.today.security_terminates}</h3>
-      <span>Security Term</span>
+      <span>Security Terminates</span>
     </div>
 
     <div className="today-card blocked">
@@ -262,7 +262,7 @@ function Dashboard() {
 
     <div className="monthly-item">
       <div className="monthly-header">
-        <span>Disqualified</span>
+        <span>Terminates</span>
         <strong>
           {stats.monthly.total_hits
             ? ((stats.monthly.terminates / stats.monthly.total_hits) * 100).toFixed(1)
@@ -395,41 +395,6 @@ function Dashboard() {
           </div>
         </div>
       </div>
-
-    
-      {/* <div className="recent-projects-section">
-
-  <h2>Recent Projects</h2>
-
-  <div className="recent-projects-table">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Project</th>
-          <th>Country</th>
-          <th>Target</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {recentProjects.map((project) => (
-          <tr key={project.id}>
-            <td>{project.id}</td>
-            <td>{project.name}</td>
-            <td>{project.country}</td>
-            <td>{project.completes}/{project.target}</td>
-            <td>{project.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-
-</div> */}
-
-
     </div>
   );
 }

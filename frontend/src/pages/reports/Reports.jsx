@@ -197,9 +197,9 @@ function Reports() {
       "Target",
       "Hits",
       "Completed",
-      "Terminated",
+      "Total Terminates",
       "Quota Full",
-      "Security Term",
+      "Security Terminates",
       "IR",
       "CPC",
       "Last Completed",
@@ -239,6 +239,11 @@ function Reports() {
 
   const totalCompletes = supplierStats.reduce(
     (sum, item) => sum + Number(item.completed || 0),
+    0
+  );
+
+  const totalTerminates = supplierStats.reduce(
+    (sum, item) => sum + Number(item.terminated || 0),
     0
   );
 
@@ -523,9 +528,9 @@ function Reports() {
                   <tr>
                     <th>Project Hits</th>
                     <th>Completes</th>
-                    <th>Terminates</th>
+                    <th>Total Terminates</th>
                     <th>Quota Full</th>
-                    <th>Security Term</th>
+                    <th>Security Terminates</th>
                     <th>Project IR</th>
                   </tr>
                 </thead>
@@ -546,6 +551,15 @@ function Reports() {
             </div>
 
           </div>
+          <p
+          style={{
+            marginTop: "10px",
+            fontSize: "13px",
+            color: "#6b7280",
+          }}
+        >
+  Total Terminates includes Security Terminates.
+</p>
         </>
       )}
 
@@ -573,9 +587,9 @@ function Reports() {
                     <th>Hits</th>
                     <th>Completed</th>
                     <th>Progress</th>
-                    <th>Terminated</th>
+                    <th>Total Terminates</th>
                     <th>Quota Full</th>
-                    <th>Security Term</th>
+                    <th>Security Terminates</th>
                     <th>IR</th>
                     <th>CPC</th>
                     <th>Last Completed</th>

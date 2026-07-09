@@ -2,6 +2,14 @@ from pathlib import Path
 from datetime import timedelta
 from decouple import config
 
+import os
+from dotenv import load_dotenv
+    
+load_dotenv()
+
+IPINFO_TOKEN = os.getenv("IPINFO_TOKEN")
+PROXYCHECK_TOKEN = os.getenv("PROXYCHECK_TOKEN")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -136,11 +144,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://carpenter-trodden-upstate.ngrok-free.dev",
+    "https://backwater-muster-repayment.ngrok-free.dev",
 ]
 
-PUBLIC_BACKEND_URL = "https://carpenter-trodden-upstate.ngrok-free.dev"
+PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://backwater-muster-repayment.ngrok-free.dev",
 ]

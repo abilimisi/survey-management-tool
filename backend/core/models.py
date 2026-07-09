@@ -537,6 +537,7 @@ class Respondent(models.Model):
     project_vendor = models.ForeignKey(ProjectVendor, on_delete=models.CASCADE, related_name="respondents")
 
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="started")
+    termination_reason = models.CharField(max_length=100, blank=True, null=True)
     previous_status = models.CharField(max_length=30, blank=True, null=True)
 
     vendor_panelist_id = models.CharField(max_length=255, blank=True, null=True)
@@ -558,6 +559,9 @@ class Respondent(models.Model):
 
     detected_country = models.CharField(max_length=100, blank=True, null=True)
 
+    proxy_detected = models.BooleanField(default=False)
+    vpn_detected = models.BooleanField(default=False)
+    
     def __str__(self):
         return self.respondent_id
 
