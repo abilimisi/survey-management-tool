@@ -25,6 +25,35 @@ function SupplierHints() {
     }
   };
 
+  const getStatusLabel = (item) => {
+
+      // Normal terminate
+      if (item.status === "terminate") {
+          return "Terminate";
+      }
+
+      // Security terminate
+      if (item.status === "security_terminate") {
+
+          switch (item.termination_reason) {
+
+              case "country_mismatch":
+                  return "Security Terminate 🌐";
+
+              case "proxy_detected":
+                  return "Security Terminate 🛡️";
+
+              case "security_issue":
+                  return "Security Terminate 🔒";
+
+              default:
+                  return "Security";
+          }
+      }
+
+      return item.status;
+  };
+
   if (!data) return <p>Loading hints...</p>;
 
 
@@ -37,7 +66,7 @@ function SupplierHints() {
 
     const headers = [
       "Respondent ID",
-      "Vendor PID",
+      "PID",
       "Panel misc data:",
       "reconnect_id",
       "Project",
@@ -65,7 +94,7 @@ function SupplierHints() {
       item.country,
       item.vendor,
       item.vendor_cpc,
-      item.status,
+      getStatusLabel(item),
       item.previous_status || "",
       item.ip_address || "",
       item.browser || "",
@@ -115,7 +144,7 @@ function SupplierHints() {
                 ? "Completed Respondents"
 
             : status === "terminate"
-                ? "Disqualified Respondents"
+                ? "Terminated Respondents"
 
             : status === "quota_full"
                 ? "Quota Full Respondents"
@@ -139,7 +168,7 @@ function SupplierHints() {
           <thead>
             <tr>
               <th>Respondent ID</th>
-              <th>Vendor PID</th>
+              <th>PID</th>
               <th>Panel misc data:</th>
               <th>reconnect_id</th>
               <th>Project</th>
@@ -179,7 +208,7 @@ function SupplierHints() {
                 <td>{item.vendor_cpc}</td>
                 <td>
                   <span className={`status-pill status-${item.status}`}>
-                    {item.status}
+                    {getStatusLabel(item)}
                   </span>
                 </td>
                 <td>{item.previous_status || "-"}</td>
@@ -217,7 +246,7 @@ function SupplierHints() {
 
             {data.respondents.length === 0 && (
               <tr>
-                <td colSpan="12" style={{ textAlign: "center" }}>
+                <td colSpan="17" style={{ textAlign: "center" }}>
                   No respondents found
                 </td>
               </tr>

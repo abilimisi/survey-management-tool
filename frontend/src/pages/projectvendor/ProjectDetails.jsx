@@ -124,14 +124,92 @@ function ProjectDetails() {
 
   const handleMapForeignIds = async () => {
     try {
-      const data = await mapForeignIds(redirectIdsInput.trim());
-      setMappedResults(data);
+      const response = await mapForeignIds(redirectIdsInput.trim());
+
+      setMappedResults(response.results || []);
+
     } catch (error) {
       console.error(error);
       toast.error("Failed to map IDs");
     }
   };
 
+  const exportMappedCSV = () => {
+
+      if (!mappedResults.length) {
+        toast.warning("No records to export.");
+        return;
+      }
+
+      const headers = [
+        "Searched By",
+        "Searched Value",
+        "Redirect ID",
+        "Foreign ID",
+        "Ext",
+        "Reconnect ID",
+        "Status",
+        "Termination Reason",
+        "Project",
+        "Vendor",
+        "Country",
+        "LOI",
+        "Vendor CPI",
+        "Started",
+        "Completed"
+      ];
+
+      const rows = mappedResults.map(item => [
+
+        item.searched_by,
+        item.searched_value,
+        item.redirect_id,
+        item.foreign_id,
+        item.ext,
+        item.reconnect_id,
+        item.status,
+        item.termination_reason || "-",
+        item.project_name,
+        item.vendor_name,
+        item.country,
+        item.loi,
+        item.vendor_cpi,
+
+        item.entrant_time
+          ? new Date(item.entrant_time).toLocaleString("en-IN")
+          : "",
+
+        item.completed_time
+          ? new Date(item.completed_time).toLocaleString("en-IN")
+          : ""
+
+      ]);
+
+      const csv = [
+        headers.join(","),
+        ...rows.map(row =>
+          row.map(value => `"${value ?? ""}"`).join(",")
+        )
+      ].join("\n");
+
+      const blob = new Blob(
+        [csv],
+        { type: "text/csv;charset=utf-8;" }
+      );
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+
+      link.download = `Foreign_ID_Mapping_${new Date().toISOString().slice(0,10)}.csv`;
+
+      link.click();
+
+      URL.revokeObjectURL(url);
+    };
+    
   const handleEditSupplier = (supplier) => {
     setEditingSupplier(supplier);
 
@@ -614,6 +692,7 @@ function ProjectDetails() {
           setRedirectIdsInput={setRedirectIdsInput}
           mappedResults={mappedResults}
           onSearch={handleMapForeignIds}
+          exportMappedCSV={exportMappedCSV}
         />
       )}
     </div>
@@ -734,6 +813,7 @@ function MapForeignIdsPopup({
   setRedirectIdsInput,
   mappedResults,
   onSearch,
+  exportMappedCSV,
 }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -753,13 +833,23 @@ function MapForeignIdsPopup({
             />
           </div>
 
-          <button
-            className="primary-btn search-ids"
-            disabled={!redirectIdsInput.trim()}
-            onClick={onSearch}
-          >
-            Search IDs
-          </button>
+          <div className="map-actions">
+              <button
+                className="primary-btn"
+                disabled={!redirectIdsInput.trim()}
+                onClick={onSearch}
+              >
+                🔍 Search IDs
+              </button>
+
+              <button
+                className="export-btn"
+                disabled={!mappedResults.length}
+                onClick={exportMappedCSV}
+              >
+                📥 Export CSV
+              </button>
+          </div>
 
           <div className="table-wrapper">
             <table className="custom-table">
@@ -777,7 +867,7 @@ function MapForeignIdsPopup({
               </thead>
 
               <tbody>
-                {mappedResults.map((item, index) => (
+                {(Array.isArray(mappedResults) ? mappedResults : []).map((item, index) => (
                   <tr key={index}>
                     <td>{item.redirect_id}</td>
                     <td>{item.foreign_id}</td>
@@ -801,10 +891,6 @@ function MapForeignIdsPopup({
             </table>
           </div>
         </div>
-
-        {/* <div className="modal-footer">
-          <button className="primary-btn" onClick={onClose}>Okay</button>
-        </div> */}
       </div>
     </div>
   );

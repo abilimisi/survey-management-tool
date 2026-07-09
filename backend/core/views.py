@@ -10,6 +10,10 @@ from django.db.models import Count, Max, Q
 from django.conf import settings
 import requests
 from user_agents import parse
+import pycountry
+
+from .utils import is_proxy
+
 
 from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile
 
@@ -416,9 +420,9 @@ def create_respondent_and_redirect(request, project_vendor):
     test_country = request.GET.get("country")
 
     detected_country = (
-        test_country
-        or get_country_from_ip(respondent.ip_address)
-    )
+            test_country
+            or get_country_from_ip(respondent.ip_address)
+        )
 
     required_country = project_vendor.project.country
 
@@ -426,37 +430,112 @@ def create_respondent_and_redirect(request, project_vendor):
 
     if required_country and detected_country.strip().lower() != required_country.strip().lower():
         respondent.previous_status = respondent.status
-        respondent.status = "terminate"
+        respondent.status = "security_terminate"
+        respondent.termination_reason = "country_mismatch"
         respondent.country_validation_passed = False
         respondent.completed_at = timezone.now()
         respondent.save()
 
+        security_link = (
+            project_vendor.security_terminate_link
+            or project_vendor.terminate_link
+        )
+
         terminate_link = replace_tokens(
-            project_vendor.terminate_link,
+            security_link,
             respondent
         )
 
         RedirectLog.objects.create(
             respondent=respondent,
-            redirect_type="country_terminate",
+            redirect_type="security_country_terminate",
             redirect_url=terminate_link or "landing/terminate.html",
         )
-
         if terminate_link:
             return redirect(terminate_link)
 
         return render(
             request,
-            "landing/terminate.html",
+            "landing/security_terminate.html",
             {
                 "respondent": respondent,
-                "status": "terminate",
+                "status": "security_terminate",
                 "reason": "Country mismatch",
             }
         )
 
     respondent.country_validation_passed = True
+    respondent.termination_reason = None
     respondent.save()
+
+    #proxy check
+    client = project.client
+
+    if client.check_proxy:
+
+        proxy_found = is_proxy(
+            respondent.ip_address
+        )
+
+        if proxy_found:
+
+            respondent.previous_status = respondent.status
+
+            respondent.status = "terminate"
+
+            respondent.proxy_detected = True
+
+            respondent.termination_reason = "proxy_detected"
+
+            respondent.completed_at = timezone.now()
+
+            respondent.save()
+
+
+            terminate_link = replace_tokens(
+
+                project_vendor.terminate_link,
+
+                respondent
+
+            )
+
+
+            RedirectLog.objects.create(
+
+                respondent=respondent,
+
+                redirect_type="proxy_terminate",
+
+                redirect_url=terminate_link
+
+            )
+
+
+            if terminate_link:
+
+                return redirect(
+
+                    terminate_link
+
+                )
+
+
+            return render(
+
+                request,
+
+                "landing/terminate.html",
+
+                {
+
+                    "status": "terminate",
+
+                    "reason": "Proxy detected"
+
+                }
+
+            )
 
     # REDIRECT TO CLIENT SURVEY
     client_live_link = project_vendor.project.live_link
@@ -612,7 +691,7 @@ def dashboard_stats(request):
     def calculate_stats(queryset):
         total_hits = queryset.count()
         completes = queryset.filter(status="complete").count()
-        terminates = queryset.filter(status="terminate").count()
+        terminates = queryset.filter(status__in=["terminate","security_terminate"]).count()
         quota_full = queryset.filter(status="quota_full").count()
         security_terminates = queryset.filter(status="security_terminate").count()
 
@@ -652,7 +731,7 @@ def project_report(request, project_id):
 
     total_hits = respondents.count()
     completes = respondents.filter(status="complete").count()
-    terminates = respondents.filter(status="terminate").count()
+    terminates = respondents.filter(status__in=["terminate","security_terminate"]).count()
     quota_full = respondents.filter(status="quota_full").count()
     security_terminates = respondents.filter(status="security_terminate").count()
 
@@ -691,7 +770,7 @@ def supplier_statistics(request, project_id):
 
         hits = respondents.count()
         completes = respondents.filter(status="complete").count()
-        terminates = respondents.filter(status="terminate").count()
+        terminates = respondents.filter(status__in=["terminate", "security_terminate"]).count()
         quota_full = respondents.filter(status="quota_full").count()
         security_terms = respondents.filter(status="security_terminate").count()
 
@@ -756,6 +835,8 @@ def respondent_hints(request, project_vendor_id):
 
     status = request.GET.get("status")
 
+    
+
     respondents = Respondent.objects.filter(
         project_vendor=project_vendor
     ).select_related(
@@ -803,7 +884,10 @@ def respondent_hints(request, project_vendor_id):
             "country": respondent.project.country,
             "vendor": respondent.vendor.name,
             "vendor_cpc": respondent.project_vendor.vendor_cpc,
+            # "status": respondent.status,
+            # "previous_status": respondent.previous_status,
             "status": respondent.status,
+            "termination_reason": respondent.termination_reason,
             "previous_status": respondent.previous_status,
             "s2s_status": respondent.s2s_status,
             "vendor_panelist_id": respondent.vendor_panelist_id,
@@ -817,6 +901,7 @@ def respondent_hints(request, project_vendor_id):
             "os": os_name,
             "device": device,
             "time_taken": time_taken,
+            "proxy_detected": respondent.proxy_detected,
         })
 
     return Response({
@@ -1060,14 +1145,15 @@ def panelist_list(request):
     return Response(data)
 
 def get_country_from_ip(ip_address):
+    
     if not ip_address:
         return "Unknown"
 
-    if ip_address in ["127.0.0.1", "localhost", "::1"]:                 
+    if ip_address in ["127.0.0.1", "localhost", "::1"]:
         return "India"
 
     try:
-        token = "d65bc3c122892d"
+        token = settings.IPINFO_TOKEN
 
         response = requests.get(
             f"https://api.ipinfo.io/lite/{ip_address}?token={token}",
@@ -1076,29 +1162,25 @@ def get_country_from_ip(ip_address):
 
         data = response.json()
 
-        # print("IPINFO Response:", data)
+        country_name = data.get("country")
+        country_code = data.get("country_code")
 
-        country_code = data.get("country")
+        if country_name:
+            return country_name
 
-        country_map = {
-            "IN": "India",
-            "GB": "England",
-            "US": "USA",
-            "CA": "Canada",
-            "AU": "Australia",
-        }
+        if not country_code:
+            return "Unknown"
 
-        return country_map.get(
-            country_code,
-            country_code or "Unknown"
-        )
+        if country_code:
+            country = pycountry.countries.get(alpha_2=country_code)
+            if country:
+                return country.name
 
-    except Exception as e:
-        print("IPINFO Error:", e)
+        return "Unknown"
+
+    except Exception:
         return "Unknown"
     
-
-
 @api_view(["GET"])
 def recent_projects(request):
 
@@ -1327,37 +1409,77 @@ def vendor_projects(request, vendor_id):
     return Response(list(unique_projects.values()))
 
 
+from django.db.models import Q
+
+
 @api_view(["POST"])
 def map_foreign_ids(request):
+
     raw_ids = request.data.get("redirect_ids", "")
 
-    redirect_ids = [
+    search_values = [
         item.strip()
         for item in raw_ids.replace(",", "\n").splitlines()
         if item.strip()
     ]
 
     respondents = Respondent.objects.filter(
-        respondent_id__in=redirect_ids
-    ).select_related("project", "vendor", "project_vendor")
+        Q(respondent_id__in=search_values) |
+        Q(vendor_panelist_id__in=search_values)
+    ).select_related(
+        "project",
+        "vendor",
+        "project_vendor"
+    ).order_by("-started_at")
 
     data = []
 
     for respondent in respondents:
+
+        # Determine what matched
+        if respondent.respondent_id in search_values:
+            searched_by = "Respondent ID"
+            searched_value = respondent.respondent_id
+
+        else:
+            searched_by = "Panelist ID"
+            searched_value = respondent.vendor_panelist_id
+
         data.append({
+
+            "searched_by": searched_by,
+            "searched_value": searched_value,
+
             "redirect_id": respondent.respondent_id,
+
             "foreign_id": respondent.vendor_panelist_id or "-",
+
             "ext": respondent.panel_misc_data or "-",
+
             "reconnect_id": respondent.reconnect_id or "-",
+
             "status": respondent.status,
+
+            "termination_reason": respondent.termination_reason,
+
             "loi": respondent.project.loi,
+
             "project_id": respondent.project.id,
+
             "project_name": respondent.project.name,
+
             "vendor_name": respondent.vendor.name,
+
             "vendor_cpi": respondent.project_vendor.vendor_cpc,
+
             "entrant_time": respondent.started_at,
+
             "completed_time": respondent.completed_at,
+
             "country": respondent.project.country,
         })
 
-    return Response(data)
+    return Response({
+        "total_found": len(data),
+        "results": data
+    })
