@@ -1,29 +1,17 @@
-.project-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* ============================
+   PROJECT FORM
+============================ */
 
-.project-section {
-  background: white;
-  border: 1px solid #dbe1ea;
-  padding: 16px;
-  border-radius: 8px;
-}
-
-.section-title {
-  background: #e5e5e5;
-  color: #111827;
-  padding: 10px 12px;
-  font-weight: 700;
-  border-radius: 6px;
-  margin-top: 6px;
-}
-
-.form-grid-2 {
+.project-form-layout {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 16px;
+}
+
+.form-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
 }
 
 .form-grid-3 {
@@ -32,37 +20,34 @@
   gap: 14px;
 }
 
-.project-form textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.small-field {
-  max-width: 420px;
-}
-
-.device-options {
-  display: flex;
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  flex-wrap: wrap;
 }
 
-.device-check {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 14px;
+.form-group textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  min-height: 70px;
+  resize: vertical;
+  font-size: 13px;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  gap: 10px;
 }
 
 @media (max-width: 1000px) {
-  .form-grid-2,
-  .form-grid-3 {
+  .form-grid-3,
+  .form-grid-2 {
     grid-template-columns: 1fr;
   }
 }

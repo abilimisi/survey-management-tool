@@ -122,27 +122,28 @@ function EditProject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
+    console.log("1. Submit clicked");
 
     try {
+      console.log("2. Calling API...");
+
       await updateProject(id, formData);
+
+      console.log("3. API Success");
 
       toast.success("Project updated successfully!");
 
+      console.log("4. Toast called");
+
       setTimeout(() => {
+        console.log("5. Navigating...");
         navigate("/projects");
-      }, 1500);
+      }, 1200);
 
     } catch (error) {
-      console.error(error.response?.data || error);
-
-      setError(
-        JSON.stringify(
-          error.response?.data || "Project update failed"
-        )
-      );
-
-      toast.error("Project update failed!");
+      console.log("API Error");
+      console.error(error);
     }
   };
 

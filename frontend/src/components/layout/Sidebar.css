@@ -1,41 +1,36 @@
 /* ==========================================
    SIDEBAR
+   
+   ≥ 1024px  DESKTOP  : Fixed, always visible, collapses to icon mode
+   < 1024px  OVERLAY  : Slides over content, hamburger in topbar controls it
 ========================================== */
 
 .sidebar {
-  width: 255px;
+  width: 200px;
   background: #111827;
   color: white;
-  padding: 20px;
+  padding: 16px 12px;
   position: fixed;
+  top: 0;
+  left: 0;
   height: 100vh;
-  overflow: hidden;
-  transition: width 0.25s ease;
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 300;
+  transform: translateX(0);
+  transition: width 0.25s ease, transform 0.25s ease;
 }
 
-/* ==========================================
-   COLLAPSED SIDEBAR
-========================================== */
-
+/* Desktop collapsed: icon-only, stays on screen */
 .sidebar.collapsed {
-  width: 90px;
+  width: 68px;
+  transform: translateX(0);
 }
 
-.sidebar.collapsed .sidebar-logo {
-  font-size: 18px;
-  text-align: center;
-}
-
-.sidebar.collapsed .sidebar-link {
-  justify-content: center;
-  padding: 12px;
-}
-
-.sidebar.collapsed .sidebar-header {
-  justify-content: center;
-  flex-direction: column;
-  gap: 14px;
-}
+.sidebar.collapsed .sidebar-logo { display: none; }
+.sidebar.collapsed .sidebar-link span { display: none; }
+.sidebar.collapsed .sidebar-link { justify-content: center; padding: 10px; }
+.sidebar.collapsed .sidebar-header { flex-direction: column; justify-content: center; align-items: center; gap: 12px; }
 
 /* ==========================================
    SIDEBAR HEADER
@@ -44,39 +39,41 @@
 .sidebar-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 20px;
+  min-height: 36px;
 }
 
 .sidebar-logo {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   color: white;
-  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* ==========================================
-   COLLAPSE BUTTON
+   INTERNAL TOGGLE — desktop only
 ========================================== */
 
 .sidebar-collapse-btn {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  margin-top: -4px;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
 }
 
-.sidebar-collapse-btn:hover {
-  background: #2563eb;
-}
+.sidebar-collapse-btn:hover { background: #2563eb; }
 
 /* ==========================================
    SIDEBAR MENU
@@ -85,63 +82,59 @@
 .sidebar-menu {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  color: #d1d5db;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: #9ca3af;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, color 0.15s;
+  overflow: hidden;
 }
 
-.sidebar-link:hover,
-.sidebar-link.active {
-  background: #2563eb;
-  color: white;
-}
+.sidebar-link:hover { background: rgba(255,255,255,0.07); color: white; }
+.sidebar-link.active { background: #2563eb; color: white; }
 
 /* ==========================================
-   MOBILE RESPONSIVE
+   OVERLAY MODE  < 1024px
+   Covers: all phones, iPad Mini/Air,
+   Surface Pro 7, Galaxy Z Fold, Asus Zenbook
 ========================================== */
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
 
   .sidebar {
     width: 220px;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-}
-
-@media (max-width: 700px) {
-
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
+    transform: translateX(0);   /* open: visible */
   }
 
   .sidebar.collapsed {
-    width: 100%;
+    width: 220px;
+    transform: translateX(-100%); /* hidden: slides off-screen */
   }
 
-  .sidebar.collapsed .sidebar-link {
-    justify-content: flex-start;
-  }
+  /* Restore full labels in overlay mode */
+  .sidebar.collapsed .sidebar-logo { display: block; }
+  .sidebar.collapsed .sidebar-link span { display: inline; }
+  .sidebar.collapsed .sidebar-link { justify-content: flex-start; padding: 9px 10px; }
+  .sidebar.collapsed .sidebar-header { flex-direction: row; justify-content: space-between; align-items: center; gap: 0; }
 
-  .main-section,
-  .sidebar-collapsed .main-section {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
+  /* Internal toggle hidden — topbar hamburger handles it */
+  .sidebar-collapse-btn { display: none; }
+}
 
+/* Tiny phones: Z Fold (344px), S8+ (360px), iPhone SE (375px) */
+@media (max-width: 380px) {
+  .sidebar { width: 200px; }
+  .sidebar.collapsed { width: 200px; }
+  .sidebar-link { font-size: 12.5px; padding: 8px 10px; }
 }
