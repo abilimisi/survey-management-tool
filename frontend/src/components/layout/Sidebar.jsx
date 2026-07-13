@@ -4,53 +4,51 @@ import {
   Building2,
   FolderKanban,
   BarChart3,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./Sidebar.css";
 
-function Sidebar({ isCollapsed, toggleSidebar }) {
-  const isSuperuser =
-  localStorage.getItem("is_superuser") === "true";
+// onNavigate: called when a link is clicked — closes sidebar on overlay mode
+function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
+  const isSuperuser = localStorage.getItem("is_superuser") === "true";
 
   const menuItems = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Clients", path: "/clients", icon: Building2 },
-    { name: "Vendors", path: "/vendors", icon: Users },
-    { name: "Projects", path: "/projects", icon: FolderKanban },
-    { name: "Reports", path: "/reports", icon: BarChart3 },
-    { name: "Panelists", path: "/panelists", icon: Users },
+    { name: "Dashboard",        path: "/dashboard",        icon: LayoutDashboard },
+    { name: "Clients",          path: "/clients",          icon: Building2 },
+    { name: "Vendors",          path: "/vendors",          icon: Users },
+    { name: "Projects",         path: "/projects",         icon: FolderKanban },
+    { name: "Reports",          path: "/reports",          icon: BarChart3 },
+    { name: "Panelists",        path: "/panelists",        icon: Users },
     { name: "Company Contacts", path: "/company-contacts", icon: Building2 },
-
     ...(isSuperuser
       ? [{ name: "Users", path: "/users", icon: Users }]
       : []),
   ];
+
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-header">
-        <div className="sidebar-logo">
-          {isCollapsed ? "ST" : "Survey Tool"}
-        </div>
 
+      <div className="sidebar-header">
+        <div className="sidebar-logo">Survey Tool</div>
+
+        {/* Internal collapse btn — only visible on desktop (hidden via CSS on mobile) */}
         <button
           className="sidebar-collapse-btn"
           onClick={toggleSidebar}
+          aria-label="Collapse sidebar"
         >
-          {isCollapsed ? (
-            <ChevronRight size={18} />
-          ) : (
-            <ChevronLeft size={18} />
-          )}
+          {isCollapsed
+            ? <ChevronRight size={18} />
+            : <ChevronLeft size={18} />
+          }
         </button>
       </div>
 
       <nav className="sidebar-menu">
         {menuItems.map((item) => {
           const Icon = item.icon;
-
           return (
             <NavLink
               key={item.path}
@@ -59,13 +57,16 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
               className={({ isActive }) =>
                 isActive ? "sidebar-link active" : "sidebar-link"
               }
+              onClick={onNavigate}  /* close sidebar on mobile after navigation */
             >
               <Icon size={20} />
-              {!isCollapsed && <span>{item.name}</span>}
+              {/* Always render span — CSS hides it when icon-only */}
+              <span>{item.name}</span>
             </NavLink>
           );
         })}
       </nav>
+
     </aside>
   );
 }

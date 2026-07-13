@@ -4,7 +4,6 @@
   --border: #e2e8f0;
   --text: #0f172a;
   --muted: #64748b;
-
   --blue: #2563eb;
   --green: #16a34a;
   --red: #dc2626;
@@ -17,9 +16,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  /* min-height: 100vh; */
-   min-height:auto;
-
+  min-height:auto;
   width:100%;
   max-width:100%;
   overflow-x:hidden;
