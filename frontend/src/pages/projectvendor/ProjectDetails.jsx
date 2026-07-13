@@ -54,7 +54,6 @@ function ProjectDetails() {
     ask_zip: false,
     ask_age: false,
     ask_gender: false,
-    qualification_required: true,
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -234,7 +233,6 @@ function ProjectDetails() {
       ask_zip: supplier.ask_zip || false,
       ask_age: supplier.ask_age || false,
       ask_gender: supplier.ask_gender || false,
-      qualification_required: supplier.qualification_required ?? true,
     });
 
     setShowAddSupplier(true);
@@ -308,6 +306,12 @@ function ProjectDetails() {
           >
             Map Foreign IDs
           </button>
+          <Link
+              to={`/projects/${project.id}/questions`}
+              className="primary-btn"
+          >
+              Screening Questions
+          </Link>
         </div>
       </div>
 
@@ -545,22 +549,6 @@ function ProjectDetails() {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Qualification Required</label>
-                  <select
-                    name="qualification_required"
-                    value={formData.qualification_required ? "true" : "false"}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        qualification_required: e.target.value === "true",
-                      })
-                    }
-                  >
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
               </div>
 
               <div className="form-grid-4">

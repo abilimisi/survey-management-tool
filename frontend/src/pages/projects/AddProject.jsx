@@ -36,6 +36,9 @@ function AddProject() {
     notes: "",
     project_brief: "",
     status: "bidding",
+    enable_screening: false,
+    screening_pass_percentage: 100,
+
   });
 
   useEffect(() => {
@@ -92,6 +95,24 @@ function AddProject() {
 
   try {
     await createProject(formData);
+
+    if(
+
+        formData.enable_screening &&
+
+        (
+            formData.screening_pass_percentage < 1 ||
+
+            formData.screening_pass_percentage > 100
+        )
+
+    ){
+
+        alert("Passing percentage must be between 1 and 100");
+
+        return;
+
+    }
     
     console.log("Project Created Successfully");
     toast.success("Project created successfully!");
@@ -313,6 +334,75 @@ function AddProject() {
               </div>
             </div>
           </div>
+          <div className="form-group">
+            <label>
+
+                  <input
+                      type="checkbox"
+                      checked={formData.enable_screening}
+                      onChange={(e)=>{
+
+                          const enabled = e.target.checked;
+
+                          setFormData({
+
+                              ...formData,
+
+                              enable_screening: enabled,
+
+                              screening_pass_percentage: enabled
+                                  ? formData.screening_pass_percentage
+                                  : 100
+
+                          });
+
+                      }}
+                  />
+
+                  Enable Pre Screening
+
+              </label>
+
+          </div>
+          {
+          formData.enable_screening && (
+
+          <div className="form-group">
+
+              <label>
+
+                  Passing Percentage
+
+              </label>
+
+              <input
+
+                  type="number"
+
+                  min="1"
+
+                  max="100"
+
+                  value={formData.screening_pass_percentage}
+
+                  onChange={(e)=>
+
+                      setFormData({
+
+                          ...formData,
+
+                          screening_pass_percentage:e.target.value
+
+                      })
+
+                  }
+
+              />
+
+          </div>
+
+          )
+          }
         </div>
 
         <div className="section-title">People</div>

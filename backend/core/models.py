@@ -452,6 +452,9 @@ class Project(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    enable_screening = models.BooleanField(default=False)
+    screening_pass_percentage = models.PositiveIntegerField(default=100,null=True,blank=True)
+
     def __str__(self):
         return self.name
 
@@ -488,7 +491,7 @@ class ProjectVendor(models.Model):
 
     s2s_token = models.CharField(max_length=128, blank=True, null=True, unique=True)
 
-    qualification_required = models.BooleanField(default=True)
+    # qualification_required = models.BooleanField(default=True)
 
     gid = models.CharField(max_length=255,unique=True, blank=True, null=True)
 
@@ -561,6 +564,16 @@ class Respondent(models.Model):
 
     proxy_detected = models.BooleanField(default=False)
     vpn_detected = models.BooleanField(default=False)
+    
+    screening_status = models.CharField(max_length=20,choices=[
+            ("pending", "Pending"),
+            ("passed", "Passed"),
+            ("failed", "Failed"),
+        ],
+        default="pending",
+    )
+
+    screening_score = models.DecimalField( max_digits=5,decimal_places=2, default=0)
     
     def __str__(self):
         return self.respondent_id
@@ -666,3 +679,66 @@ class CompanyContact(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name or ''}"
+    
+
+class ScreeningQuestion(models.Model):
+
+    QUESTION_TYPES = [
+        ("radio", "Radio"),
+        ("checkbox", "Checkbox"),
+        ("text", "Text"),
+        ("textarea", "Textarea"),
+        ("number", "Number"),
+        ("select", "Dropdown"),
+    ]
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="screening_questions"
+    )
+
+    question = models.CharField(max_length=500)
+
+    question_type = models.CharField(
+        max_length=20,
+        choices=QUESTION_TYPES
+    )
+
+    required = models.BooleanField(default=True)
+
+    display_order = models.PositiveIntegerField(default=1)
+
+    is_active = models.BooleanField(default=True)
+
+class ScreeningOption(models.Model):
+
+    question = models.ForeignKey(
+        ScreeningQuestion,
+        on_delete=models.CASCADE,
+        related_name="options"
+    )
+
+    option_text = models.CharField(max_length=255)
+
+    is_correct = models.BooleanField(default=False)
+
+    display_order = models.PositiveIntegerField(default=1)
+
+class RespondentAnswer(models.Model):
+
+    respondent = models.ForeignKey(
+        Respondent,
+        on_delete=models.CASCADE,
+        related_name="answers"
+    )
+
+    question = models.ForeignKey(
+        ScreeningQuestion,
+        on_delete=models.CASCADE
+    )
+
+    answer = models.TextField()
+
+    is_correct = models.BooleanField(default=False)
+

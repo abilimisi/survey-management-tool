@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, ScreeningQuestion, ScreeningOption, RespondentAnswer
 
 from .models import UserProfile
 
@@ -144,3 +144,7 @@ class CompanyContactAdmin(admin.ModelAdmin):
 
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name or ''}"
+    
+admin.site.register(ScreeningQuestion)
+admin.site.register(ScreeningOption)
+admin.site.register(RespondentAnswer)

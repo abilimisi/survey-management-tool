@@ -4,11 +4,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 # from .views import recent_projects_stats
 from .views import (
+    create_option,
+    create_question,
+    delete_option,
+    delete_question,
     get_users,
     create_user,
     map_foreign_ids,
+    project_questions,
     simple_process,
     start_survey_by_gid,
+    update_option,
+    update_question,
     update_user,
     delete_user
 )
@@ -36,6 +43,8 @@ from .views import (
     recent_projects,
     client_projects,
     vendor_projects,
+    screening_questions,
+    submit_screening,
     
 )
 
@@ -88,6 +97,19 @@ urlpatterns = [
     path("vendors/<int:vendor_id>/projects/",vendor_projects,name="vendor-projects",),
 
     path("map-foreign-ids/", map_foreign_ids, name="map-foreign-ids"),  
+
+    path("projects/<int:project_id>/questions/",project_questions),
+    path("projects/<int:project_id>/questions/create/",create_question),
+    path("questions/<int:question_id>/update/",update_question),
+    path("questions/<int:question_id>/delete/",delete_question),
+    path("questions/<int:question_id>/options/create/",create_option,name="create-option"),
+
+    path("options/<int:option_id>/update/",update_option),
+    path("options/<int:option_id>/delete/",delete_option),
+
+    path("screening/submit/", submit_screening, name="submit-screening"),
+    path("screening/<str:respondent_id>/",screening_questions,name="screening-questions"),
+
 
 ]
 

@@ -31,6 +31,9 @@ import EditCompanyContact from "../pages/companycontacts/EditCompanyContact";
 
 import UsersList from "../pages/users/UsersList";
 
+import ScreeningQuestions from "../pages/screening/ScreeningQuestions";
+import ScreeningSurvey from "../pages/screening/ScreeningSurvey";
+
 
 function ProtectedLayout({ children }) {
   return (
@@ -217,6 +220,24 @@ function AppRoutes() {
           )
         }
       />
+      <Route
+          path="/projects/:projectId/questions"
+          element={
+            <ProtectedLayout>
+              <ScreeningQuestions />
+            </ProtectedLayout>
+          }
+      />
+      <Route
+          path="/screening/:respondentId"
+          element={
+            <ProtectedLayout>
+              <ScreeningSurvey />
+            </ProtectedLayout>
+          }
+      />
+
+
     </Routes>
 
     

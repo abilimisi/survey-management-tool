@@ -4,9 +4,10 @@ from django.contrib.auth.models import User
 
 from django.conf import settings
 from rest_framework import serializers 
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile,ScreeningQuestion,ScreeningOption,RespondentAnswer
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
@@ -154,3 +155,28 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         return user
+    
+class ScreeningOptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ScreeningOption
+        fields = "__all__"
+        read_only_fields = ["question"]
+
+class ScreeningQuestionSerializer(serializers.ModelSerializer):
+
+    options = ScreeningOptionSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = ScreeningQuestion
+        fields = "__all__"
+        read_only_fields = ["project"]
+
+class RespondentAnswerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RespondentAnswer
+        fields = "__all__"

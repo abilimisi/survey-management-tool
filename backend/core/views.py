@@ -15,13 +15,15 @@ import pycountry
 from .utils import is_proxy
 
 
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile
+from .models import Client, CompanyContact, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile
 
 from django.contrib.auth.models import User
 
 from .serializers import (
     ClientSerializer,
     CompanyContactSerializer,
+    ScreeningOptionSerializer,
+    ScreeningQuestionSerializer,
     VendorSerializer,
     ProjectSerializer,
     ProjectVendorSerializer,
@@ -536,9 +538,50 @@ def create_respondent_and_redirect(request, project_vendor):
                 }
 
             )
+    # ------------------------------------
+    # SCREENING CHECK
+    # ------------------------------------
 
-    # REDIRECT TO CLIENT SURVEY
-    client_live_link = project_vendor.project.live_link
+    if project_vendor.project.enable_screening:
+
+        screening_url = (
+            f"{settings.FRONTEND_URL}/screening/{respondent.respondent_id}"
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="screening_start",
+            redirect_url=screening_url
+        )
+
+        return redirect(screening_url)
+
+    # ------------------------------------
+    # CHECK SCREENING
+    # ------------------------------------
+
+    project = project_vendor.project
+
+    if project.enable_screening:
+
+        screening_url = (
+            f"{settings.FRONTEND_URL}/screening/{respondent.respondent_id}"
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="screening_start",
+            redirect_url=screening_url,
+        )
+
+        return redirect(screening_url)
+
+
+    # ------------------------------------
+    # NO SCREENING
+    # ------------------------------------
+
+    client_live_link = project.live_link
 
     final_client_link = replace_tokens(
         client_live_link,
@@ -1467,3 +1510,372 @@ def map_foreign_ids(request):
         "total_found": len(data),
         "results": data
     })
+
+@api_view(["GET"])
+def project_questions(request, project_id):
+
+    project = get_object_or_404(
+        Project,
+        id=project_id
+    )
+
+    questions = ScreeningQuestion.objects.filter(
+        project=project
+    ).order_by("display_order")
+
+    serializer = ScreeningQuestionSerializer(
+        questions,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+@api_view(["POST"])
+def create_question(request, project_id):
+
+    project = get_object_or_404(
+        Project,
+        id=project_id
+    )
+
+    serializer = ScreeningQuestionSerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save(project=project)
+
+        return Response(serializer.data)
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+
+@api_view(["PUT"])
+def update_question(request, question_id):
+
+    question = get_object_or_404(
+        ScreeningQuestion,
+        id=question_id
+    )
+
+    serializer = ScreeningQuestionSerializer(
+        question,
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(serializer.data)
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+
+@api_view(["DELETE"])
+def delete_question(request, question_id):
+
+    question = get_object_or_404(
+        ScreeningQuestion,
+        id=question_id
+    )
+
+    question.delete()
+
+    return Response({
+        "message":"Question deleted successfully."
+    })
+
+@api_view(["POST"])
+def create_option(request, question_id):
+
+    question = get_object_or_404(
+        ScreeningQuestion,
+        id=question_id
+    )
+
+    serializer = ScreeningOptionSerializer(
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save(question=question)
+
+        return Response(serializer.data)
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+    
+@api_view(["PUT"])
+def update_option(request, option_id):
+
+    option = get_object_or_404(
+        ScreeningOption,
+        id=option_id
+    )
+
+    serializer = ScreeningOptionSerializer(
+        option,
+        data=request.data
+    )
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(serializer.data)
+
+    return Response(
+        serializer.errors,
+        status=400
+    )
+
+
+@api_view(["DELETE"])
+def delete_option(request, option_id):
+
+    option = get_object_or_404(
+        ScreeningOption,
+        id=option_id
+    )
+
+    option.delete()
+
+    return Response({
+        "message":"Option deleted successfully."
+    })
+
+@api_view(["GET"])
+def screening_questions(request, respondent_id):
+
+    respondent = get_object_or_404(
+        Respondent,
+        respondent_id=respondent_id
+    )
+
+    questions = (
+        ScreeningQuestion.objects
+        .filter(
+            project=respondent.project,
+            is_active=True
+        )
+        .prefetch_related("options")
+        .order_by("display_order")
+    )
+
+    serializer = ScreeningQuestionSerializer(
+        questions,
+        many=True
+    )
+
+    return Response({
+
+        "respondent_id": respondent.respondent_id,
+
+        "project_id": respondent.project.id,
+
+        "project_name": respondent.project.name,
+
+        "questions": serializer.data
+
+    })
+
+@api_view(["POST"])
+def submit_screening(request):
+
+    respondent = get_object_or_404(
+        Respondent,
+        respondent_id=request.data.get("respondent_id")
+    )
+
+    answers = request.data.get("answers", [])
+
+    # Remove previous answers
+    RespondentAnswer.objects.filter(
+        respondent=respondent
+    ).delete()
+
+    total_questions = 0
+    correct_answers = 0
+
+    for item in answers:
+
+        question = get_object_or_404(
+            ScreeningQuestion,
+            id=item["question_id"]
+        )
+
+        user_answer = str(item["answer"]).strip()
+
+        is_correct = False
+
+        ####################################################
+        # RADIO / SELECT
+        ####################################################
+        if question.question_type in ["radio", "select"]:
+
+            correct_option = question.options.filter(
+                is_correct=True
+            ).first()
+
+            if (
+                correct_option and
+                user_answer.lower() ==
+                correct_option.option_text.strip().lower()
+            ):
+                is_correct = True
+
+        ####################################################
+        # CHECKBOX
+        ####################################################
+        elif question.question_type == "checkbox":
+
+            correct_options = question.options.filter(
+                is_correct=True
+            ).values_list(
+                "option_text",
+                flat=True
+            )
+
+            correct_set = {
+                x.strip().lower()
+                for x in correct_options
+            }
+
+            user_set = {
+                x.strip().lower()
+                for x in user_answer.split(",")
+                if x.strip()
+            }
+
+            if user_set == correct_set:
+                is_correct = True
+
+        ####################################################
+        # TEXT / TEXTAREA / NUMBER
+        ####################################################
+        else:
+
+            correct_option = question.options.filter(
+                is_correct=True
+            ).first()
+
+            if (
+                correct_option and
+                user_answer.lower() ==
+                correct_option.option_text.strip().lower()
+            ):
+                is_correct = True
+
+        RespondentAnswer.objects.create(
+            respondent=respondent,
+            question=question,
+            answer=user_answer,
+            is_correct=is_correct
+        )
+
+        total_questions += 1
+
+        if is_correct:
+            correct_answers += 1
+
+    ####################################################
+    # SCORE
+    ####################################################
+
+    score = (
+        round((correct_answers / total_questions) * 100, 2)
+        if total_questions else 0
+    )
+
+    passing_score = respondent.project.screening_pass_percentage
+
+    passed = score >= passing_score
+
+    ####################################################
+    # UPDATE RESPONDENT
+    ####################################################
+
+    respondent.screening_score = score
+
+    if passed:
+
+        respondent.screening_status = "passed"
+
+    else:
+
+        respondent.screening_status = "failed"
+
+        respondent.previous_status = respondent.status
+
+        respondent.status = "terminate"
+
+        respondent.completed_at = timezone.now()
+
+    respondent.save(
+        update_fields=[
+            "screening_status",
+            "screening_score",
+            "status",
+            "previous_status",
+            "completed_at",
+        ]
+    )
+    ####################################################
+    # REDIRECT URL
+    ####################################################
+
+    if passed:
+
+        redirect_url = replace_tokens(
+            respondent.project.live_link,
+            respondent
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="screening_pass",
+            redirect_url=redirect_url
+        )
+
+    else:
+
+        redirect_url = replace_tokens(
+            respondent.project_vendor.terminate_link,
+            respondent
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="screening_failed",
+            redirect_url=redirect_url
+        )    
+    ####################################################
+    # RESPONSE
+    ####################################################
+
+    return Response({
+
+        "success": True,
+
+        "passed": passed,
+
+        "score": score,
+
+        "passing_score": passing_score,
+
+        "correct_answers": correct_answers,
+
+        "total_questions": total_questions,
+
+        "redirect_url": redirect_url
+
+}) 
