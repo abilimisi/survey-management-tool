@@ -270,7 +270,7 @@ function ScreeningSurvey() {
 
                         }
 
-                        {
+                        {/* {
 
                             question.question_type==="textarea" &&
 
@@ -292,7 +292,7 @@ function ScreeningSurvey() {
 
                         />
 
-                        }
+                        } */}
 
                         {
 

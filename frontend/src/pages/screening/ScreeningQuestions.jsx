@@ -12,6 +12,8 @@ import {
 } from "../../api/screeningApi";
 
 import "./ScreeningQuestions.css";
+import QuestionModal from "../../components/screening/QuestionModal";
+import OptionModal from "../../components/screening/OptionModal";
 
 function ScreeningQuestions() {
   const { projectId } = useParams();
@@ -58,42 +60,43 @@ function ScreeningQuestions() {
       console.error(err);
     }
   };
-  const handleSaveQuestion = async (e) => {
-
-        e.preventDefault();
+  const handleSaveQuestion = async (form) => {
 
         try {
 
             if (editingQuestion) {
 
                 await updateQuestion(
+
                     editingQuestion.id,
-                    questionForm
-                );
 
-            } else {
+                    form
 
-                await createQuestion(
-                    projectId,
-                    questionForm
                 );
 
             }
 
-            await loadQuestions();
+            else {
+
+                await createQuestion(
+
+                    projectId,
+
+                    form
+
+                );
+
+            }
 
             setShowQuestionModal(false);
 
             setEditingQuestion(null);
 
-            setQuestionForm({
-                question: "",
-                question_type: "radio",
-                required: true,
-                display_order: 1,
-            });
+            loadQuestions();
 
-        } catch (err) {
+        }
+
+        catch (err) {
 
             console.error(err);
 
@@ -101,37 +104,33 @@ function ScreeningQuestions() {
 
     };
 
-    const handleSaveOption = async (e) => {
-
-        e.preventDefault();
+    const handleSaveOption = async (form) => {
 
         try {
 
-            if(editingOption){
+            if (editingOption) {
 
                 await updateOption(
 
                     editingOption.id,
 
-                    optionForm
+                    form
 
                 );
 
             }
 
-            else{
+            else {
 
                 await createOption(
 
                     selectedQuestion.id,
 
-                    optionForm
+                    form
 
                 );
 
             }
-
-            await loadQuestions();
 
             setShowOptionModal(false);
 
@@ -139,17 +138,11 @@ function ScreeningQuestions() {
 
             setSelectedQuestion(null);
 
-            setOptionForm({
-
-                option_text:"",
-
-                is_correct:false,
-
-            });
+            loadQuestions();
 
         }
 
-        catch(err){
+        catch (err) {
 
             console.error(err);
 
@@ -425,228 +418,39 @@ function ScreeningQuestions() {
       </div>
 
       {/* Question Modal (Next Step) */}
-      {showQuestionModal && (
-        <div className="modal-overlay">
 
-          <div className="supplier-modal">
+        <QuestionModal
 
-            <div className="modal-header">
+            open={showQuestionModal}
 
-              <h2>
-                {editingQuestion
-                  ? "Edit Question"
-                  : "Add Question"}
-              </h2>
+            editingQuestion={editingQuestion}
 
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setShowQuestionModal(false)
-                }
-              >
-                ✕
-              </button>
+            onClose={() => setShowQuestionModal(false)}
 
-            </div>
+            onSave={handleSaveQuestion}
 
-           <form onSubmit={handleSaveQuestion}>
+        />
 
-                <div className="form-group">
+            {/* option mode */}
+      <OptionModal
 
-                    <label>Question</label>
+            open={showOptionModal}
 
-                    <input
-                        type="text"
-                        value={questionForm.question}
-                        onChange={(e)=>
-                            setQuestionForm({
-                                ...questionForm,
-                                question:e.target.value
-                            })
-                        }
-                        required
-                    />
+            editingOption={editingOption}
 
-                </div>
+            selectedQuestion={selectedQuestion}
 
-                <div className="form-group">
+            onClose={() => {
 
-                    <label>Question Type</label>
+                setShowOptionModal(false);
 
-                    <select
-                        value={questionForm.question_type}
-                        onChange={(e)=>
-                            setQuestionForm({
-                                ...questionForm,
-                                question_type:e.target.value
-                            })
-                        }
-                    >
+                setEditingOption(null);
 
-                        <option value="radio">Radio</option>
+            }}
 
-                        <option value="checkbox">Checkbox</option>
+            onSave={handleSaveOption}
 
-                        <option value="text">Text</option>
-
-                        <option value="textarea">Textarea</option>
-
-                    </select>
-
-                </div>
-
-                <div className="form-group">
-
-                    <label>Display Order</label>
-
-                    <input
-                        type="number"
-                        value={questionForm.display_order}
-                        onChange={(e)=>
-                            setQuestionForm({
-                                ...questionForm,
-                                display_order:e.target.value
-                            })
-                        }
-                    />
-
-                </div>
-
-                <div
-                    className="form-group"
-                    style={{
-                        display:"flex",
-                        gap:"10px",
-                        alignItems:"center"
-                    }}
-                >
-
-                    <input
-                        type="checkbox"
-                        checked={questionForm.required}
-                        onChange={(e)=>
-                            setQuestionForm({
-                                ...questionForm,
-                                required:e.target.checked
-                            })
-                        }
-                    />
-
-                    <label>Required</label>
-
-                </div>
-
-                <button
-                    className="primary-btn"
-                    type="submit"
-                >
-
-                    {editingQuestion
-                        ? "Update Question"
-                        : "Create Question"}
-
-                </button>
-
-            </form>
-
-          </div>
-
-        </div>
-      )}
-      {/* option mode */}
-      {showOptionModal && (
-            <div className="modal-overlay">
-
-                <div className="supplier-modal">
-
-                    <div className="modal-header">
-
-                        <h2>
-
-                            {editingOption
-                                ? "Edit Option"
-                                : "Add Option"}
-
-                        </h2>
-
-                        <button
-                            className="close-btn"
-                            onClick={() => {
-
-                                setShowOptionModal(false);
-
-                                setEditingOption(null);
-
-                                setSelectedQuestion(null);
-
-                            }}
-                        >
-                            ✕
-                        </button>
-
-                    </div>
-
-                    <form onSubmit={handleSaveOption}>
-
-                        <div className="form-group">
-
-                            <label>Option Text</label>
-
-                            <input
-                                type="text"
-                                value={optionForm.option_text}
-                                onChange={(e)=>
-                                    setOptionForm({
-                                        ...optionForm,
-                                        option_text:e.target.value
-                                    })
-                                }
-                                required
-                            />
-
-                        </div>
-
-                        <div
-                            className="form-group"
-                            style={{
-                                display:"flex",
-                                alignItems:"center",
-                                gap:"10px"
-                            }}
-                        >
-
-                            <input
-                                type="checkbox"
-                                checked={optionForm.is_correct}
-                                onChange={(e)=>
-                                    setOptionForm({
-                                        ...optionForm,
-                                        is_correct:e.target.checked
-                                    })
-                                }
-                            />
-
-                            <label>Correct Answer</label>
-
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="primary-btn"
-                        >
-
-                            {editingOption
-                                ? "Update Option"
-                                : "Save Option"}
-
-                        </button>
-
-                    </form>
-
-                </div>
-
-            </div>
-        )}
+        />
     </div>
   );
 }

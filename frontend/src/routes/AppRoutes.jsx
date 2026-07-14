@@ -231,9 +231,9 @@ function AppRoutes() {
       <Route
           path="/screening/:respondentId"
           element={
-            <ProtectedLayout>
+            // <ProtectedLayout>
               <ScreeningSurvey />
-            </ProtectedLayout>
+            // </ProtectedLayout>
           }
       />
 

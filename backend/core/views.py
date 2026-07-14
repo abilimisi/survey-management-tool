@@ -1738,7 +1738,7 @@ def submit_screening(request):
         ####################################################
         elif question.question_type == "checkbox":
 
-            correct_options = question.options.filter(
+            correct_option_values  = question.options.filter(
                 is_correct=True
             ).values_list(
                 "option_text",
@@ -1747,7 +1747,7 @@ def submit_screening(request):
 
             correct_set = {
                 x.strip().lower()
-                for x in correct_options
+                for x in correct_option_values 
             }
 
             user_set = {
@@ -1762,30 +1762,33 @@ def submit_screening(request):
         ####################################################
         # TEXT / TEXTAREA / NUMBER
         ####################################################
-        else:
+        elif question.question_type in ["text", "number"]:
 
-            correct_option = question.options.filter(
+            correct_option_values = question.options.filter(
                 is_correct=True
-            ).first()
+            ).values_list(
+                "option_text",
+                flat=True
+            )
 
-            if (
-                correct_option and
-                user_answer.lower() ==
-                correct_option.option_text.strip().lower()
-            ):
+            correct_option_values = [
+                str(x).strip().lower()
+                for x in correct_option_values
+            ]
+
+            if user_answer.lower() in correct_option_values:
                 is_correct = True
+                RespondentAnswer.objects.create(
+                    respondent=respondent,
+                    question=question,
+                    answer=user_answer,
+                    is_correct=is_correct
+                )
 
-        RespondentAnswer.objects.create(
-            respondent=respondent,
-            question=question,
-            answer=user_answer,
-            is_correct=is_correct
-        )
+                total_questions += 1
 
-        total_questions += 1
-
-        if is_correct:
-            correct_answers += 1
+                if is_correct:
+                    correct_answers += 1
 
     ####################################################
     # SCORE
