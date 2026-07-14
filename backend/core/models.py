@@ -742,3 +742,10 @@ class RespondentAnswer(models.Model):
 
     is_correct = models.BooleanField(default=False)
 
+class RespondentLog(models.Model):
+    project     = models.ForeignKey(Project, on_delete=models.CASCADE)
+    vendor      = models.ForeignKey(Vendor,  on_delete=models.SET_NULL, null=True, blank=True)
+    respondent_id = models.CharField(max_length=200, blank=True)
+    status      = models.CharField(max_length=50)   # complete / terminate / quota_full / started
+    timestamp   = models.DateTimeField(auto_now_add=True)
+    ip_address  = models.GenericIPAddressField(null=True, blank=True)

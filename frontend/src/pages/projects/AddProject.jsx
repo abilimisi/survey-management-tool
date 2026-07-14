@@ -334,75 +334,73 @@ function AddProject() {
               </div>
             </div>
           </div>
-          <div className="form-group">
-            <label>
+          <div className="form-grid-2">
+           <div className="form-group">
+
+              <div className="screening-row">
+
+                  <label
+                      htmlFor="enableScreening"
+                      className="screening-inline"
+                  >
+                      <input
+                          id="enableScreening"
+                          type="checkbox"
+                          checked={formData.enable_screening}
+                          onChange={(e) => {
+
+                              const enabled = e.target.checked;
+
+                              setFormData({
+                                  ...formData,
+                                  enable_screening: enabled,
+                                  screening_pass_percentage: enabled
+                                      ? formData.screening_pass_percentage
+                                      : 100
+                              });
+
+                          }}
+                      />
+
+                      <span>Enable Pre Screening</span>
+
+                  </label>
+
+              </div>
+
+          </div>
+
+          {
+          formData.enable_screening && (
+
+              <div className="form-group">
+
+                  <label>Passing Percentage</label>
 
                   <input
-                      type="checkbox"
-                      checked={formData.enable_screening}
-                      onChange={(e)=>{
-
-                          const enabled = e.target.checked;
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={formData.screening_pass_percentage}
+                      onChange={(e)=>
 
                           setFormData({
 
                               ...formData,
 
-                              enable_screening: enabled,
+                              screening_pass_percentage:e.target.value
 
-                              screening_pass_percentage: enabled
-                                  ? formData.screening_pass_percentage
-                                  : 100
+                          })
 
-                          });
-
-                      }}
+                      }
                   />
 
-                  Enable Pre Screening
-
-              </label>
-
-          </div>
-          {
-          formData.enable_screening && (
-
-          <div className="form-group">
-
-              <label>
-
-                  Passing Percentage
-
-              </label>
-
-              <input
-
-                  type="number"
-
-                  min="1"
-
-                  max="100"
-
-                  value={formData.screening_pass_percentage}
-
-                  onChange={(e)=>
-
-                      setFormData({
-
-                          ...formData,
-
-                          screening_pass_percentage:e.target.value
-
-                      })
-
-                  }
-
-              />
-
-          </div>
+              </div>
 
           )
           }
+
+          </div>
         </div>
 
         <div className="section-title">People</div>

@@ -15,7 +15,7 @@ import pycountry
 from .utils import is_proxy
 
 
-from .models import Client, CompanyContact, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile
+from .models import Client, CompanyContact, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
 
 from django.contrib.auth.models import User
 
@@ -254,6 +254,8 @@ def start_survey_by_gid(request):
         ProjectVendor,
         gid=gid
     )
+    
+    
 
     return create_respondent_and_redirect(request, project_vendor)
 
@@ -381,6 +383,17 @@ def create_respondent_and_redirect(request, project_vendor):
         ip_address=get_client_ip(request),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
         status="started",
+    )
+    
+    # ------------------------------------
+    # CREATE RESPONDENT LOG
+    # ------------------------------------
+
+    RespondentLog.objects.create(
+        project=project,
+        vendor=vendor,
+        respondent_id=respondent.respondent_id,
+        status="started"
     )
 
     # TARGET CAP CHECK
@@ -587,12 +600,14 @@ def create_respondent_and_redirect(request, project_vendor):
         client_live_link,
         respondent
     )
+    
 
     RedirectLog.objects.create(
         respondent=respondent,
         redirect_type="client_survey_start",
         redirect_url=final_client_link,
     )
+  
 
     return redirect(final_client_link)
 
@@ -657,6 +672,16 @@ def handle_survey_result(request, result_type):
     respondent.status = result_type
     respondent.completed_at = timezone.now()
     respondent.save()
+    
+    # ----------------------------------------
+    # Save Respondent Log
+    # ----------------------------------------
+    RespondentLog.objects.create(
+        project=respondent.project,
+        vendor=respondent.vendor,
+        respondent_id=respondent.respondent_id,
+        status=result_type
+    )
 
     project_vendor = respondent.project_vendor
 
@@ -695,6 +720,7 @@ def handle_survey_result(request, result_type):
         redirect_type=result_type,
         redirect_url=fallback_template,
     )
+    
 
     return render(
         request,
@@ -1882,3 +1908,16 @@ def submit_screening(request):
         "redirect_url": redirect_url
 
 }) 
+    
+@api_view(["GET"])
+def recent_responses(request):
+    logs = RespondentLog.objects.select_related("project","vendor") \
+                .order_by("-timestamp")[:20]
+    data = [{
+        "project_name":  l.project.name,
+        "vendor_name":   l.vendor.name if l.vendor else None,
+        "respondent_id": l.respondent_id,
+        "status":        l.status,
+        "timestamp":     l.timestamp,
+    } for l in logs]
+    return Response(data)

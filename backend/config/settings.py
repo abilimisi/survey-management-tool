@@ -56,9 +56,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+     "DEFAULT_PERMISSION_CLASSES": (
+         "rest_framework.permissions.IsAuthenticated",
+     ),
 }
 
 SIMPLE_JWT = {
@@ -144,13 +144,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://backwater-muster-repayment.ngrok-free.dev",
+    "https://carpenter-trodden-upstate.ngrok-free.dev",
 ]
 
-PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
+
+PUBLIC_BACKEND_URL = "https://carpenter-trodden-upstate.ngrok-free.dev"
 FRONTEND_URL = "http://localhost:5173"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://backwater-muster-repayment.ngrok-free.dev",
+    "https://carpenter-trodden-upstate.ngrok-free.dev",
 ]
