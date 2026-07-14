@@ -45,6 +45,7 @@ from .views import (
     vendor_projects,
     screening_questions,
     submit_screening,
+    recent_responses,
     
 )
 
@@ -109,6 +110,9 @@ urlpatterns = [
 
     path("screening/submit/", submit_screening, name="submit-screening"),
     path("screening/<str:respondent_id>/",screening_questions,name="screening-questions"),
+    
+    
+    path("dashboard/recent_responses/", recent_responses),
 
 
 ]
