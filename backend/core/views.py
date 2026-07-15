@@ -1762,6 +1762,7 @@ def submit_screening(request):
 
         user_answer = str(item["answer"]).strip()
 
+
         is_correct = False
 
         ####################################################
@@ -1785,7 +1786,7 @@ def submit_screening(request):
         ####################################################
         elif question.question_type == "checkbox":
 
-            correct_option_values  = question.options.filter(
+            correct_option_values = question.options.filter(
                 is_correct=True
             ).values_list(
                 "option_text",
@@ -1793,8 +1794,8 @@ def submit_screening(request):
             )
 
             correct_set = {
-                x.strip().lower()
-                for x in correct_option_values 
+                str(x).strip().lower()
+                for x in correct_option_values
             }
 
             user_set = {
@@ -1807,7 +1808,7 @@ def submit_screening(request):
                 is_correct = True
 
         ####################################################
-        # TEXT / TEXTAREA / NUMBER
+        # TEXT / NUMBER
         ####################################################
         elif question.question_type in ["text", "number"]:
 
@@ -1825,17 +1826,23 @@ def submit_screening(request):
 
             if user_answer.lower() in correct_option_values:
                 is_correct = True
-                RespondentAnswer.objects.create(
-                    respondent=respondent,
-                    question=question,
-                    answer=user_answer,
-                    is_correct=is_correct
-                )
 
-                total_questions += 1
+        ####################################################
+        # SAVE ANSWER (Always)
+        ####################################################
 
-                if is_correct:
-                    correct_answers += 1
+        RespondentAnswer.objects.create(
+            respondent=respondent,
+            question=question,
+            answer=user_answer,
+            is_correct=is_correct
+        )
+
+        total_questions += 1
+
+        if is_correct:
+            correct_answers += 1
+
 
     ####################################################
     # SCORE
@@ -1879,6 +1886,7 @@ def submit_screening(request):
             "completed_at",
         ]
     )
+
     ####################################################
     # REDIRECT URL
     ####################################################
@@ -1907,7 +1915,9 @@ def submit_screening(request):
             respondent=respondent,
             redirect_type="screening_failed",
             redirect_url=redirect_url
-        )    
+        )
+
+  
     ####################################################
     # RESPONSE
     ####################################################
@@ -1928,8 +1938,7 @@ def submit_screening(request):
 
         "redirect_url": redirect_url
 
-}) 
-    
+    })
 @api_view(["GET"])
 def recent_responses(request):
     logs = RespondentLog.objects.select_related("project","vendor") \
