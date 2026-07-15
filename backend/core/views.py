@@ -1906,9 +1906,19 @@ def submit_screening(request):
 
     else:
 
-        redirect_url = replace_tokens(
+        terminate_link = replace_tokens(
             respondent.project_vendor.terminate_link,
             respondent
+        )
+
+        if terminate_link:
+
+            redirect_url = terminate_link
+
+        else:
+            redirect_url = (
+            f"{settings.PUBLIC_BACKEND_URL}/api/terminate/"
+            f"?id={respondent.respondent_id}"
         )
 
         RedirectLog.objects.create(

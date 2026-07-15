@@ -35,7 +35,7 @@ function AddProject() {
     end_date: "",
     notes: "",
     project_brief: "",
-    status: "bidding",
+    status: "testing",
     enable_screening: false,
     screening_pass_percentage: 100,
 

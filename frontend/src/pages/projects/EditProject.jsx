@@ -35,7 +35,7 @@ function EditProject() {
     end_date: "",
     notes: "",
     project_brief: "",
-    status: "bidding",
+    status: "testing",
     enable_screening: false,
     screening_pass_percentage: 100,
 
@@ -83,7 +83,11 @@ function EditProject() {
         end_date: data.end_date || "",
         notes: data.notes || "",
         project_brief: data.project_brief || "",
-        status: data.status || "bidding",
+        status: data.status || "testing",
+        enable_screening: data.enable_screening,
+        screening_pass_percentage:
+        data.screening_pass_percentage ?? 100,
+
       });
     } catch (error) {
       console.error(error);
@@ -355,39 +359,43 @@ function EditProject() {
                 ))}
               </div>
             </div>
+            </div>
+            
+            <div className="form-grid-2">
+              <div className="form-group">
 
+                  <div className="screening-row">
 
+                      <label
+                          htmlFor="enableScreening"
+                          className="screening-inline"
+                      >
+                          <input
+                              id="enableScreening"
+                              type="checkbox"
+                              checked={formData.enable_screening}
+                              onChange={(e) => {
 
-            <div className="form-group">
-                        <label>
+                                  const enabled = e.target.checked;
 
-                              <input
-                                  type="checkbox"
-                                  checked={formData.enable_screening}
-                                  onChange={(e)=>{
+                                  setFormData({
+                                      ...formData,
+                                      enable_screening: enabled,
+                                      screening_pass_percentage: enabled
+                                          ? formData.screening_pass_percentage
+                                          : 100
+                                  });
 
-                                      const enabled = e.target.checked;
+                              }}
+                          />
 
-                                      setFormData({
+                          <span>Enable Pre Screening</span>
 
-                                          ...formData,
+                      </label>
 
-                                          enable_screening: enabled,
+                  </div>
 
-                                          screening_pass_percentage: enabled
-                                              ? formData.screening_pass_percentage
-                                              : 100
-
-                                      });
-
-                                  }}
-                              />
-
-                              Enable Pre Screening
-
-                          </label>
-
-                      </div>
+              </div>
                       {
                       formData.enable_screening && (
 
@@ -428,7 +436,7 @@ function EditProject() {
                       )
                       }
                     </div>
-                </div>
+            </div>
 
         <div className="section-title">People</div>
 
