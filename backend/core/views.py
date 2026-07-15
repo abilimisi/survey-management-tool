@@ -242,23 +242,44 @@ def start_survey(request, project_vendor_id):
     return create_respondent_and_redirect(request, project_vendor)
 
 # new_update-------------------------------------------
+# def start_survey_by_gid(request):
+#     gid = request.GET.get("gid")
+
+#     if not gid:
+#         return render(request, "landing/error.html", {
+#             "error_message": "Missing GID."
+#         })
+
+#     project_vendor = get_object_or_404(
+#         ProjectVendor,
+#         gid=gid
+#     )
+    
+    
+
+#     return create_respondent_and_redirect(request, project_vendor)
+
 def start_survey_by_gid(request):
     gid = request.GET.get("gid")
 
-    if not gid:
-        return render(request, "landing/error.html", {
-            "error_message": "Missing GID."
-        })
+    print("================================")
+    print("Incoming URL:", request.get_full_path())
+    print("Incoming GID:", repr(gid))
+
+    matches = ProjectVendor.objects.filter(gid=gid)
+
+    print("Matching Count:", matches.count())
+
+    if matches.exists():
+        print("Matched ProjectVendor ID:", matches.first().id)
+    else:
+        print("No matching ProjectVendor found.")
 
     project_vendor = get_object_or_404(
         ProjectVendor,
         gid=gid
     )
-    
-    
-
     return create_respondent_and_redirect(request, project_vendor)
-
 #new_update-------------------------------------------
 def create_respondent_and_redirect(request, project_vendor):
     vendor = project_vendor.vendor
