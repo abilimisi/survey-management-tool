@@ -272,7 +272,7 @@ function QuestionModal({
 
                             type="submit"
 
-                            className="primary-btn"
+                            className="primary-btn1"
 
                         >
 

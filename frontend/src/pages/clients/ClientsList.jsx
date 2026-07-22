@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { toast } from "react-toastify";
 // import "./Clients.css";
 import {
   getClients,
@@ -10,6 +11,7 @@ import {
 function ClientsList() {
 
   const [clients, setClients] = useState([]);
+  console.log(clients);
   const isSuperUser =
     localStorage.getItem("is_superuser") === "true";
 
@@ -57,7 +59,19 @@ function ClientsList() {
 
     try {
       await deleteClient(id);
-      fetchClients();
+
+      // Show success toast
+      toast.success("Client deleted successfully!", {
+          position: "top-right",
+          autoClose: 2000,
+      });
+
+      // Wait until toast is visible
+      setTimeout(() => {
+
+          fetchClients();
+
+      }, 2000);
     } catch (error) {
       console.error(error);
     }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus, Eye } from "lucide-react";
 import { getProjects, deleteProject } from "../../api/projectApi";
 import "./ProjectList.css";
+import { toast } from "react-toastify";
 
 function ProjectsList() {
   const [projects, setProjects] = useState([]);
@@ -46,16 +47,39 @@ function ProjectsList() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this project?")) return;
+const handleDelete = async (id) => {
 
-    try {
-      await deleteProject(id);
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this project?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+
+    await deleteProject(id);
+
+    toast.success("Project deleted successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+
+    setTimeout(() => {
       fetchProjects();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    }, 2000);
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast.error("Project deletion failed!", {
+      position: "top-right",
+      autoClose: 2500,
+    });
+
+  }
+
+};
 
   const handleFilterChange = (e) => {
     setFilters({

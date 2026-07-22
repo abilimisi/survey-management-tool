@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getScreeningQuestions,submitScreening } from "../../api/screeningSurveyApi";
+import "./ScreeningSurvey.css";
 
 function ScreeningSurvey() {
 
@@ -123,81 +124,73 @@ function ScreeningSurvey() {
         }
 
     };
+     return (
+        <div className="ps-page">
 
-    return(
+            <div className="ps-card">
 
-        <div className="screening-container">
+            <div className="ps-header">
+                <h1>Pre Screening Survey</h1>
 
-            <h1>Pre Screening Survey</h1>
+                <p>
+                Please answer the following questions before continuing to the main survey.
+                </p>
 
-            <p>
+            </div>
 
-                Project :
+            <div className="ps-body">
 
-                <strong>
+                {data.questions.map((question, index) => (
 
-                    {data.project_name}
+                <div
+                    className="ps-question-box"
+                    key={question.id}
+                >
 
-                </strong>
+                    <label className="ps-question-title">
+                    {index + 1}. {question.question}
+                    </label>
 
-            </p>
+                                {
 
-            {
+                                    question.question_type==="radio" &&
 
-                data.questions.map((question,index)=>(
+                                    question.options.map(option=>(
 
-                    <div
-                        className="question-card"
-                        key={question.id}
-                    >
+                                        <label
+                                            key={option.id}
+                                        >
 
-                        <h3>
+                                            <input
 
-                            {index+1}.
+                                                type="radio"
 
-                            {question.question}
+                                                name={`question_${question.id}`}
 
-                        </h3>
+                                                value={option.option_text}
+                                                checked={
+                                                (answers[question.id] || "") === option.option_text
+                                                }
 
-                        {
+                                                onChange={(e)=>
 
-                            question.question_type==="radio" &&
+                                                    handleAnswer(
+                                                        question.id,
+                                                        e.target.value
+                                                    )
 
-                            question.options.map(option=>(
+                                                }
 
-                                <label
-                                    key={option.id}
-                                >
+                                            />
 
-                                    <input
+                                            {option.option_text}
 
-                                        type="radio"
+                                        </label>
 
-                                        name={`question_${question.id}`}
+                                    ))
 
-                                        value={option.option_text}
-                                        checked={
-                                        (answers[question.id] || "") === option.option_text
-                                        }
-
-                                        onChange={(e)=>
-
-                                            handleAnswer(
-                                                question.id,
-                                                e.target.value
-                                            )
-
-                                        }
-
-                                    />
-
-                                    {option.option_text}
-
-                                </label>
-
-                            ))
-
-                        }
+                                }
+                      
 
                         {
 
@@ -270,29 +263,6 @@ function ScreeningSurvey() {
 
                         }
 
-                        {/* {
-
-                            question.question_type==="textarea" &&
-
-                           <textarea
-
-                           value={answers[question.id] || ""}
-
-                            onChange={(e)=>
-
-                            handleAnswer(
-
-                            question.id,
-
-                            e.target.value
-
-                            )
-
-                            }
-
-                        />
-
-                        } */}
 
                         {
 
@@ -379,21 +349,22 @@ function ScreeningSurvey() {
                 ))
 
             }
+            </div>
+            <div className="ps-footer">
 
-            <button
+                <button
+                className="ps-submit-btn"
+                onClick={handleSubmit}
+                >
+                Submit
+                </button>
 
-            onClick={handleSubmit}
+            </div>
 
-            >
-
-            Submit
-
-            </button>
+            </div>
 
         </div>
-
-    );
-
-}
+      );
+    }
 
 export default ScreeningSurvey;

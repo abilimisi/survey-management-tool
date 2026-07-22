@@ -96,35 +96,44 @@ function EditVendor() {
     alert("Copied!");
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
-  setError("");
+  setError('');
 
-  const payload = {
-    ...formData,
-  };
-
+  const payload = { ...formData };
   delete payload.s2s_token;
 
   try {
     await updateVendor(id, payload);
 
-    toast.success("Vendor updated successfully!");
+    // Show success toast
+    toast.success('Vendor updated successfully!', {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
 
+    // Navigate after toast is visible
     setTimeout(() => {
-      navigate("/vendors");
-    }, 1500);
+      navigate('/vendors');
+    }, 2200);
 
   } catch (error) {
     console.error(error.response?.data || error);
 
     setError(
       JSON.stringify(
-        error.response?.data || "Vendor update failed"
+        error.response?.data || 'Vendor update failed'
       )
     );
 
-    toast.error("Vendor update failed!");
+    toast.error('Vendor update failed!', {
+      position: 'top-right',
+      autoClose: 2500,
+    });
   }
 };
 
