@@ -220,7 +220,7 @@ function ProjectDetails() {
           }}>
             Map Foreign IDs
           </button>
-          <Link to={`/projects/${project.id}/questions`} className="primary-btn">
+          <Link to={`/projects/${project.id}/questions`} className="primary-btn" style={{ marginTop:'5px'}}>
             Screening Questions
           </Link>
         </div>

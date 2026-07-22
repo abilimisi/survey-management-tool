@@ -1,10 +1,4 @@
-/* ============================================================
-   ProjectDetails.css
-   Scoped styles ONLY for ProjectDetails.jsx
-   All class names prefixed with pd- to avoid index.css conflicts
-   Core classes (primary-btn, modal-overlay, form-group, etc.)
-   remain in index.css untouched.
-============================================================ */
+
 
 /* ── Action bar (top-right buttons) ── */
 .pd-action-bar {

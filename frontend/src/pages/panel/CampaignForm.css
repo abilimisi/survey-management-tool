@@ -1,71 +1,135 @@
-.campaign-form-page{
-
-    padding:25px;
-
+.campaign-form-page {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.campaign-form{
-
-    margin-top:25px;
-
+.campaign-form-page h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+.campaign-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.form-grid{
+.form-grid {
+  width: 100%;
+  display: grid;
 
-    display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
 
-    grid-template-columns:repeat(2,1fr);
+  gap: 18px;
 
-    gap:20px;
+  background: white;
 
+  border: 1px solid #dbe1ea;
+
+  padding: 24px;
+
+  border-radius: 8px;
+
+  box-sizing: border-box;
 }
 
-.form-grid label{
-
-    display:block;
-
-    margin-bottom:8px;
-
-    font-weight:600;
-
+.form-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.form-grid input,
-.form-grid select,
-textarea{
-
-    width:100%;
-
-    padding:10px;
-
-    border:1px solid #ddd;
-
-    border-radius:6px;
-
+.form-field-wide {
+  grid-column: 1 / -1;
 }
 
-textarea{
-
-    margin-top:20px;
-
-    resize:vertical;
-
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
-.primary-btn{
+.form-field input,
+.form-field select {
+  width: 100%;
+  box-sizing: border-box;
 
-    margin-top:25px;
+  padding: 11px 14px;
 
-    background:#2563eb;
+  border: 1px solid #dbe1ea;
 
-    color:white;
+  border-radius: 6px;
 
-    border:none;
+  font-size: 14px;
+}
 
-    padding:12px 20px;
+.campaign-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 110px;
+  resize: vertical;
+  padding: 12px 14px;
+  border: 1px solid #dbe1ea;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #111827;
+  font-family: inherit;
+}
 
-    border-radius:6px;
+.form-field select[multiple] {
+  min-height: 130px;
+}
 
-    cursor:pointer;
+.form-field input:focus,
+.form-field select:focus,
+.campaign-form textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+}
 
+/* Notes field sits outside the grid, like project-section */
+.campaign-form > .form-field-wide {
+  background: white;
+  border: 1px solid #dbe1ea;
+  padding: 24px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.primary-btn {
+  align-self: flex-start;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
 }

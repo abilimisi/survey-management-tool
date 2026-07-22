@@ -42,7 +42,7 @@ const CampaignDetail = () => {
 
     if (!campaign) {
 
-        return <h3>Loading...</h3>;
+        return <h3 className="page-loading">Loading...</h3>;
 
     }
 
@@ -50,11 +50,23 @@ const CampaignDetail = () => {
 
         <div className="campaign-detail">
 
-            <h2>{campaign.name}</h2>
+            <div className="campaign-detail-header">
+
+                <h2>{campaign.name}</h2>
+
+                <span
+                    className={`status-badge status-${String(
+                        campaign.status
+                    ).toLowerCase()}`}
+                >
+                    {campaign.status}
+                </span>
+
+            </div>
 
             <div className="campaign-card">
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Project</strong>
 
@@ -62,7 +74,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Status</strong>
 
@@ -70,7 +82,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Target</strong>
 
@@ -78,7 +90,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Country</strong>
 
@@ -86,7 +98,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Gender</strong>
 
@@ -94,7 +106,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field">
 
                     <strong>Industry</strong>
 
@@ -102,7 +114,7 @@ const CampaignDetail = () => {
 
                 </div>
 
-                <div>
+                <div className="detail-field detail-field-wide">
 
                     <strong>Notes</strong>
 
@@ -115,6 +127,7 @@ const CampaignDetail = () => {
             <div className="campaign-actions">
 
                 <button
+                    className="btn-ghost"
                     onClick={() =>
                         navigate(`/panel-campaigns/${id}/recipients`)
                     }
@@ -123,6 +136,8 @@ const CampaignDetail = () => {
                 </button>
 
                 <button
+
+                    className="btn-ghost"
 
                     onClick={() =>
                         navigate(`/panel-campaigns/${id}/generate`)
@@ -134,6 +149,8 @@ const CampaignDetail = () => {
 
                 <button
 
+                    className="btn-ghost"
+
                     onClick={() =>
                         navigate(`/panel-campaigns/${id}/recipients`)
                     }
@@ -144,6 +161,8 @@ const CampaignDetail = () => {
 
                 <button
 
+                    className="btn-ghost"
+
                     onClick={() =>
                         navigate(`/panel-campaigns/${id}/survey-links`)
                     }
@@ -153,6 +172,8 @@ const CampaignDetail = () => {
                 </button>
 
                 <button
+
+                    className="btn-primary"
 
                     onClick={() =>
                         navigate(`/panel-campaigns/${id}/stats`)

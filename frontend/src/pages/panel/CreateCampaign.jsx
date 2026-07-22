@@ -7,6 +7,9 @@ import { getProjectVendors } from "../../api/projectVendorApi";
 import { getProjectVendorsByProject } from "../../api/panelCampaignApi";
 import { INDUSTRIES } from "../../constants/industries";
 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import "./CampaignForm.css";
 
 
@@ -71,7 +74,9 @@ const CreateCampaign = () => {
 
         catch (err) {
 
-            console.error(err);
+            toast.error(
+                err.response?.data?.message || "Failed to create campaign."
+            );
 
         }
 
@@ -151,7 +156,11 @@ const CreateCampaign = () => {
 
             await createPanelCampaign(formData);
 
-            navigate("/panel-campaigns");
+            toast.success("Campaign created successfully!");
+
+            setTimeout(() => {
+                navigate("/panel-campaigns");
+            }, 1500);
 
         }
 
@@ -176,7 +185,7 @@ const CreateCampaign = () => {
 
                 <div className="form-grid">
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Campaign Name</label>
 
@@ -188,7 +197,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Project</label>
 
@@ -215,7 +224,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Project Vendor</label>
 
@@ -244,7 +253,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Status</label>
 
@@ -268,7 +277,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Target</label>
 
@@ -281,7 +290,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Country</label>
 
@@ -293,7 +302,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Gender</label>
 
@@ -317,7 +326,7 @@ const CreateCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field form-field-wide">
 
                         <label>Industry</label>
 
@@ -352,7 +361,7 @@ const CreateCampaign = () => {
 
                 </div>
 
-                <div>
+                <div className="form-field form-field-wide">
 
                     <label>Notes</label>
 
@@ -373,6 +382,13 @@ const CreateCampaign = () => {
                 </button>
 
             </form>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={1500}
+                hideProgressBar={false}
+                closeOnClick
+            />
 
         </div>
 

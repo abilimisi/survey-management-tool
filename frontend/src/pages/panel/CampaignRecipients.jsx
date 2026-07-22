@@ -90,21 +90,23 @@ export default function CampaignRecipients() {
 
             <div className="top-buttons">
 
-                <button onClick={handleGenerate}>
+                <button className="btn-secondary" onClick={handleGenerate}>
                     Generate Recipients
                 </button>
 
-                <button onClick={handleLinks}>
+                <button className="btn-secondary" onClick={handleLinks}>
                     View Survey Links
                 </button>
 
-                <button onClick={handleSendEmails}>
+                <button className="btn-primary" onClick={handleSendEmails}>
                     Send Emails
                 </button>
 
             </div>
 
-            <table>
+            <div className="table-scroll">
+
+            <table className="recipients-table">
 
                 <thead>
 
@@ -124,6 +126,14 @@ export default function CampaignRecipients() {
 
                 <tbody>
 
+                    {recipients.length === 0 && (
+
+                        <tr className="empty-row">
+                            <td colSpan={4}>No recipients yet.</td>
+                        </tr>
+
+                    )}
+
                     {recipients.map(r=>(
 
                         <tr key={r.id}>
@@ -134,7 +144,15 @@ export default function CampaignRecipients() {
 
                             <td>{r.country}</td>
 
-                            <td>{r.status}</td>
+                            <td>
+                                <span
+                                    className={`status-pill status-${String(
+                                        r.status
+                                    ).toLowerCase()}`}
+                                >
+                                    {r.status}
+                                </span>
+                            </td>
 
                         </tr>
 
@@ -144,6 +162,8 @@ export default function CampaignRecipients() {
 
             </table>
 
+            </div>
+
             {
                 links.length>0 &&
 
@@ -151,7 +171,9 @@ export default function CampaignRecipients() {
 
                     <h3>Survey Links</h3>
 
-                    <table>
+                    <div className="table-scroll">
+
+                    <table className="recipients-table">
 
                         <thead>
 
@@ -182,6 +204,7 @@ export default function CampaignRecipients() {
                                         <td>
 
                                             <a
+                                                className="link-pill"
                                                 href={link.survey_link}
                                                 target="_blank"
                                                 rel="noreferrer"
@@ -200,6 +223,8 @@ export default function CampaignRecipients() {
                         </tbody>
 
                     </table>
+
+                    </div>
 
                 </>
 

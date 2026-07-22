@@ -31,7 +31,7 @@ export default function RedirectJourney(){
     }
 
     if(!data)
-        return <p>Loading...</p>;
+        return <p className="page-loading">Loading...</p>;
 
     return(
 
@@ -45,41 +45,43 @@ export default function RedirectJourney(){
 
             <div className="journey-info">
 
-                <p>
+                <div className="journey-field">
 
                     <b>Respondent :</b>
 
                     {data.respondent.respondent_id}
 
-                </p>
+                </div>
 
-                <p>
+                <div className="journey-field">
 
                     <b>Status :</b>
 
                     {data.respondent.status}
 
-                </p>
+                </div>
 
-                <p>
+                <div className="journey-field">
 
                     <b>Project :</b>
 
                     {data.respondent.project}
 
-                </p>
+                </div>
 
-                <p>
+                <div className="journey-field">
 
                     <b>Vendor :</b>
 
                     {data.respondent.vendor}
 
-                </p>
+                </div>
 
             </div>
 
-            <table>
+            <div className="table-scroll">
+
+            <table className="journey-table">
 
                 <thead>
 
@@ -107,7 +109,7 @@ export default function RedirectJourney(){
 
                                 <tr key={item.id}>
 
-                                    <td>
+                                    <td className="mono-cell">
 
                                         {index+1}
 
@@ -119,13 +121,13 @@ export default function RedirectJourney(){
 
                                     </td>
 
-                                    <td>
+                                    <td className="url-cell">
 
                                         {item.url}
 
                                     </td>
 
-                                    <td>
+                                    <td className="mono-cell">
 
                                         {
 
@@ -148,6 +150,8 @@ export default function RedirectJourney(){
                 </tbody>
 
             </table>
+
+            </div>
 
         </div>
 

@@ -45,15 +45,15 @@ export default function CampaignDashboard() {
     };
 
     if (!campaign)
-        return <p>Loading...</p>;
+        return <p className="page-loading">Loading...</p>;
 
     return (
 
         <div className="campaign-dashboard">
 
-            <div className="dashboard-header">
+            <div className="dashboard-header_01">
 
-                <div>
+                <div className="dashboard-header-info_02">
 
                     <h2>{campaign.campaign.name}</h2>
 
@@ -67,13 +67,15 @@ export default function CampaignDashboard() {
 
                 </div>
 
-                <div className="status-badge">
+                <div className={`status-badge status-${String(campaign.campaign.status).toLowerCase()}`}>
 
                     {campaign.campaign.status}
 
                 </div>
 
             </div>
+
+            <div className="table-scroll">
 
             <table className="dashboard-table">
 
@@ -187,6 +189,8 @@ export default function CampaignDashboard() {
                 </tbody>
 
             </table>
+
+            </div>
 
         </div>
 

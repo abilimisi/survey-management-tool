@@ -45,15 +45,93 @@ export default function CampaignRespondents() {
 
     };
 
+   const handleExportCSV = () => {
+
+        if (rows.length === 0) {
+            alert("No data available to export.");
+            return;
+        }
+
+        const headers = [
+            "Respondent ID",
+            "Email",
+            "Project",
+            "Vendor",
+            "Country",
+            "Status",
+            "Previous Status",
+            "IP Address",
+            "Started",
+            "Completed"
+        ];
+
+        const csvRows = [];
+
+        csvRows.push(headers.join(","));
+
+        rows.forEach((row) => {
+
+            csvRows.push([
+                row.respondent_id,
+                row.email,
+                row.project,
+                row.vendor,
+                row.country,
+                row.status,
+                row.previous_status || "",
+                row.ip || "",
+                row.started_at
+                    ? new Date(row.started_at).toLocaleString()
+                    : "",
+                row.completed_at
+                    ? new Date(row.completed_at).toLocaleString()
+                    : ""
+            ].join(","));
+
+        });
+
+        const csvString = csvRows.join("\n");
+
+        const blob = new Blob([csvString], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+
+        link.href = url;
+
+        link.download = `Campaign_Respondents_${id}.csv`;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        window.URL.revokeObjectURL(url);
+
+    };
+
     return (
 
         <div className="campaign-respondents">
 
-            <div className="respondents-header">
+          <div className="respondents-header">
 
-                <h2>Campaign Respondents</h2>
+            <h2>Campaign Respondents</h2>
 
-            </div>
+            <button
+                className="export-btn1"
+                onClick={handleExportCSV}
+            >
+                Export CSV
+            </button>
+
+        </div>
+
+            <div className="table-scroll">
 
             <table className="respondents-table">
 
@@ -141,9 +219,9 @@ export default function CampaignRespondents() {
 
                                     <td>{r.previous_status || "-"}</td>
 
-                                    <td>{r.ip || "-"}</td>
+                                    <td className="mono-cell">{r.ip || "-"}</td>
 
-                                    <td>
+                                    <td className="mono-cell">
 
                                         {
                                             r.started_at
@@ -153,7 +231,7 @@ export default function CampaignRespondents() {
 
                                     </td>
 
-                                    <td>
+                                    <td className="mono-cell">
 
                                         {
                                             r.completed_at
@@ -189,6 +267,8 @@ export default function CampaignRespondents() {
                 </tbody>
 
             </table>
+
+            </div>
 
         </div>
 

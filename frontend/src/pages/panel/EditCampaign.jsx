@@ -5,6 +5,9 @@ import { getProjects } from "../../api/projectApi";
 import { getProjectVendorsByProject } from "../../api/panelCampaignApi";
 import { INDUSTRIES } from "../../constants/industries";
 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
     getPanelCampaign,
     updatePanelCampaign
@@ -196,15 +199,21 @@ const EditCampaign = () => {
 
             await updatePanelCampaign(id, formData);
 
-            alert("Campaign Updated Successfully");
+            toast.success("Campaign Updated Successfully!", {
+                position: "top-right",
+                autoClose: 2000,
+            });
 
-            navigate("/panel-campaigns");
+            setTimeout(() => {
+                navigate("/panel-campaigns");
+            }, 2000);
 
         }
 
         catch (err) {
 
             console.error(err);
+            toast.error("Failed to update campaign!");
 
         }
 
@@ -223,7 +232,7 @@ const EditCampaign = () => {
 
                 <div className="form-grid">
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Campaign Name</label>
 
@@ -235,7 +244,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Project</label>
 
@@ -266,7 +275,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Project Vendor</label>
 
@@ -297,7 +306,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Status</label>
 
@@ -319,7 +328,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Target</label>
 
@@ -332,7 +341,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Country</label>
 
@@ -344,7 +353,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field">
 
                         <label>Gender</label>
 
@@ -364,7 +373,7 @@ const EditCampaign = () => {
 
                     </div>
 
-                    <div>
+                    <div className="form-field form-field-wide">
 
                         <label>Industry</label>
 
@@ -403,7 +412,7 @@ const EditCampaign = () => {
 
                 </div>
 
-                <div>
+                <div className="form-field form-field-wide">
 
                     <label>Notes</label>
 
@@ -426,6 +435,8 @@ const EditCampaign = () => {
                 </button>
 
             </form>
+
+            <ToastContainer />
 
         </div>
 

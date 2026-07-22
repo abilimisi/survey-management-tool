@@ -49,7 +49,9 @@ export default function CampaignSurveyLinks() {
 
             <h2>Campaign Survey Links</h2>
 
-            <table>
+            <div className="table-scroll">
+
+            <table className="survey-links-table">
 
                 <thead>
 
@@ -69,6 +71,14 @@ export default function CampaignSurveyLinks() {
 
                 <tbody>
 
+                    {links.length === 0 && (
+
+                        <tr className="empty-row">
+                            <td colSpan={4}>No survey links yet.</td>
+                        </tr>
+
+                    )}
+
                     {
 
                         links.map((item)=>(
@@ -83,6 +93,8 @@ export default function CampaignSurveyLinks() {
 
                                     <input
 
+                                        className="link-input"
+
                                         value={item.survey_link}
 
                                         readOnly
@@ -94,6 +106,7 @@ export default function CampaignSurveyLinks() {
                                 <td>
 
                                     <button
+                                        className="copy-btn"
                                         onClick={()=>copyLink(item.survey_link)}
                                     >
                                         Copy
@@ -111,9 +124,10 @@ export default function CampaignSurveyLinks() {
 
             </table>
 
+            </div>
+
         </div>
 
     );
 
 }
-
