@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Plus } from "lucide-react";
-
+import { toast } from "react-toastify";
 import {
   getVendors,
   deleteVendor,
@@ -47,19 +47,37 @@ function VendorsList() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this vendor?"
-    );
 
-    if (!confirmDelete) return;
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this vendor?"
+  );
 
-    try {
-      await deleteVendor(id);
-      fetchVendors();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  if (!confirmDelete) return;
+
+  try {
+
+    await deleteVendor(id);
+
+    // Refresh the table
+    fetchVendors();
+
+    // Success Toast
+    toast.success("Vendor deleted successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast.error("Failed to delete vendor!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+
+  }
+};
 
   const handleFilterChange = (e) => {
   setFilters({

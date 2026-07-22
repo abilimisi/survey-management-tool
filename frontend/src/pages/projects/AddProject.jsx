@@ -88,44 +88,59 @@ function AddProject() {
       ?.split(",")
       .includes(device);
   };
-
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   setError("");
 
+  // Validate before API call
+  if (
+    formData.enable_screening &&
+    (
+      Number(formData.screening_pass_percentage) < 1 ||
+      Number(formData.screening_pass_percentage) > 100
+    )
+  ) {
+    toast.error("Passing percentage must be between 1 and 100");
+    return;
+  }
+
   try {
-    await createProject(formData);
 
-    if(
+    console.log("Sending Data:", formData);
 
-        formData.enable_screening &&
+    const response = await createProject(formData);
 
-        (
-            formData.screening_pass_percentage < 1 ||
-
-            formData.screening_pass_percentage > 100
-        )
-
-    ){
-
-        alert("Passing percentage must be between 1 and 100");
-
-        return;
-
-    }
-    
     console.log("Project Created Successfully");
-    toast.success("Project created successfully!");
-    console.log("Toast Executed");
+    console.log(response);
+
+    toast.success("Project created successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+
     setTimeout(() => {
       navigate("/projects");
-    }, 1500);
+    }, 2200);
 
   } catch (error) {
 
+    console.error("========== PROJECT ERROR ==========");
+
     console.error(error);
 
-    toast.error("Project creation failed!");
+    console.log("Status:", error.response?.status);
+
+    console.log("Backend Response:");
+
+    console.log(error.response?.data);
+
+    setError(JSON.stringify(error.response?.data));
+
+    toast.error("Project creation failed!", {
+      position: "top-right",
+      autoClose: 2500,
+    });
+
   }
 };
 

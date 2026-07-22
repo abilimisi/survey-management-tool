@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import {
     getQuestions,
     createQuestion,
@@ -187,7 +188,7 @@ function ScreeningQuestions() {
       </div>
 
       {/* Question List */}
-      <div className="question-list">
+      <div className="s-question-list">
 
         {questions.length > 0 ? (
 
@@ -195,19 +196,19 @@ function ScreeningQuestions() {
 
             <div
               key={q.id}
-              className="question-card"
+              className="s-question-card"
             >
 
-              <div className="question-header">
-                <div className="question-title">
+              <div className="s-question-header">
+                <div className="s-question-title">
 
-                    <span className="question-number">
+                    <span className="s-question-number">
 
                     Question {index+1}
 
                     </span>
 
-                    <span className="question-type">
+                    <span className="s-question-type">
 
                     {q.question_type.toUpperCase()}
 
@@ -245,7 +246,7 @@ function ScreeningQuestions() {
 
                           <li
                               key={option.id}
-                              className="option-item"
+                              className="s-option-item"
                           >
 
                               <span>
@@ -261,7 +262,7 @@ function ScreeningQuestions() {
                               <div>
 
                                   <button
-                                      className="edit-btn"
+                                      className="s-edit-btn"
                                       onClick={() => {
 
                                           setSelectedQuestion(q);
@@ -281,12 +282,12 @@ function ScreeningQuestions() {
                                       }}
                                   >
 
-                                      Edit
+                                      <Pencil size={14} strokeWidth={2} />
 
                                   </button>
 
                                   <button
-                                      className="delete-btn"
+                                      className="s-delete-btn"
                                       onClick={async () => {
 
                                           if (!window.confirm("Delete this option?"))
@@ -307,9 +308,10 @@ function ScreeningQuestions() {
                                       }}
                                   >
 
-                                      Delete
+                                      <Trash2 size={14} strokeWidth={2}/>
 
                                   </button>
+                                  
 
                               </div>
 
@@ -325,80 +327,57 @@ function ScreeningQuestions() {
 
               )}
 
-              <div className="question-actions">
+              <div className="s-question-actions">
 
               <button
-
-                  className="primary-btn"
-
-                  onClick={()=>{
-
+                    className="primary-btn"
+                    onClick={()=>{
                       setSelectedQuestion(q);
-
                       setEditingOption(null);
-
                       setOptionForm({
-
                           option_text:"",
-
                           is_correct:false,
-
                       });
-
                       setShowOptionModal(true);
-
-                  }}
-
-              >
+                    }}
+               >
 
                   + Add Option
 
               </button>
 
                 <button
-                    className="edit-btn"
+                    className="s-edit-btn"
                     onClick={() => {
 
                         setEditingQuestion(q);
-
-                    setQuestionForm    ({
-
+                        setQuestionForm({
                             question: q.question,
                             question_type: q.question_type,
                             required: q.required,
                             display_order: q.display_order,
 
                         });
-
                         setShowQuestionModal(true);
-
                     }}
                 >
-                    Edit
+                    <Pencil size={14} strokeWidth={2} />
                 </button>
 
                 <button
-                    className="delete-btn"
+                    className="s-delete-btn"
                     onClick={async () => {
-
                         if (!window.confirm("Delete this question?"))
                             return;
-
                         try {
-
                             await deleteQuestion(q.id);
-
                             loadQuestions();
-
                         } catch (err) {
-
                             console.error(err);
-
                         }
-
                     }}
                 >
-                    Delete
+                    <Trash2 size={14} strokeWidth={2}/>
                 </button>
 
               </div>
@@ -409,7 +388,7 @@ function ScreeningQuestions() {
 
         ) : (
 
-          <div className="no-data">
+          <div className="s-empty-state">
             No Screening Questions Found
           </div>
 
@@ -420,36 +399,23 @@ function ScreeningQuestions() {
       {/* Question Modal (Next Step) */}
 
         <QuestionModal
-
             open={showQuestionModal}
-
             editingQuestion={editingQuestion}
-
             onClose={() => setShowQuestionModal(false)}
-
             onSave={handleSaveQuestion}
-
         />
 
             {/* option mode */}
       <OptionModal
 
             open={showOptionModal}
-
             editingOption={editingOption}
-
-            selectedQuestion={selectedQuestion}
-
+            electedQuestion={selectedQuestion}
             onClose={() => {
-
                 setShowOptionModal(false);
-
                 setEditingOption(null);
-
             }}
-
             onSave={handleSaveOption}
-
         />
     </div>
   );

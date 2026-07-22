@@ -93,11 +93,16 @@ function EditClient() {
   try {
     await updateClient(id, formData);
 
-    toast.success("Client updated successfully!");
+    // Show the toast
+    toast.success("Client updated successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
 
+    // Wait until the toast is visible, then navigate
     setTimeout(() => {
       navigate("/clients");
-    }, 1200);
+    }, 2000);
 
   } catch (error) {
     console.error(error.response?.data || error);
