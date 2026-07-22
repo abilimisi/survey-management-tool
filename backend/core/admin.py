@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, ScreeningQuestion, ScreeningOption, RespondentAnswer
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, ScreeningQuestion, ScreeningOption, RespondentAnswer,PanelCampaign,PanelCampaignRecipient
 
 from .models import UserProfile
 
@@ -148,3 +148,6 @@ class CompanyContactAdmin(admin.ModelAdmin):
 admin.site.register(ScreeningQuestion)
 admin.site.register(ScreeningOption)
 admin.site.register(RespondentAnswer)
+
+admin.site.register(PanelCampaign)
+admin.site.register(PanelCampaignRecipient)

@@ -34,6 +34,17 @@ import UsersList from "../pages/users/UsersList";
 import ScreeningQuestions from "../pages/screening/ScreeningQuestions";
 import ScreeningSurvey from "../pages/screening/ScreeningSurvey";
 
+import CampaignList from "../pages/panel/CampaignList";
+import CreateCampaign from "../pages/panel/CreateCampaign";
+// import CampaignDetail from "../pages/panel/CampaignDetail";
+import EditCampaign from "../pages/panel/EditCampaign";
+import CampaignRecipients from "../pages/panel/CampaignRecipients";
+import CampaignStats from "../pages/panel/CampaignStats";
+import CampaignSurveyLinks from "../pages/panel/CampaignSurveyLinks";
+import CampaignDashboard from "../pages/panel/CampaignDashboard";
+import CampaignRespondents from "../pages/panel/CampaignRespondents";
+// import RedirectJourney from "../pages/panel/RedirectJourney";
+
 
 function ProtectedLayout({ children }) {
   return (
@@ -231,9 +242,56 @@ function AppRoutes() {
       <Route
           path="/screening/:respondentId"
           element={
-            // <ProtectedLayout>
               <ScreeningSurvey />
-            // </ProtectedLayout>
+          }
+      />
+
+      <Route
+          path="/panel-campaigns"
+          element={ <ProtectedLayout><CampaignList /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/create"
+          element={<ProtectedLayout><CreateCampaign /></ProtectedLayout>}
+      />
+{/* 
+      <Route
+          path="/panel-campaigns/:id"
+          element={<ProtectedLayout><CampaignDetail /></ProtectedLayout>}
+      /> */}
+
+      <Route
+          path="/panel-campaigns/:id/edit"
+          element={<ProtectedLayout><EditCampaign /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/:id/recipients"
+          element={<ProtectedLayout><CampaignRecipients /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/:id/stats"
+          element={<ProtectedLayout><CampaignStats /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/:id/survey-links"
+          element={<ProtectedLayout><CampaignSurveyLinks /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/:id"
+          element={<ProtectedLayout><CampaignDashboard /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/panel-campaigns/:id/respondents"
+          element={
+              <ProtectedLayout>
+                  <CampaignRespondents/>
+              </ProtectedLayout>
           }
       />
 

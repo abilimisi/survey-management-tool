@@ -611,9 +611,146 @@ class Panelist(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_active = models.BooleanField(default=True)
+
+    last_synced = models.DateTimeField(auto_now=True)
+
+    source = models.CharField(
+        max_length=30,
+        default="Opinion Bunch"
+    )
+
     def __str__(self):
         return self.email
     
+class PanelCampaign(models.Model):
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("running", "Running"),
+        ("completed", "Completed"),
+        ("paused", "Paused"),
+    ]
+
+    name = models.CharField(max_length=255)
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+
+    project_vendor = models.ForeignKey(
+        ProjectVendor,
+        on_delete=models.CASCADE,
+        related_name="panel_campaigns",
+        blank=True,
+        null= True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft"
+    )
+
+    target = models.PositiveIntegerField(default=0)
+
+    notes = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    country = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    industry = models.JSONField(
+        default=list,
+        blank=True
+    )
+    
+    gender = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+    
+class PanelCampaignRecipient(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("sent", "Sent"),
+        ("opened", "Opened"),
+        ("started", "Started"),
+        ("complete", "Complete"),
+        ("terminate", "Terminate"),
+        ("quota_full", "Quota Full"),
+        ("security_terminate", "Security Terminate"),
+    ]
+
+    campaign = models.ForeignKey(
+        PanelCampaign,
+        on_delete=models.CASCADE,
+        related_name="recipients"
+    )
+
+    panelist = models.ForeignKey(
+        Panelist,
+        on_delete=models.CASCADE,
+        related_name="campaigns"
+    )
+
+    survey_token = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    survey_link = models.URLField(
+        max_length=1000,
+        blank=True,
+        null=True
+    )
+
+    respondent = models.OneToOneField(
+        "Respondent",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    email_sent = models.BooleanField(default=False)
+
+    clicked = models.BooleanField(default=False)
+
+    started_at = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    completed_at = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.campaign.name} - {self.panelist.email}"    
+
 class CompanyContact(models.Model):
     CONTACT_TYPE_CHOICES = [
         ("ceo", "CEO"),

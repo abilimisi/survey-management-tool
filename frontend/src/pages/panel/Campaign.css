@@ -1,0 +1,55 @@
+.campaign-page {
+    padding: 25px;
+}
+
+.campaign-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.primary-btn{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.campaign-toolbar{
+    margin-bottom:20px;
+}
+
+.campaign-toolbar input{
+    width:300px;
+    padding:10px;
+}
+
+.campaign-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.campaign-table th,
+.campaign-table td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+.campaign-table th{
+    background:#f5f5f5;
+    text-align:left;
+}
+
+.campaign-table button{
+    margin-right:8px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+.delete-btn{
+    background:#dc2626;
+    color:white;
+}

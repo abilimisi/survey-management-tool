@@ -15,7 +15,7 @@ import pycountry
 from .utils import is_proxy
 
 
-from .models import Client, CompanyContact, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
 
 from django.contrib.auth.models import User
 
@@ -107,6 +107,7 @@ class RespondentViewSet(viewsets.ReadOnlyModelViewSet):
 class RedirectLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = RedirectLog.objects.all().order_by("-id")
     serializer_class = RedirectLogSerializer
+
 
 
 def get_client_ip(request):
@@ -693,6 +694,17 @@ def handle_survey_result(request, result_type):
     respondent.status = result_type
     respondent.completed_at = timezone.now()
     respondent.save()
+
+    # ----------------------------------------
+    # Update Panel Campaign Recipient (if exists)
+    # ----------------------------------------
+    recipient = PanelCampaignRecipient.objects.filter(
+        respondent=respondent
+    ).first()
+
+    if recipient:
+        recipient.status = result_type
+        recipient.save()
     
     # ----------------------------------------
     # Save Respondent Log

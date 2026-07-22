@@ -1,0 +1,71 @@
+.campaign-form-page{
+
+    padding:25px;
+
+}
+
+.campaign-form{
+
+    margin-top:25px;
+
+}
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+.form-grid label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.form-grid input,
+.form-grid select,
+textarea{
+
+    width:100%;
+
+    padding:10px;
+
+    border:1px solid #ddd;
+
+    border-radius:6px;
+
+}
+
+textarea{
+
+    margin-top:20px;
+
+    resize:vertical;
+
+}
+
+.primary-btn{
+
+    margin-top:25px;
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 20px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+}

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from django.conf import settings
 from rest_framework import serializers 
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile,ScreeningQuestion,ScreeningOption,RespondentAnswer
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile,ScreeningQuestion,ScreeningOption,RespondentAnswer,PanelCampaign,PanelCampaignRecipient   
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -119,9 +119,6 @@ class CompanyContactSerializer(serializers.ModelSerializer):
         return f"{obj.first_name} {obj.last_name or ''}".strip()
     
     
-
-
-
 class UserSerializer(serializers.ModelSerializer):
 
     role = serializers.CharField(write_only=True)
@@ -180,3 +177,44 @@ class RespondentAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = RespondentAnswer
         fields = "__all__"
+
+class PanelCampaignSerializer(serializers.ModelSerializer):
+
+    project_name = serializers.CharField(
+        source="project.name",
+        read_only=True
+    )
+
+    class Meta:
+
+        model = PanelCampaign
+
+        fields = "__all__"
+
+
+class PanelCampaignDashboardSerializer(serializers.ModelSerializer):
+
+    project_name = serializers.CharField(
+        source="project.name",
+        read_only=True
+    )
+
+    vendor_name = serializers.CharField(
+        source="project_vendor.vendor.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = PanelCampaign
+
+        fields = [
+            "id",
+            "name",
+            "project_name",
+            "vendor_name",
+            "status",
+            "target",
+            "country",
+            "gender",
+            "industry",
+        ]

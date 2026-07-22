@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
-# from .views import recent_projects_stats
+from .panel_campaign_views import *
+
 from .views import (
     create_option,
     create_question,
@@ -41,6 +42,7 @@ from .views import (
     supplier_statistics,
     respondent_hints,
     recent_projects,
+    
     client_projects,
     vendor_projects,
     screening_questions,
@@ -113,6 +115,65 @@ urlpatterns = [
     
     
     path("dashboard/recent_responses/", recent_responses),
+
+    path("panel-campaigns/",panel_campaign_list),
+    path("panel-campaigns/create/",create_panel_campaign),
+    path("panel-campaigns/<int:pk>/",panel_campaign_detail),
+    path("panel-campaigns/<int:pk>/update/",update_panel_campaign),
+    path("panel-campaigns/<int:pk>/delete/",delete_panel_campaign),
+
+    path(
+    "panel-campaigns/<int:pk>/generate/",
+    generate_campaign_recipients
+    ),
+
+    path(
+        "panel-campaigns/<int:pk>/recipients/",
+        campaign_recipients
+    ),
+
+    path(
+        "panel-campaigns/<int:pk>/stats/",
+        campaign_stats
+    ),
+
+    path(
+        "panel-campaigns/<int:pk>/survey-links/",
+        campaign_survey_links
+    ),
+
+    path(
+        "panel/start/",
+        panel_start,
+        name="panel-start"
+    ),
+    path(
+        "projects/<int:project_id>/vendors/",
+        project_vendors_by_project
+    ),
+    path(
+    "panel-campaigns/<int:pk>/send-emails/",
+    send_campaign_invitations
+),
+
+    path(
+    "panel-campaigns/<int:pk>/dashboard/",
+    campaign_dashboard,
+    name="campaign-dashboard",
+),
+    path(
+    "panel-campaigns/<int:pk>/panel-summary/",
+    campaign_panel_summary,
+    name="campaign-panel-summary",
+),
+    path(
+    "panel-campaigns/<int:pk>/respondents/",
+    campaign_respondent_list,
+),
+    path(
+    "respondents/<str:respondent_id>/journey/",
+    respondent_redirect_journey,
+),
 
 
 ]
