@@ -1,0 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Page shell ── */
+.ps-page {
+  min-height: 100vh;
+  background: #eef2f7;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 36px 16px 60px;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+/* ── Survey card ── */
+.ps-card {
+  width: 100%;
+  max-width: 700px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(13,17,23,.12);
+}
+
+/* ── Header (blue gradient, SurveyMonkey/JotForm style) ── */
+.ps-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+  padding: 32px 36px 28px;
+  border-bottom: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative circle */
+.ps-header::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  pointer-events: none;
+}
+
+.ps-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  font-family: "Inter", sans-serif;
+  position: relative;
+  z-index: 1;
+}
+
+.ps-header p {
+  font-size: 14px;
+  color: rgba(255,255,255,.75);
+  line-height: 1.65;
+  margin: 0 0 18px;
+  font-family: "Inter", sans-serif;
+  position: relative;
+  z-index: 1;
+}
+
+/* Project info chip */
+.ps-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.8);
+  position: relative;
+  z-index: 1;
+}
+
+.ps-project strong {
+  color: #ffffff;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* ── Body (questions container) ── */
+.ps-body {
+  padding: 0;
+  background: #fff;
+}
+
+/* ── Each question block ── */
+.ps-question-box {
+  padding: 26px 36px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .12s;
+}
+
+.ps-question-box:last-child {
+  border-bottom: none;
+}
+
+.ps-question-box:hover {
+  background: #fafbff;
+}
+
+/* Question label / title */
+.ps-question-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+  line-height: 1.55;
+  font-family: "Inter", sans-serif;
+  /* Mandatory asterisk via CSS */
+  position: relative;
+}
+
+/* Asterisk for required fields — appended via CSS */
+.ps-question-title::after {
+  content: " *";
+  color: #dc2626;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+/* Radio / Checkbox option labels */
+.ps-question-box label:not(.ps-question-title) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  line-height: 1.4;
+  font-family: "Inter", sans-serif;
+}
+
+.ps-question-box label:not(.ps-question-title):hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Style native radio/checkbox */
+.ps-question-box input[type="radio"],
+.ps-question-box input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* Text / number / select / textarea inputs */
+.ps-question-box input[type="text"],
+.ps-question-box input[type="number"],
+.ps-question-box textarea {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  border-radius: 9px;
+  border: 1.5px solid #d1d5db;
+  font-family: "Inter", sans-serif;
+  color: #111827;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color .15s, box-shadow .15s;
+  max-width: 520px;
+  display: block;
+}
+
+.ps-question-box select {
+  width: 100%;
+  max-width: 420px;
+  padding: 11px 36px 11px 14px;
+  font-size: 14px;
+  border-radius: 9px;
+  border: 1.5px solid #d1d5db;
+  font-family: "Inter", sans-serif;
+  color: #111827;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color .15s, box-shadow .15s;
+  display: block;
+}
+
+.ps-question-box input:focus,
+.ps-question-box textarea:focus,
+.ps-question-box select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+.ps-question-box input::placeholder,
+.ps-question-box textarea::placeholder {
+  color: #9ca3af;
+}
+
+.ps-question-box textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ── Footer ── */
+.ps-footer {
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  padding: 24px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Note text beside button */
+.ps-footer::before {
+  content: "All fields marked * are required";
+  font-size: 12px;
+  color: #9ca3af;
+  font-family: "Inter", sans-serif;
+}
+
+/* ── Submit button ── */
+.ps-submit-btn {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 36px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(37,99,235,.3);
+  transition: all .2s ease;
+}
+
+.ps-submit-btn:hover {
+  background: linear-gradient(135deg, #1e40af, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,.35);
+}
+
+.ps-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(37,99,235,.25);
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ps-page    { padding: 0 0 40px; }
+  .ps-card    { border-radius: 0; box-shadow: none; max-width: 100%; }
+  .ps-header  { padding: 24px 20px 20px; }
+  .ps-header h1 { font-size: 20px; }
+  .ps-header p  { font-size: 13px; }
+  .ps-question-box { padding: 20px; }
+
+  .ps-question-box input[type="text"],
+  .ps-question-box input[type="number"],
+  .ps-question-box textarea,
+  .ps-question-box select { max-width: 100%; }
+
+  .ps-footer { flex-direction: column; align-items: stretch; padding: 18px 20px; }
+  .ps-submit-btn { width: 100%; text-align: center; }
+}
+
+@media (max-width: 400px) {
+  .ps-header h1 { font-size: 18px; }
+  .ps-question-title { font-size: 14px; }
+}
