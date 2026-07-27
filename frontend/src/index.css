@@ -236,14 +236,15 @@ body {
 }
 
 .custom-table th {
-  padding: 9px 12px;
+  background: #e5e5e5;
+  padding: 11px 14px;
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
+  color: #111827;
+  border-bottom: 1px solid #dbe1ea;
   white-space: nowrap;
+  text-transform: uppercase; 
 }
 
 .custom-table td {
@@ -331,7 +332,7 @@ body {
    PAGINATION
 ============================ */
 
-.pagination-container {
+.pagination-container{
   display: flex;
   justify-content: space-between;
   align-items: center;

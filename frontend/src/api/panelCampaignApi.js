@@ -181,3 +181,26 @@ export const getRedirectJourney = async (
     return response.data;
 
 }
+
+// Get Email Template
+export const getEmailTemplate = async (campaignId) => {
+
+    const response = await axiosInstance.get(
+        `/panel-campaigns/${campaignId}/email-template/`
+    );
+
+    return response.data;
+
+};
+
+// Update Email Template
+export const updateEmailTemplate = async (campaignId, data) => {
+
+    const response = await axiosInstance.put(
+        `/panel-campaigns/${campaignId}/email-template/update/`,
+        data
+    );
+
+    return response.data;
+
+};

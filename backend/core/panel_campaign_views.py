@@ -2,11 +2,11 @@ import uuid
 from django.conf import settings
 
 from django.shortcuts import get_object_or_404, redirect
-
-from rest_framework.decorators import api_view
+from core.serializers import CampaignEmailTemplateSerializer
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from core.views import get_client_ip
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db import transaction
 from core.services.email_sender import send_campaign_emails
 from django.db.models import Max
@@ -17,7 +17,8 @@ from core.models import (
     PanelCampaignRecipient,
     Panelist,
     Respondent,
-    RedirectLog
+    RedirectLog,
+    CampaignEmailTemplate
 )
 
 from core.serializers import (
@@ -719,3 +720,45 @@ def respondent_redirect_journey(request, respondent_id):
     }
 
     return Response(data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def campaign_email_template(request, pk):
+
+    campaign = get_object_or_404(
+        PanelCampaign,
+        pk=pk
+    )
+
+    template, created = CampaignEmailTemplate.objects.get_or_create(
+        campaign=campaign
+    )
+
+    serializer = CampaignEmailTemplateSerializer(template)
+
+    return Response(serializer.data)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_campaign_email_template(request, pk):
+
+    campaign = get_object_or_404(
+        PanelCampaign,
+        pk=pk
+    )
+
+    template, created = CampaignEmailTemplate.objects.get_or_create(
+        campaign=campaign
+    )
+
+    serializer = CampaignEmailTemplateSerializer(
+        template,
+        data=request.data,
+        partial=True
+    )
+
+    serializer.is_valid(raise_exception=True)
+
+    serializer.save()
+
+    return Response(serializer.data)

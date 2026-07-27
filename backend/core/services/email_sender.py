@@ -2,7 +2,10 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 
-from core.models import PanelCampaignRecipient
+from core.models import (
+    PanelCampaignRecipient,
+    CampaignEmailTemplate,
+)
 
 
 def send_panel_invitation(recipient):
@@ -12,21 +15,48 @@ def send_panel_invitation(recipient):
         f"/api/panel/start/?token={recipient.survey_token}"
     )
 
-    subject = recipient.campaign.name
+    template, created = CampaignEmailTemplate.objects.get_or_create(
+        campaign=recipient.campaign
+    )
 
-    message = f"""
-Hello {recipient.panelist.fname},
+    subject = template.subject
 
-You have been invited to participate in a survey.
+    subject = subject.replace(
+        "{{first_name}}",
+        recipient.panelist.fname or ""
+    )
 
-Survey Link
+    subject = subject.replace(
+        "{{campaign_name}}",
+        recipient.campaign.name
+    )
 
-{survey_link}
+    subject = subject.replace(
+        "{{project_name}}",
+        recipient.campaign.project.name
+    )
 
-Thank you.
+    message = template.body
 
-Opinion Bunch
-"""
+    message = message.replace(
+        "{{first_name}}",
+        recipient.panelist.fname or ""
+    )
+
+    message = message.replace(
+        "{{survey_link}}",
+        survey_link
+    )
+
+    message = message.replace(
+        "{{campaign_name}}",
+        recipient.campaign.name
+    )
+
+    message = message.replace(
+        "{{project_name}}",
+        recipient.campaign.project.name
+    )
 
     send_mail(
         subject=subject,

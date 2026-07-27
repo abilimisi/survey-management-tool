@@ -57,6 +57,7 @@
   color: #111827;
   border-bottom: 1px solid #dbe1ea;
   white-space: nowrap;
+  text-transform: uppercase; 
 }
 
 .respondents-table td {

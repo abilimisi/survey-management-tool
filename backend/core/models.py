@@ -751,6 +751,42 @@ class PanelCampaignRecipient(models.Model):
     def __str__(self):
         return f"{self.campaign.name} - {self.panelist.email}"    
 
+class CampaignEmailTemplate(models.Model):
+
+        campaign = models.OneToOneField(
+            PanelCampaign,
+            on_delete=models.CASCADE,
+            related_name="email_template"
+        )
+
+        subject = models.CharField(
+            max_length=255,
+            default="Survey Invitation"
+        )
+
+        body = models.TextField(
+            default="""
+    Hello {{first_name}},
+
+    You have been invited to participate in our survey.
+
+    Survey Link:
+    {{survey_link}}
+
+    Thank you.
+
+    Opinion Bunch
+    """
+        )
+
+        updated_at = models.DateTimeField(auto_now=True)
+
+        class Meta:
+            ordering = ["campaign"]
+
+        def __str__(self):
+            return f"Email Template - {self.campaign.name}"
+
 class CompanyContact(models.Model):
     CONTACT_TYPE_CHOICES = [
         ("ceo", "CEO"),
