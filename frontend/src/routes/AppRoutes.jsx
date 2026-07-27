@@ -44,7 +44,7 @@ import CampaignSurveyLinks from "../pages/panel/CampaignSurveyLinks";
 import CampaignDashboard from "../pages/panel/CampaignDashboard";
 import CampaignRespondents from "../pages/panel/CampaignRespondents";
 // import RedirectJourney from "../pages/panel/RedirectJourney";
-
+import EmailTemplate from "../pages/EmailTemplates/EmailTemplate";
 
 import AnalyticsDashboard from "../pages/analytics/AnalyticsDashboard";
 import ProjectAnalytics from "../pages/analytics/projectAnalytics/ProjectAnalytics";
@@ -259,11 +259,6 @@ function AppRoutes() {
           path="/panel-campaigns/create"
           element={<ProtectedLayout><CreateCampaign /></ProtectedLayout>}
       />
-{/* 
-      <Route
-          path="/panel-campaigns/:id"
-          element={<ProtectedLayout><CampaignDetail /></ProtectedLayout>}
-      /> */}
 
       <Route
           path="/panel-campaigns/:id/edit"
@@ -310,6 +305,14 @@ function AppRoutes() {
       />
 
 
+     <Route
+        path="/panel-campaigns/:id/email-template"
+        element={
+            <ProtectedLayout>
+                <EmailTemplate />
+            </ProtectedLayout>
+        }
+    />
 
 
     </Routes>

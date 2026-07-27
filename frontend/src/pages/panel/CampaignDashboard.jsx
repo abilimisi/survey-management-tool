@@ -85,23 +85,21 @@ export default function CampaignDashboard() {
 
                         <th>ID</th>
 
-                        <th>Panel</th>
+                        <th>PANEL</th>
 
-                        <th>Status</th>
+                        <th>STATUS</th>
 
-                        <th>Hits</th>
+                        <th>HITS</th>
 
-                        <th>Completed</th>
+                        <th>COMPLETED</th>
 
-                        <th>Terminate</th>
+                        <th>TERMINATE</th>
 
-                        <th>Quota Full</th>
+                        <th>QUOTA FULL</th>
 
-                        <th>Security</th>
+                        <th>SECURITY</th>
 
                         <th>IR</th>
-
-                        {/* <th>Last Completed</th> */}
 
                     </tr>
 

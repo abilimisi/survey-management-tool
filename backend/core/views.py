@@ -1784,7 +1784,6 @@ def submit_screening(request):
 
     answers = request.data.get("answers", [])
 
-    # Remove previous answers
     RespondentAnswer.objects.filter(
         respondent=respondent
     ).delete()
@@ -1804,9 +1803,6 @@ def submit_screening(request):
 
         is_correct = False
 
-        ####################################################
-        # RADIO / SELECT
-        ####################################################
         if question.question_type in ["radio", "select"]:
 
             correct_option = question.options.filter(

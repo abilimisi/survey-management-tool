@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from django.conf import settings
 from rest_framework import serializers 
-from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile,ScreeningQuestion,ScreeningOption,RespondentAnswer,PanelCampaign,PanelCampaignRecipient   
+from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog,  UserProfile,ScreeningQuestion,ScreeningOption,RespondentAnswer,PanelCampaign,PanelCampaignRecipient,CampaignEmailTemplate
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -217,4 +217,24 @@ class PanelCampaignDashboardSerializer(serializers.ModelSerializer):
             "country",
             "gender",
             "industry",
+        ]
+        
+from rest_framework import serializers
+
+class CampaignEmailTemplateSerializer(serializers.ModelSerializer):
+
+    campaign_name = serializers.CharField(
+        source="campaign.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = CampaignEmailTemplate
+        fields = [
+            "id",
+            "campaign",
+            "campaign_name",
+            "subject",
+            "body",
+            "updated_at",
         ]

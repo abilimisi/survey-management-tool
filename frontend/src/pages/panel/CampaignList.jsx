@@ -7,34 +7,37 @@ import {
   getPanelCampaigns,
   deletePanelCampaign,
 } from "../../api/panelCampaignApi";
-
+import { getProjects } from "../../api/projectApi";
 import "./Campaign.css";
 
 const CampaignList = () => {
   const navigate = useNavigate();
 
   const [campaigns, setCampaigns] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+
+    campaignId: "",
+
+    campaignName: "",
+
+    project: "",
+
+    status: "",
+
+    country: ""
+
+});
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
   useEffect(() => {
     fetchCampaigns();
+    loadProjects();
   }, []);
 
-  useEffect(() => {
-    const value = search.toLowerCase();
-
-    setFilteredCampaigns(
-      campaigns.filter(
-        (campaign) =>
-          campaign.name.toLowerCase().includes(value) ||
-          campaign.project_name.toLowerCase().includes(value)
-      )
-    );
-    setCurrentPage(1);
-  }, [search, campaigns]);
+ 
 
   // Pagination
 
@@ -61,24 +64,109 @@ const CampaignList = () => {
     }
   };
 
- const handleDelete = async (id) => {
+  const loadProjects = async () => {
 
-    const confirmDelete = window.confirm(
-      "Delete this campaign?"
-    );
+      try{
 
-    if (!confirmDelete) return;
+          const data = await getProjects();
 
-    try {
+          setProjects(data);
 
-      await deletePanelCampaign(id);
+      }
 
-      toast.success("Campaign deleted successfully!", {
-        position: "top-right",
-        autoClose: 2000,
-      });
+      catch(err){
 
-      fetchCampaigns();
+          console.error(err);
+
+      }
+
+  };
+
+      const handleSearch = () => {
+
+          const filtered = campaigns.filter((campaign) => {
+
+              const campaignIdMatch =
+                  filters.campaignId === "" ||
+                  String(campaign.id)
+                      .toLowerCase()
+                      .includes(filters.campaignId.toLowerCase());
+
+              const campaignNameMatch =
+                  filters.campaignName === "" ||
+                  campaign.name
+                      .toLowerCase()
+                      .includes(filters.campaignName.toLowerCase());
+
+              const projectMatch =
+                  filters.project === "" ||
+                  campaign.project_name === filters.project;
+
+              const statusMatch =
+                  filters.status === "" ||
+                  campaign.status === filters.status;
+
+              const countryMatch =
+                  filters.country === "" ||
+                  campaign.country
+                      .toLowerCase()
+                      .includes(filters.country.toLowerCase());
+
+              return (
+
+                  campaignIdMatch &&
+                  campaignNameMatch &&
+                  projectMatch &&
+                  statusMatch &&
+                  countryMatch
+
+              );
+
+          });
+
+          setFilteredCampaigns(filtered);
+          setCurrentPage(1);
+      };
+
+      const clearFilters = () => {
+
+          setFilters({
+
+              campaignId: "",
+
+              campaignName: "",
+
+              project: "",
+
+              status: "",
+
+              country: ""
+
+          });
+
+          setFilteredCampaigns(campaigns);
+          setCurrentPage(1);
+      };
+
+       const handleDelete = async (id) => {
+
+          const confirmDelete = window.confirm(
+            "Delete this campaign?"
+          );
+
+          if (!confirmDelete) return;
+
+          try {
+
+            await deletePanelCampaign(id);
+
+            toast.success("Campaign deleted successfully!", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+
+            fetchCampaigns();
+       
 
     } catch (err) {
 
@@ -112,19 +200,177 @@ const CampaignList = () => {
 
       </div>
 
-      <div className="campaign-toolbar">
+      <div className="campaign-search-panel">
 
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search Campaign..."
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-        />
+          <div className="search-row">
+
+              <input
+
+                  type="text"
+
+                  placeholder="Campaign Name"
+
+                  value={filters.campaignName}
+
+                  onChange={(e)=>
+
+                      setFilters({
+
+                          ...filters,
+
+                          campaignName:e.target.value
+
+                      })
+
+                  }
+
+              />
+
+              <select
+
+                  value={filters.project}
+
+                  onChange={(e)=>
+
+                      setFilters({
+
+                          ...filters,
+
+                          project:e.target.value
+
+                      })
+
+                  }
+
+              >
+
+                  <option value="">Project</option>
+
+                  {projects.map(project=>(
+
+                      <option
+
+                          key={project.id}
+
+                          value={project.name}
+
+                      >
+
+                          {project.name}
+
+                      </option>
+
+                  ))}
+
+              </select>
+
+              <select
+
+                  value={filters.status}
+
+                  onChange={(e)=>
+
+                      setFilters({
+
+                          ...filters,
+
+                          status:e.target.value
+
+                      })
+
+                  }
+
+              >
+
+                  <option value="">Status</option>
+
+                  <option value="draft">Draft</option>
+
+                  <option value="running">Running</option>
+
+                  <option value="paused">Paused</option>
+
+                  <option value="completed">Completed</option>
+
+              </select>
+
+              <input
+
+                  type="text"
+
+                  placeholder="Country"
+
+                  value={filters.country}
+
+                  onChange={(e)=>
+
+                      setFilters({
+
+                          ...filters,
+
+                          country:e.target.value
+
+                      })
+
+                  }
+
+              />
+
+              <input
+
+                  type="text"
+
+                  placeholder="Campaign ID"
+
+                  value={filters.campaignId}
+
+                  onChange={(e)=>
+
+                      setFilters({
+
+                          ...filters,
+
+                          campaignId:e.target.value
+
+                      })
+
+                  }
+
+              />
+
+          </div>
 
       </div>
+      <div className="search-buttons">
+
+              <button
+
+                  // className="primary-btn"
+                  className="submit-btn "
+
+                  onClick={handleSearch}
+
+              >
+
+                  Submit
+
+              </button>
+
+              <button
+                  className="reset-btn"
+                  onClick={clearFilters}
+              >
+
+                  Reset
+
+              </button>
+
+              
+
+          </div>
+
+          <hr className="project-divider" />
+
 
       <div className="table-scroll">
 
@@ -133,17 +379,12 @@ const CampaignList = () => {
         <thead>
 
           <tr>
-
-            <th>Name</th>
-
-            <th>Project</th>
-
-            <th>Status</th>
-
-            <th>Target</th>
-
-            <th>Actions</th>
-
+              <th>Campaign ID</th>
+              <th>Name</th>
+              <th>Project</th>
+              <th>Status</th>
+              <th>Target</th>
+              <th>Actions</th>
           </tr>
 
         </thead>
@@ -153,7 +394,7 @@ const CampaignList = () => {
           {filteredCampaigns.length === 0 && (
 
             <tr className="empty-row">
-              <td colSpan={5}>No campaigns found.</td>
+              <td colSpan={6}>No campaigns found.</td>
             </tr>
 
           )}
@@ -162,9 +403,17 @@ const CampaignList = () => {
 
             <tr key={campaign.id}>
 
-              <td>{campaign.name}</td>
+                <td>
+                    {campaign.id}
+                </td>
 
-              <td>{campaign.project_name}</td>
+                <td>
+                    {campaign.name}
+                </td>
+
+                <td>
+                    {campaign.project_name}
+                </td>
 
               <td>
 
@@ -229,6 +478,17 @@ const CampaignList = () => {
                 >
                   Links
                 </button>
+
+                <button
+                  className="btn-ghost"
+                  onClick={() =>
+                      navigate(
+                          `/panel-campaigns/${campaign.id}/email-template`
+                      )
+                  }
+              >
+                  Email Template
+              </button>
 
                 </div>
                 

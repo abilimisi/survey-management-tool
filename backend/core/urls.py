@@ -176,6 +176,10 @@ urlpatterns = [
     "respondents/<str:respondent_id>/journey/",
     respondent_redirect_journey,
 ),
+    path(
+    "panel-campaigns/<int:pk>/email-template/",
+    campaign_email_template
+),
 
 # analytics
 path(
@@ -211,6 +215,11 @@ path(
 ),
 
 
+path(
+    "panel-campaigns/<int:pk>/email-template/update/",
+    update_campaign_email_template
+),
+    
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
