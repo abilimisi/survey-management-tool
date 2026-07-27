@@ -11,6 +11,7 @@ from django.conf import settings
 import requests
 from user_agents import parse
 import pycountry
+from datetime import date
 
 from .utils import is_proxy
 
@@ -242,23 +243,6 @@ def start_survey(request, project_vendor_id):
 
     return create_respondent_and_redirect(request, project_vendor)
 
-# new_update-------------------------------------------
-# def start_survey_by_gid(request):
-#     gid = request.GET.get("gid")
-
-#     if not gid:
-#         return render(request, "landing/error.html", {
-#             "error_message": "Missing GID."
-#         })
-
-#     project_vendor = get_object_or_404(
-#         ProjectVendor,
-#         gid=gid
-#     )
-    
-    
-
-#     return create_respondent_and_redirect(request, project_vendor)
 
 def start_survey_by_gid(request):
     gid = request.GET.get("gid")
@@ -281,7 +265,7 @@ def start_survey_by_gid(request):
         gid=gid
     )
     return create_respondent_and_redirect(request, project_vendor)
-#new_update-------------------------------------------
+
 def create_respondent_and_redirect(request, project_vendor):
     vendor = project_vendor.vendor
     project = project_vendor.project
@@ -415,7 +399,8 @@ def create_respondent_and_redirect(request, project_vendor):
         project=project,
         vendor=vendor,
         respondent_id=respondent.respondent_id,
-        status="started"
+        status="started",
+        ip_address=respondent.ip_address,
     )
 
     # TARGET CAP CHECK
@@ -429,6 +414,14 @@ def create_respondent_and_redirect(request, project_vendor):
         respondent.status = "quota_full"
         respondent.completed_at = timezone.now()
         respondent.save()
+
+        RespondentLog.objects.create(
+            project=project,
+            vendor=vendor,
+            respondent_id=respondent.respondent_id,
+            status="quota_full",
+            ip_address=respondent.ip_address,
+        )
 
         quota_link = replace_tokens(
             project_vendor.quota_full_link,
@@ -488,6 +481,15 @@ def create_respondent_and_redirect(request, project_vendor):
             redirect_type="security_country_terminate",
             redirect_url=terminate_link or "landing/terminate.html",
         )
+
+        RespondentLog.objects.create(
+            project=project,
+            vendor=vendor,
+            respondent_id=respondent.respondent_id,
+            status="security_terminate",
+            ip_address=respondent.ip_address,
+        )
+
         if terminate_link:
             return redirect(terminate_link)
 
@@ -546,6 +548,14 @@ def create_respondent_and_redirect(request, project_vendor):
 
                 redirect_url=terminate_link
 
+            )
+
+            RespondentLog.objects.create(
+                project=project,
+                vendor=vendor,
+                respondent_id=respondent.respondent_id,
+                status="terminate",
+                ip_address=respondent.ip_address,
             )
 
 
@@ -713,7 +723,8 @@ def handle_survey_result(request, result_type):
         project=respondent.project,
         vendor=respondent.vendor,
         respondent_id=respondent.respondent_id,
-        status=result_type
+        status=result_type,
+        ip_address=respondent.ip_address,
     )
 
     project_vendor = respondent.project_vendor
@@ -1183,9 +1194,9 @@ def reports_data(request):
 def sync_panelists(request):
 
     response = requests.get(
-        "https://ob-panel.com/api/users.php",
+        settings.OB_PANEL_API_URL,
         headers={
-            "X-API-KEY": "OB_PANEL_SYNC_2026@StrongKey"
+            "X-API-KEY": settings.OB_PANEL_API_KEY
         }
     )
 
@@ -1233,6 +1244,21 @@ def panelist_list(request):
     data = []
 
     for p in panelists:
+        age = None
+
+        if p.dob:
+            today = date.today()
+
+            age = (
+                today.year
+                - p.dob.year
+                - (
+                    (today.month, today.day)
+                    < (p.dob.month, p.dob.day)
+                )
+            )
+
+
         data.append({
             "id": p.id,
             "fname": p.fname,
@@ -1241,6 +1267,7 @@ def panelist_list(request):
             "gender": p.gender,
             "country": p.country,
             "industry": p.industry,
+            "age": age,  
             "registered_at": p.registered_at,
         })
 
@@ -1961,15 +1988,34 @@ def submit_screening(request):
         "redirect_url": redirect_url
 
     })
+
 @api_view(["GET"])
 def recent_responses(request):
-    logs = RespondentLog.objects.select_related("project","vendor") \
-                .order_by("-timestamp")[:20]
-    data = [{
-        "project_name":  l.project.name,
-        "vendor_name":   l.vendor.name if l.vendor else None,
-        "respondent_id": l.respondent_id,
-        "status":        l.status,
-        "timestamp":     l.timestamp,
-    } for l in logs]
+
+    logs = (
+        RespondentLog.objects
+        .select_related("project", "vendor")
+        .order_by("-timestamp")[:10]
+    )
+
+    data = []
+
+    for log in logs:
+
+        data.append({
+
+            "id": log.id,
+
+            "project_name": log.project.name if log.project else "-",
+
+            "vendor_name": log.vendor.name if log.vendor else "-",
+
+            "respondent_id": log.respondent_id,
+
+            "status": log.status,
+
+            "timestamp": log.timestamp,
+
+        })
+
     return Response(data)

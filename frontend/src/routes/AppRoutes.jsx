@@ -46,6 +46,10 @@ import CampaignRespondents from "../pages/panel/CampaignRespondents";
 // import RedirectJourney from "../pages/panel/RedirectJourney";
 
 
+import AnalyticsDashboard from "../pages/analytics/AnalyticsDashboard";
+import ProjectAnalytics from "../pages/analytics/projectAnalytics/ProjectAnalytics";
+
+
 function ProtectedLayout({ children }) {
   return (
     <ProtectedRoute>
@@ -294,6 +298,18 @@ function AppRoutes() {
               </ProtectedLayout>
           }
       />
+
+      <Route
+          path="/analytics"
+          element={<ProtectedLayout><AnalyticsDashboard /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/analytics/projects"
+          element={<ProtectedLayout><ProjectAnalytics /></ProtectedLayout>}
+      />
+
+
 
 
     </Routes>

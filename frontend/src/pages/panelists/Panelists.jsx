@@ -113,7 +113,6 @@ function Panelists() {
     );
 
 
-
   return (
     <div className="panelists-page">
       <div className="page-header-flex">
@@ -236,6 +235,7 @@ function Panelists() {
                 <th>Gender</th>
                 <th>Country</th>
                 <th>Industry</th>
+                <th>AGE</th>
                 <th>Registered</th>
               </tr>
             </thead>
@@ -268,6 +268,7 @@ function Panelists() {
                   </td>
                   <td>{p.country || "-"}</td>
                   <td>{p.industry || "-"}</td>
+                  <td>{p.age || "-"}</td>
                   <td>{p.registered_at || "-"}</td>
                 </tr>
               ))}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -8,10 +9,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+
 import "./Sidebar.css";
 
 // onNavigate: called when a link is clicked — closes sidebar on overlay mode
 function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
+  const [openMenu, setOpenMenu] = useState("Analytics");
   const isSuperuser = localStorage.getItem("is_superuser") === "true";
 
   const menuItems = [
@@ -23,6 +26,26 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
     { name: "Panelists",        path: "/panelists",        icon: Users },
     { name: "Panel Campaigns",  path: "/panel-campaigns",  icon: FolderKanban },
     { name: "Company Contacts", path: "/company-contacts", icon: Building2 },
+    { name: "Analytics", icon: BarChart3,
+      children: [
+        {
+          name: "Dashboard",
+          path: "/analytics",
+          icon: BarChart3,
+        },
+        {
+          name: "Project Analytics",
+          path: "/analytics/projects",
+          icon: FolderKanban,
+        },
+        {
+          name: "Vendor Analytics",
+          path: "/analytics/vendors",
+          icon: Users,
+        },
+      ],
+    },
+
     ...(isSuperuser
       ? [{ name: "Users", path: "/users", icon: Users }]
       : []),
@@ -49,23 +72,90 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
 
       <nav className="sidebar-menu">
         {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              title={item.name}
-              className={({ isActive }) =>
-                isActive ? "sidebar-link active" : "sidebar-link"
-              }
-              onClick={onNavigate}  /* close sidebar on mobile after navigation */
-            >
-              <Icon size={20} />
-              {/* Always render span — CSS hides it when icon-only */}
-              <span>{item.name}</span>
-            </NavLink>
-          );
-        })}
+
+  const Icon = item.icon;
+
+  if (item.children) {
+    return (
+      <div key={item.name} className="sidebar-dropdown">
+
+        <button
+          className="sidebar-link sidebar-dropdown-btn"
+          onClick={() =>
+            setOpenMenu(
+              openMenu === item.name
+                ? ""
+                : item.name
+            )
+          }
+        >
+          <Icon size={20}/>
+          <span>{item.name}</span>
+
+          <ChevronRight
+            size={16}
+            className={
+              openMenu === item.name
+                ? "rotate"
+                : ""
+            }
+          />
+        </button>
+
+        {openMenu === item.name && (
+
+          <div className="sidebar-submenu">
+
+            {item.children.map((child)=>{
+
+              const ChildIcon = child.icon;
+
+              return (
+
+                <NavLink
+                  key={child.path}
+                  to={child.path}
+                  className={({isActive}) =>
+                    isActive
+                      ? "sidebar-sublink active"
+                      : "sidebar-sublink"
+                  }
+                >
+                  <ChildIcon size={16}/>
+                  <span>{child.name}</span>
+                </NavLink>
+
+              );
+
+            })}
+
+          </div>
+
+        )}
+
+      </div>
+    );
+  }
+
+  return (
+
+    <NavLink
+      key={item.path}
+      to={item.path}
+      className={({isActive}) =>
+        isActive
+          ? "sidebar-link active"
+          : "sidebar-link"
+      }
+      onClick={onNavigate}
+    >
+      <Icon size={20}/>
+      <span>{item.name}</span>
+    </NavLink>
+
+  );
+
+})}
       </nav>
 
     </aside>

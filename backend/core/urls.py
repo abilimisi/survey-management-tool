@@ -51,6 +51,8 @@ from .views import (
     
 )
 
+from core.analytics_views import *
+
 router = routers.DefaultRouter()
 router.register("clients", ClientViewSet)
 router.register("vendors", VendorViewSet)
@@ -173,6 +175,39 @@ urlpatterns = [
     path(
     "respondents/<str:respondent_id>/journey/",
     respondent_redirect_journey,
+),
+
+# analytics
+path(
+    "analytics/overview/",
+    analytics_overview,
+),
+
+path(
+    "analytics/hits-chart/",
+    analytics_hits_chart,
+),
+
+path(
+    "analytics/status-chart/",
+    analytics_status_chart,
+),
+
+path(
+    "analytics/vendor-performance/",
+    analytics_vendor_performance,
+),
+path(
+    "analytics/project-performance/",
+    analytics_project_performance,
+),
+path(
+    "analytics/project-list/",
+    analytics_project_list,
+),
+path(
+    "analytics/projects/<int:project_id>/",
+    analytics_project_details,
 ),
 
 

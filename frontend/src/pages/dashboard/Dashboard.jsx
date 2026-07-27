@@ -264,8 +264,15 @@ const cards = [
                     <td className="db-td-mono">{r.respondent_id || "—"}</td>
                     <td className="db-td-dim">
                       {r.timestamp
-                        ? new Date(r.timestamp).toLocaleTimeString("en-IN",
-                            {hour:"2-digit", minute:"2-digit"})
+                        ? new Date(r.timestamp).toLocaleString(
+                            "en-IN",
+                            {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }
+                          )
                         : "—"}
                     </td>
                     <td>{pill(r.status)}</td>
