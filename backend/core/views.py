@@ -700,21 +700,50 @@ def handle_survey_result(request, result_type):
         respondent_id=respondent_id
     )
 
+    # Save the current status before changing it
+    old_status = respondent.status
+
+
     respondent.previous_status = respondent.status
     respondent.status = result_type
     respondent.completed_at = timezone.now()
     respondent.save()
 
     # ----------------------------------------
-    # Update Panel Campaign Recipient (if exists)
+    # Update Panel Campaign Recipient
     # ----------------------------------------
+
     recipient = PanelCampaignRecipient.objects.filter(
         respondent=respondent
     ).first()
 
     if recipient:
+
         recipient.status = result_type
         recipient.save()
+
+        panelist = recipient.panelist
+
+        # Update counters only if the status changed
+        if old_status != result_type:
+
+            panelist.total_surveys += 1
+
+            if result_type == "complete":
+                panelist.completed_surveys += 1
+
+            elif result_type == "terminate":
+                panelist.terminated_surveys += 1
+
+            elif result_type == "quota_full":
+                panelist.quota_full_surveys += 1
+
+            elif result_type == "security_terminate":
+                panelist.security_terminated_surveys += 1
+
+            panelist.last_survey_date = timezone.now()
+
+            panelist.save()
     
     # ----------------------------------------
     # Save Respondent Log
@@ -788,12 +817,6 @@ def universal_result(request):
         return HttpResponse("Invalid or missing status", status=400)
 
     return handle_survey_result(request, status)
-
-
-from django.utils import timezone
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .models import Project
 
 
 @api_view(["GET"])
@@ -1221,6 +1244,9 @@ def sync_panelists(request):
                 "industry": user["industry"],
                 "code": user["code"],
                 "registered_at": user["created_at"],
+                "email_verified": user["email_verified"],
+                "optin_type": user["optin_type"],
+                "verified_at": user["verified_at"],
             }
         )
 
@@ -1269,6 +1295,15 @@ def panelist_list(request):
             "industry": p.industry,
             "age": age,  
             "registered_at": p.registered_at,
+            "email_verified": p.email_verified,
+            "optin_type": p.optin_type,
+            "verified_at": p.verified_at,
+            "total_surveys": p.total_surveys,
+            "completed_surveys": p.completed_surveys,
+            "terminated_surveys": p.terminated_surveys,
+            "quota_full_surveys": p.quota_full_surveys,
+            "security_terminated_surveys": p.security_terminated_surveys,
+            "last_survey_date": p.last_survey_date,
         })
 
     return Response(data)

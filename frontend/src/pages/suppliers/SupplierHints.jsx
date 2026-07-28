@@ -158,7 +158,7 @@ function SupplierHints() {
         <p>
           Project: {data.project_name} | Vendor: {data.vendor_name}
         </p>
-        <button className="btn btn-primary" onClick={exportCSV}>
+        <button className="export-btn" onClick={exportCSV}>
           Export CSV
         </button>
       </div>

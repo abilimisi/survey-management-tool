@@ -592,17 +592,21 @@ class RedirectLog(models.Model):
     
 
 class Panelist(models.Model):
+    
     external_id = models.IntegerField(unique=True)
 
     fname = models.CharField(max_length=100)
+
     lname = models.CharField(max_length=100)
 
     email = models.EmailField(unique=True)
 
     gender = models.CharField(max_length=20, blank=True, null=True)
+
     dob = models.DateField(blank=True, null=True)
 
     country = models.CharField(max_length=100, blank=True, null=True)
+
     industry = models.CharField(max_length=100, blank=True, null=True)
 
     code = models.CharField(max_length=50, blank=True, null=True)
@@ -615,10 +619,25 @@ class Panelist(models.Model):
 
     last_synced = models.DateTimeField(auto_now=True)
 
-    source = models.CharField(
-        max_length=30,
-        default="Opinion Bunch"
-    )
+    source = models.CharField(max_length=30,default="Opinion Bunch")
+
+    email_verified = models.BooleanField(default=False)
+
+    optin_type = models.CharField(max_length=10,default="SOI")
+
+    verified_at = models.DateTimeField(null=True,blank=True)
+
+    total_surveys = models.PositiveIntegerField(default=0)
+
+    completed_surveys = models.PositiveIntegerField(default=0)
+
+    terminated_surveys = models.PositiveIntegerField(default=0)
+
+    quota_full_surveys = models.PositiveIntegerField(default=0)
+
+    security_terminated_surveys = models.PositiveIntegerField(default=0)
+
+    last_survey_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.email

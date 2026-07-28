@@ -112,6 +112,88 @@ function Panelists() {
         recordsPerPage
     );
 
+    const exportToCSV = () => {
+
+      const headers = [
+        "Panelist ID",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Gender",
+        "Country",
+        "Industry",
+        "Age",
+        "Registered",
+        "Opt-in",
+        "Verified",
+        "Verified Date",
+        "Total Surveys",
+        "Completed",
+        "Terminated",
+        "Quota Full",
+        "Security Terminated",
+        "IR (%)"
+      ];
+
+      const rows = filteredPanelists.map((p) => {
+
+        const total = p.total_surveys || 0;
+        const completed = p.completed_surveys || 0;
+
+        const ir =
+          total > 0
+            ? ((completed / total) * 100).toFixed(2)
+            : "0.00";
+
+        return [
+          p.id,
+          p.fname,
+          p.lname,
+          p.email,
+          p.gender,
+          p.country,
+          p.industry,
+          p.age,
+          p.registered_at,
+          p.optin_type,
+          p.email_verified ? "Verified" : "Pending",
+          p.email_verified_at || "",
+          total,
+          completed,
+          p.terminated_surveys || 0,
+          p.quota_full_surveys || 0,
+          p.security_terminated_surveys || 0,
+          ir
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(row =>
+          row.map(item => `"${item ?? ""}"`).join(",")
+        )
+      ].join("\n");
+
+      const blob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8;"
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "panelists.csv";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+    };
+
+    
+
 
   return (
     <div className="panelists-page">
@@ -213,6 +295,12 @@ function Panelists() {
         >
           Reset
         </button>
+        <button
+          className="export-btn"
+          onClick={exportToCSV}
+        >
+          Export CSV
+        </button>
 
       </div>
 
@@ -237,11 +325,25 @@ function Panelists() {
                 <th>Industry</th>
                 <th>AGE</th>
                 <th>Registered</th>
+                <th>Opt-in</th>
+                <th>Verified</th>
+                <th>Verified Date</th>
+                <th>Total</th>
+                <th>Completed</th>
+                <th>Terminated</th>
+                <th>Quota</th>
+                <th>Security</th>
+                <th>IR</th>
               </tr>
             </thead>
 
             <tbody>
-              {currentPanelists.map((p) => (
+              {currentPanelists.map((p) => {
+                const ir =
+                  p.total_surveys > 0
+                    ? ((p.completed_surveys / p.total_surveys) * 100).toFixed(1)
+                    : "0.0";
+                return (
                 <tr key={p.id}>
                   <td>
                     <div className="panelist-name">
@@ -270,12 +372,39 @@ function Panelists() {
                   <td>{p.industry || "-"}</td>
                   <td>{p.age || "-"}</td>
                   <td>{p.registered_at || "-"}</td>
+                  <td>
+                    <span className={`badge ${p.optin_type === "DOI" ? "badge-success" : "badge-warning"}`}>
+                      {p.optin_type || "-"}
+                    </span>
+                  </td>
+
+                  <td>
+                    {p.email_verified ? (
+                      <span className="badge badge-success">Verified</span>
+                    ) : (
+                      <span className="badge badge-danger">Pending</span>
+                    )}
+                  </td>
+
+                  <td>
+                    {p.verified_at
+                      ? new Date(p.verified_at).toLocaleDateString()
+                      : "-"}
+                  </td>
+                  <td>{p.total_surveys}</td>
+                  <td>{p.completed_surveys}</td>
+                  <td>{p.terminated_surveys}</td>
+                  <td>{p.quota_full_surveys}</td>
+                  <td>{p.security_terminated_surveys}</td>
+                  <td>{ir}</td>
+                  
                 </tr>
-              ))}
+                );
+              })}
 
               {filteredPanelists.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="empty-table">
+                  <td colSpan="10" className="empty-table">
                     No panelists found. Click Sync Website Users.
                   </td>
                 </tr>

@@ -63,8 +63,18 @@
 }
 
 .export-btn{
-    background:#2563eb !important;
+    padding:10px 18px;
+    border:none;
+    border-radius:6px;
+    background:#16a34a;
     color:white;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+}
+
+.export-btn:hover{
+    background:#15803d;
 }
 
 /* ===========================================

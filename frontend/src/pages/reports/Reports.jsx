@@ -263,7 +263,7 @@ function Reports() {
           <p>Analyze project, supplier and respondent performance</p>
         </div>
 
-        <button className="primary-btn" onClick={exportCSV}>
+        <button className="export-btn" onClick={exportCSV}>
           Export CSV
         </button>
       </div>

@@ -11,7 +11,6 @@ import {
 function ClientsList() {
 
   const [clients, setClients] = useState([]);
-  console.log(clients);
   const isSuperUser =
     localStorage.getItem("is_superuser") === "true";
 

@@ -30,7 +30,7 @@ const CreateCampaign = () => {
 
         target: 100,
 
-        status: "draft",
+        status: "running",
 
         notes: "",
 
@@ -358,6 +358,7 @@ const CreateCampaign = () => {
                         </select>
 
                     </div>
+                    <small className="warning-text">Hold Ctrl and click to select or deselect multiple industries.</small>
 
                 </div>
 

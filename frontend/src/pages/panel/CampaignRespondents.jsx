@@ -123,7 +123,7 @@ export default function CampaignRespondents() {
             <h2>Campaign Respondents</h2>
 
             <button
-                className="export-btn1"
+                className="export-btn"
                 onClick={handleExportCSV}
             >
                 Export CSV
