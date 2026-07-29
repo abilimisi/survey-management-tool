@@ -218,8 +218,6 @@ class PanelCampaignDashboardSerializer(serializers.ModelSerializer):
             "gender",
             "industry",
         ]
-        
-from rest_framework import serializers
 
 class CampaignEmailTemplateSerializer(serializers.ModelSerializer):
 
