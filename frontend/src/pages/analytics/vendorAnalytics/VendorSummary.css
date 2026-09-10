@@ -1,6 +1,7 @@
-/* Aligned to shared card convention: 12px radius, 1px border, soft shadow */
+/* Aligned to shared card convention: 12px radius, 1px border, soft shadow.
+   Mirrors ProjectSummary.css, purple accent instead of blue. */
 
-.project-summary{
+.vendor-summary{
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -14,14 +15,14 @@
     box-shadow:0 4px 14px rgba(15,23,42,.05);
 }
 
-.project-info h2{
+.vendor-info h2{
     font-size:19px;
     font-weight:700;
     color:#111827;
     margin-bottom:10px;
 }
 
-.project-meta{
+.vendor-meta{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
@@ -44,7 +45,7 @@
     font-weight:500;
 }
 
-.project-status{
+.vendor-status{
     display:flex;
     flex-direction:column;
     gap:10px;
@@ -71,16 +72,8 @@
     background:#16a34a;
 }
 
-.status-badge.testing{
-    background:#2563eb;
-}
-
-.status-badge.completed{
-    background:#7c3aed;
-}
-
-.status-badge.closed{
-    background:#475569;
+.status-badge.on_hold{
+    background:#94a3b8;
 }
 
 .completion-box{
@@ -92,9 +85,9 @@
 
     border-radius:10px;
 
-    background:#eff6ff;
+    background:#faf5ff;
 
-    color:#2563eb;
+    color:#8b5cf6;
 }
 
 .completion-box h3{
@@ -108,13 +101,13 @@
 
 @media(max-width:900px){
 
-.project-summary{
+.vendor-summary{
     flex-direction:column;
     align-items:flex-start;
     gap:16px;
 }
 
-.project-status{
+.vendor-status{
     align-items:flex-start;
 }
 

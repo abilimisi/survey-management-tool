@@ -7,60 +7,81 @@ import {
     ResponsiveContainer,
 } from "recharts";
 
-const COLORS=[
-    "#22c55e",
-    "#ef4444",
-    "#f59e0b",
-    "#3b82f6",
-    "#8b5cf6",
-];
+import { STATUS_COLORS, PALETTE } from "./chartTheme";
 
-export default function StatusPieChart({data}){
+// Reusable status donut used by:
+//   - Dashboard              (AnalyticsDashboard.jsx)
+//   - Project Analytics      (ProjectAnalytics.jsx -> ProjectStatusChart wrapper)
+//   - Vendor Analytics       (VendorAnalytics.jsx  -> VendorStatusChart wrapper)
+//
+// Props:
+//   data        -> [{ name, status, value }]
+//   centerValue -> big number shown in the middle of the donut (e.g. total hits)
+//   centerLabel -> small caption under the center value (e.g. "Total Hits")
+//   height      -> chart height (default 300)
+export default function StatusPieChart({
+    data,
+    centerValue,
+    centerLabel = "Total",
+    height = 300,
+}) {
 
-    if(!data) return null;
+    if (!data || data.length === 0) {
+        return <div className="analytics-empty">No status data</div>;
+    }
 
-    return(
+    const total =
+        centerValue !== undefined
+            ? centerValue
+            : data.reduce((sum, item) => sum + (item.value || 0), 0);
 
-        <div className="chart-card">
+    return (
+        <div className="donut-wrapper">
 
-            <h3>Status Distribution</h3>
-
-            <ResponsiveContainer
-                width="100%"
-                height={320}
-            >
+            <ResponsiveContainer width="100%" height={height}>
 
                 <PieChart>
 
                     <Pie
                         data={data}
                         dataKey="value"
-                        nameKey="status"
-                        outerRadius={110}
-                        label
+                        nameKey="name"
+                        innerRadius={height * 0.28}
+                        outerRadius={height * 0.42}
+                        paddingAngle={2}
                     >
 
-                        {
-                            data.map((entry,index)=>(
-                                <Cell
-                                    key={index}
-                                    fill={COLORS[index%COLORS.length]}
-                                />
-                            ))
-                        }
+                        {data.map((entry, index) => (
+                            <Cell
+                                key={entry.status || index}
+                                fill={
+                                    STATUS_COLORS[entry.status] ||
+                                    entry.color ||
+                                    PALETTE[index % PALETTE.length]
+                                }
+                            />
+                        ))}
 
                     </Pie>
 
-                    <Tooltip/>
+                    <Tooltip formatter={(value) => value.toLocaleString()} />
 
-                    <Legend/>
+                    <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        iconType="circle"
+                        wrapperStyle={{ fontSize: 12.5 }}
+                    />
 
                 </PieChart>
 
             </ResponsiveContainer>
 
+            <div className="donut-center-label">
+                <h2>{total.toLocaleString()}</h2>
+                <span>{centerLabel}</span>
+            </div>
+
         </div>
-
-    )
-
+    );
 }

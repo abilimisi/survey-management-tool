@@ -214,6 +214,21 @@ path(
     analytics_project_details,
 ),
 
+path(
+    "analytics/funnel/",
+    analytics_funnel,
+),
+
+path(
+    "analytics/vendor-list/",
+    analytics_vendor_list,
+),
+
+path(
+    "analytics/vendors/<int:vendor_id>/",
+    analytics_vendor_details,
+),
+
 
 path(
     "panel-campaigns/<int:pk>/email-template/update/",

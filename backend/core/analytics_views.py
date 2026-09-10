@@ -302,6 +302,7 @@ def analytics_project_performance(request):
 
         data.append({
             "id": project.id,
+            "project_id": project.id,
             "project_name": project.name,
             "status": project.status,
             "total_hits": total_hits,
@@ -312,6 +313,13 @@ def analytics_project_performance(request):
             "started": started,
             "ir": ir,
         })
+
+    # Rank by IR desc, then total hits desc — was previously missing,
+    # so ProjectPerformance.jsx's "#{project.rank}" rendered "#undefined".
+    data.sort(key=lambda x: (x["ir"], x["total_hits"]), reverse=True)
+
+    for index, row in enumerate(data, start=1):
+        row["rank"] = index
 
     return Response(data)
 
@@ -378,6 +386,53 @@ def analytics_project_details(request, project_id):
         2
     ) if total_hits else 0
 
+    # --- Daily trend (last 7 days) for THIS project ---
+    today = timezone.localdate()
+    start_date = today - timedelta(days=6)
+
+    trend_qs = (
+        respondents.filter(started_at__date__gte=start_date)
+        .annotate(day=TruncDate("started_at"))
+        .values("day")
+        .annotate(hits=Count("id"))
+        .order_by("day")
+    )
+    trend_dict = {item["day"]: item["hits"] for item in trend_qs}
+
+    trend = []
+    for i in range(7):
+        current_day = start_date + timedelta(days=i)
+        trend.append({
+            "day": current_day.strftime("%a"),
+            "date": current_day.strftime("%Y-%m-%d"),
+            "hits": trend_dict.get(current_day, 0),
+        })
+
+    # --- Status breakdown (for donut) ---
+    status_breakdown = [
+        {"name": "Complete", "status": "complete", "value": completes, "color": "#22c55e"},
+        {"name": "Terminate", "status": "terminate", "value": terminates, "color": "#ef4444"},
+        {"name": "Quota Full", "status": "quota_full", "value": quota, "color": "#f59e0b"},
+        {"name": "Security Terminate", "status": "security_terminate", "value": security, "color": "#8b5cf6"},
+        {"name": "Started", "status": "started", "value": started, "color": "#3b82f6"},
+    ]
+    status_breakdown = [row for row in status_breakdown if row["value"] > 0]
+
+    # --- Vendor split (who is delivering this project) ---
+    vendor_split_qs = (
+        respondents.values("vendor__id", "vendor__name")
+        .annotate(hits=Count("id"))
+        .order_by("-hits")[:8]
+    )
+    vendor_split = [
+        {
+            "vendor_id": row["vendor__id"],
+            "vendor_name": row["vendor__name"] or "Unknown",
+            "hits": row["hits"],
+        }
+        for row in vendor_split_qs
+    ]
+
     return Response({
 
         "project": {
@@ -398,6 +453,161 @@ def analytics_project_details(request, project_id):
             "quota_full": quota,
             "security": security,
             "ir": ir,
+        },
+
+        "trend": trend,
+
+        "status_breakdown": status_breakdown,
+
+        "vendor_split": vendor_split,
+
+    })
+
+
+@api_view(["GET"])
+def analytics_funnel(request):
+    """
+    Real respondent funnel: Started -> Complete / Terminate / Quota Full / Security Terminate.
+    Replaces the old hardcoded funnel placeholder on the Dashboard.
+    """
+
+    total_hits = Respondent.objects.count()
+
+    complete = Respondent.objects.filter(status="complete").count()
+    terminate = Respondent.objects.filter(status="terminate").count()
+    quota_full = Respondent.objects.filter(status="quota_full").count()
+    security = Respondent.objects.filter(status="security_terminate").count()
+    started_only = Respondent.objects.filter(status="started").count()
+
+    stages = [
+        {"stage": "Total Hits", "value": total_hits, "color": "#2563eb"},
+        {"stage": "Complete", "value": complete, "color": "#22c55e"},
+        {"stage": "Terminate", "value": terminate, "color": "#ef4444"},
+        {"stage": "Quota Full", "value": quota_full, "color": "#f59e0b"},
+        {"stage": "Security Terminate", "value": security, "color": "#8b5cf6"},
+    ]
+
+    for stage in stages:
+        stage["percent"] = (
+            round((stage["value"] / total_hits) * 100, 1)
+            if total_hits else 0
+        )
+
+    return Response({
+        "stages": stages,
+        "in_progress": started_only,
+    })
+
+
+@api_view(["GET"])
+def analytics_vendor_list(request):
+    """
+    Returns all vendors for the Vendor Analytics filter dropdown.
+    """
+
+    vendors = Vendor.objects.all()
+
+    data = []
+
+    for vendor in vendors:
+        data.append({
+            "id": vendor.id,
+            "name": vendor.name,
+            "status": "Active" if vendor.status else "Inactive",
+        })
+
+    return Response(data)
+
+
+@api_view(["GET"])
+def analytics_vendor_details(request, vendor_id):
+    """
+    Returns complete analytics for one selected vendor:
+    summary cards, 7-day trend, status breakdown (donut),
+    and a breakdown of which projects this vendor is delivering on.
+    """
+
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+
+    respondents = Respondent.objects.filter(vendor=vendor)
+
+    total_hits = respondents.count()
+
+    completes = respondents.filter(status="complete").count()
+    terminates = respondents.filter(status="terminate").count()
+    quota = respondents.filter(status="quota_full").count()
+    security = respondents.filter(status="security_terminate").count()
+    started = respondents.filter(status="started").count()
+
+    ir = round((completes / total_hits) * 100, 2) if total_hits else 0
+
+    today = timezone.localdate()
+    start_date = today - timedelta(days=6)
+
+    trend_qs = (
+        respondents.filter(started_at__date__gte=start_date)
+        .annotate(day=TruncDate("started_at"))
+        .values("day")
+        .annotate(hits=Count("id"))
+        .order_by("day")
+    )
+    trend_dict = {item["day"]: item["hits"] for item in trend_qs}
+
+    trend = []
+    for i in range(7):
+        current_day = start_date + timedelta(days=i)
+        trend.append({
+            "day": current_day.strftime("%a"),
+            "date": current_day.strftime("%Y-%m-%d"),
+            "hits": trend_dict.get(current_day, 0),
+        })
+
+    status_breakdown = [
+        {"name": "Complete", "status": "complete", "value": completes, "color": "#22c55e"},
+        {"name": "Terminate", "status": "terminate", "value": terminates, "color": "#ef4444"},
+        {"name": "Quota Full", "status": "quota_full", "value": quota, "color": "#f59e0b"},
+        {"name": "Security Terminate", "status": "security_terminate", "value": security, "color": "#8b5cf6"},
+        {"name": "Started", "status": "started", "value": started, "color": "#3b82f6"},
+    ]
+    status_breakdown = [row for row in status_breakdown if row["value"] > 0]
+
+    project_split_qs = (
+        respondents.values("project__id", "project__name")
+        .annotate(hits=Count("id"))
+        .order_by("-hits")[:8]
+    )
+    project_split = [
+        {
+            "project_id": row["project__id"],
+            "project_name": row["project__name"] or "Unknown",
+            "hits": row["hits"],
         }
+        for row in project_split_qs
+    ]
+
+    return Response({
+
+        "vendor": {
+            "id": vendor.id,
+            "name": vendor.name,
+            "status": "Active" if vendor.status else "Inactive",
+            "email": vendor.email,
+        },
+
+        "summary": {
+            "hits": total_hits,
+            "started": started,
+            "complete": completes,
+            "terminate": terminates,
+            "quota_full": quota,
+            "security": security,
+            "ir": ir,
+        },
+
+        "trend": trend,
+
+        "status_breakdown": status_breakdown,
+
+        "project_split": project_split,
 
     })

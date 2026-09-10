@@ -1,8 +1,8 @@
-/* Aligned to the app's shared design system — see AnalyticsDashboard.css
-   for the full rationale. No extra outer padding (relies on .page-content,
-   same as every other module), card elevation matches .stat-card. */
+/* Aligned to the app's shared design system — mirrors ProjectAnalytics.css
+   so Dashboard / Project Analytics / Vendor Analytics all match. No extra
+   outer padding (relies on .page-content, same as every other module). */
 
-.project-analytics{
+.vendor-analytics{
     width:100%;
     display:flex;
     flex-direction:column;
@@ -52,14 +52,6 @@
     font-size:13.5px;
 }
 
-.project-info-card{
-    background:#fff;
-    padding:16px 20px;
-    border-radius:12px;
-    border:1px solid #e5e7eb;
-    box-shadow:0 4px 14px rgba(15,23,42,.05);
-}
-
 .project-summary-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -77,14 +69,16 @@
     box-shadow:0 4px 14px rgba(15,23,42,.05);
 }
 
+/* Vendor Analytics uses a purple accent instead of Project Analytics'
+   blue, so the two modules stay visually distinguishable at a glance */
 .summary-card svg{
     width:36px;
     height:36px;
     padding:8px;
     box-sizing:content-box;
     border-radius:9px;
-    background:#eff6ff;
-    color:#2563eb;
+    background:#faf5ff;
+    color:#8b5cf6;
 }
 
 .summary-card span{
@@ -104,7 +98,7 @@
    CHARTS (Status donut + Hits trend)
 =========================================== */
 
-.project-analytics-chart-grid{
+.vendor-analytics-chart-grid{
     display:grid;
     grid-template-columns:1fr 1.6fr;
     gap:14px;
@@ -112,7 +106,7 @@
 
 @media (max-width: 900px){
 
-.project-analytics-chart-grid{
+.vendor-analytics-chart-grid{
     grid-template-columns:1fr;
 }
 

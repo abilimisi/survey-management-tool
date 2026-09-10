@@ -25,7 +25,7 @@ import Reports from "../pages/reports/Reports";
 
 import Panelists from "../pages/panelists/Panelists";
 
-import CompanyContactsList from "../pages/companycontacts/companycontactsList";
+import CompanyContactsList from "../pages/companycontacts/CompanyContactsList";
 import AddCompanyContact from "../pages/companycontacts/AddCompanyContact";
 import EditCompanyContact from "../pages/companycontacts/EditCompanyContact";
 
@@ -48,6 +48,7 @@ import EmailTemplate from "../pages/EmailTemplates/EmailTemplate";
 
 import AnalyticsDashboard from "../pages/analytics/AnalyticsDashboard";
 import ProjectAnalytics from "../pages/analytics/projectAnalytics/ProjectAnalytics";
+import VendorAnalytics from "../pages/analytics/vendorAnalytics/VendorAnalytics";
 
 
 function ProtectedLayout({ children }) {
@@ -302,6 +303,11 @@ function AppRoutes() {
       <Route
           path="/analytics/projects"
           element={<ProtectedLayout><ProjectAnalytics /></ProtectedLayout>}
+      />
+
+      <Route
+          path="/analytics/vendors"
+          element={<ProtectedLayout><VendorAnalytics /></ProtectedLayout>}
       />
 
 

@@ -41,17 +41,32 @@ export default function VendorPerformance({ data }) {
               <td>{vendor.completes}</td>
 
               <td>
-                <span
-                  className={
-                    vendor.ir >= 60
-                      ? "status-good"
-                      : vendor.ir >= 40
-                      ? "status-warning"
-                      : "status-bad"
-                  }
-                >
-                  {vendor.ir}%
-                </span>
+                <div className="ir-cell">
+                  <span
+                    className={
+                      vendor.ir >= 60
+                        ? "status-good"
+                        : vendor.ir >= 40
+                        ? "status-warning"
+                        : "status-bad"
+                    }
+                  >
+                    {vendor.ir}%
+                  </span>
+
+                  <div className="ir-track">
+                    <div
+                      className={`ir-fill ${
+                        vendor.ir >= 60
+                          ? "fill-good"
+                          : vendor.ir >= 40
+                          ? "fill-warning"
+                          : "fill-bad"
+                      }`}
+                      style={{ width: `${Math.min(vendor.ir, 100)}%` }}
+                    />
+                  </div>
+                </div>
               </td>
 
               <td>

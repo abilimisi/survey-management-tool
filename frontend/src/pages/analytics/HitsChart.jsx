@@ -1,50 +1,73 @@
 import {
     ResponsiveContainer,
-    LineChart,
-    Line,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     Tooltip,
     CartesianGrid,
 } from "recharts";
 
-export default function HitsChart({ data }) {
+import { AXIS_STYLE, GRID_STROKE } from "./chartTheme";
 
-    if (!data) return null;
+// Reusable gradient trend chart used by:
+//   - Dashboard          (global 7-day hits)
+//   - Project Analytics  (per-project 7-day hits)
+//   - Vendor Analytics   (per-vendor 7-day hits)
+//
+// Props:
+//   data      -> [{ day, date, hits }]
+//   dataKey   -> field to plot (default "hits")
+//   xKey      -> x-axis field (default "day")
+//   color     -> line/fill color (default brand blue)
+//   height    -> chart height (default 320)
+export default function HitsChart({
+    data,
+    dataKey = "hits",
+    xKey = "day",
+    color = "#2563eb",
+    height = 320,
+}) {
+
+    if (!data || data.length === 0) {
+        return <div className="analytics-empty">No trend data</div>;
+    }
+
+    const gradientId = `hitsGradient-${dataKey}`;
 
     return (
+        <ResponsiveContainer width="100%" height={height}>
 
-        <div className="chart-card">
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
 
-            <h3>Daily Survey Hits</h3>
+                <defs>
+                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.35} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.02} />
+                    </linearGradient>
+                </defs>
 
-            <ResponsiveContainer
-                width="100%"
-                height={320}
-            >
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
 
-                <LineChart data={data}>
+                <XAxis dataKey={xKey} tick={AXIS_STYLE} axisLine={false} tickLine={false} />
+                <YAxis tick={AXIS_STYLE} axisLine={false} tickLine={false} allowDecimals={false} />
 
-                    <CartesianGrid strokeDasharray="3 3"/>
+                <Tooltip
+                    contentStyle={{ borderRadius: 10, border: "1px solid #e5e7eb" }}
+                />
 
-                    <XAxis dataKey="date"/>
+                <Area
+                    type="monotone"
+                    dataKey={dataKey}
+                    stroke={color}
+                    strokeWidth={2.5}
+                    fill={`url(#${gradientId})`}
+                    dot={{ r: 3, strokeWidth: 0, fill: color }}
+                    activeDot={{ r: 5 }}
+                />
 
-                    <YAxis/>
+            </AreaChart>
 
-                    <Tooltip/>
-
-                    <Line
-                        dataKey="hits"
-                        stroke="#2563eb"
-                        strokeWidth={3}
-                    />
-
-                </LineChart>
-
-            </ResponsiveContainer>
-
-        </div>
-
+        </ResponsiveContainer>
     );
-
 }

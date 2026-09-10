@@ -41,17 +41,32 @@ export default function ProjectPerformance({ data }) {
               <td>{project.completes}</td>
 
               <td>
-                <span
-                  className={
-                    project.ir >= 60
-                      ? "status-good"
-                      : project.ir >= 40
-                      ? "status-warning"
-                      : "status-bad"
-                  }
-                >
-                  {project.ir}%
-                </span>
+                <div className="ir-cell">
+                  <span
+                    className={
+                      project.ir >= 60
+                        ? "status-good"
+                        : project.ir >= 40
+                        ? "status-warning"
+                        : "status-bad"
+                    }
+                  >
+                    {project.ir}%
+                  </span>
+
+                  <div className="ir-track">
+                    <div
+                      className={`ir-fill ${
+                        project.ir >= 60
+                          ? "fill-good"
+                          : project.ir >= 40
+                          ? "fill-warning"
+                          : "fill-bad"
+                      }`}
+                      style={{ width: `${Math.min(project.ir, 100)}%` }}
+                    />
+                  </div>
+                </div>
               </td>
 
               <td>

@@ -1,0 +1,50 @@
+.funnel-chart{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    padding:2px 0;
+}
+
+.funnel-row{
+    display:grid;
+    grid-template-columns:150px 1fr 56px;
+    align-items:center;
+    gap:14px;
+}
+
+.funnel-label{
+    font-size:13px;
+    font-weight:600;
+    color:#374151;
+}
+
+.funnel-track{
+    background:#f1f5f9;
+    border-radius:8px;
+    overflow:hidden;
+    height:26px;
+}
+
+.funnel-bar{
+    height:100%;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    padding-right:10px;
+    min-width:38px;
+    transition:width .4s ease;
+}
+
+.funnel-bar span{
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+}
+
+.funnel-percent{
+    font-size:13px;
+    font-weight:700;
+    color:#64748b;
+    text-align:right;
+}

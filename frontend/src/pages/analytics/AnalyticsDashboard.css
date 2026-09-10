@@ -1,190 +1,133 @@
 /* ===========================================
    ANALYTICS DASHBOARD
+   Aligned to the app's shared design system:
+   - No extra page padding (relies on .page-content,
+     same as ProjectsList/VendorsList/ClientsList —
+     this removes the large gap next to the sidebar).
+   - Header sized like .page-header-flex.
+   - Card elevation matches .stat-card / .custom-table
+     (0 4px 14px rgba(15,23,42,.05), 1px solid #e5e7eb).
 =========================================== */
 
 .analytics-page{
     width:100%;
-    max-width:100%;
-    padding:24px;
-    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
 }
 
-/* .page-content{
-    flex:1;
-    width:100%;
-    min-width:0;
-    overflow-x:hidden;
-} */
-
 /* ===========================================
-   HEADER
+   HEADER (same proportions as .page-header-flex
+   used across Projects/Vendors/Clients)
 =========================================== */
 
 .analytics-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:30px;
 }
 
 .analytics-header h1{
-    font-size:32px;
+    font-size:20px;
     font-weight:700;
-    color:#1e293b;
-    margin-bottom:5px;
+    color:#111827;
+    margin-bottom:2px;
 }
 
 .analytics-header p{
-    color:#64748b;
-    font-size:15px;
+    color:#6b7280;
+    font-size:13px;
 }
 
 .analytics-actions{
     display:flex;
-    gap:12px;
+    gap:10px;
 }
 
+/* Buttons reuse the app's .primary-btn / .secondary-btn look
+   (dark solid + outline), not bespoke floating pills */
 .analytics-actions button{
     display:flex;
     align-items:center;
-    gap:8px;
-    padding:11px 18px;
-    border:none;
-    border-radius:12px;
+    gap:6px;
+    padding:8px 16px;
+    border-radius:8px;
     cursor:pointer;
-    background:white;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
-    transition:.25s;
     font-weight:600;
+    font-size:13px;
+    border:1px solid #d1d5db;
+    background:white;
+    color:#111827;
+    transition:background .15s;
 }
 
 .analytics-actions button:hover{
-    transform:translateY(-3px);
+    background:#f3f4f6;
 }
 
-.export-btn{
-    padding:10px 18px;
-    border:none;
-    border-radius:6px;
-    background:#16a34a;
+.analytics-actions .export-btn{
+    background:#111827;
     color:white;
-    cursor:pointer;
-    font-size:14px;
-    font-weight:600;
+    border:none;
 }
 
-.export-btn:hover{
-    background:#15803d;
+.analytics-actions .export-btn:hover{
+    background:#1f2937;
 }
 
 /* ===========================================
-   KPI
+   KPI — reuses the same visual weight as .stat-card
+   (white card, thin border, subtle shadow, colored
+   icon chip) instead of large gradient blocks.
 =========================================== */
 
 .analytics-kpi-grid{
-
     display:grid;
-
     grid-template-columns:repeat(4,1fr);
-
-    gap:22px;
-
-    margin-bottom:30px;
-
+    gap:14px;
 }
 
 .kpi-card{
-
     display:flex;
-
     align-items:center;
-
-    gap:20px;
-
-    padding:24px;
-
-    border-radius:18px;
-
-    color:white;
-
-    transition:.3s;
-
-    box-shadow:0 12px 28px rgba(0,0,0,.12);
-
-}
-
-.kpi-card:hover{
-
-    transform:translateY(-6px);
-
-}
-
-.kpi-card.blue{
-
-background:linear-gradient(135deg,#2563eb,#60a5fa);
-
-}
-
-.kpi-card.green{
-
-background:linear-gradient(135deg,#16a34a,#4ade80);
-
-}
-
-.kpi-card.orange{
-
-background:linear-gradient(135deg,#ea580c,#fb923c);
-
-}
-
-.kpi-card.purple{
-
-background:linear-gradient(135deg,#7c3aed,#a855f7);
-
+    gap:14px;
+    background:white;
+    padding:16px 20px;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    box-shadow:0 4px 14px rgba(15,23,42,.05);
 }
 
 .kpi-icon{
-
-width:65px;
-
-height:65px;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-border-radius:50%;
-
-background:rgba(255,255,255,.18);
-
+    width:44px;
+    height:44px;
+    min-width:44px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:10px;
 }
 
+.kpi-card.blue .kpi-icon{ background:#eff6ff; color:#2563eb; }
+.kpi-card.green .kpi-icon{ background:#f0fdf4; color:#16a34a; }
+.kpi-card.orange .kpi-icon{ background:#fff7ed; color:#ea580c; }
+.kpi-card.purple .kpi-icon{ background:#faf5ff; color:#7c3aed; }
+
 .kpi-card p{
-
-font-size:14px;
-
-opacity:.9;
-
-margin-bottom:6px;
-
+    color:#6b7280;
+    font-size:12.5px;
+    margin-bottom:4px;
 }
 
 .kpi-card h2{
-
-font-size:34px;
-
-margin-bottom:5px;
-
+    font-size:24px;
+    font-weight:700;
+    color:#111827;
 }
 
 .kpi-card span{
-
-font-size:13px;
-
-opacity:.85;
-
+    font-size:12px;
+    color:#2563eb;
 }
 
 /* ===========================================
@@ -192,15 +135,9 @@ opacity:.85;
 =========================================== */
 
 .analytics-chart-layout{
-
-display:grid;
-
-grid-template-columns:2fr 1fr;
-
-gap:24px;
-
-margin-bottom:24px;
-
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:14px;
 }
 
 /* ===========================================
@@ -210,31 +147,24 @@ margin-bottom:24px;
 .analytics-performance-grid{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:24px;
+    gap:14px;
     width:100%;
 }
 
 /* ===========================================
-   CARD
+   CARD (matches .stat-card elevation, not the
+   heavier bespoke shadow used before)
 =========================================== */
 
 .analytics-card{
-
-background:white;
-
-border-radius:18px;
-
-padding:24px;
-
-box-shadow:0 10px 30px rgba(0,0,0,.08);
-
-margin-bottom:24px;
-
-transition:.3s;
-width:100%;
-min-width:0;
-overflow:hidden;
-
+    background:white;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    padding:18px 20px;
+    box-shadow:0 4px 14px rgba(15,23,42,.05);
+    width:100%;
+    min-width:0;
+    overflow:hidden;
 }
 
 .analytics-table-wrapper{
@@ -242,90 +172,79 @@ overflow:hidden;
     overflow-x:auto;
 }
 
-.analytics-card:hover{
-
-transform:translateY(-4px);
-
-}
-
 .card-header{
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-margin-bottom:20px;
-
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
 }
 
 .card-header h3{
-
-font-size:19px;
-
-font-weight:700;
-
-color:#1e293b;
-
-display:flex;
-
-align-items:center;
-
-gap:8px;
-
+    font-size:15px;
+    font-weight:700;
+    color:#111827;
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
 
 /* ===========================================
    FUNNEL
+   (funnel-chart / funnel-row / funnel-bar styles
+   now live in FunnelChart.css, used by FunnelChart.jsx)
 =========================================== */
 
-.funnel-placeholder{
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-padding:25px 10px;
-
-font-weight:700;
-
-color:#334155;
-
-font-size:16px;
-
-}
-
 /* ===========================================
-   AI INSIGHTS
+   INSIGHTS (rule-based, computed in AnalyticsDashboard.jsx)
 =========================================== */
 
 .insight-list{
-
-display:flex;
-
-flex-direction:column;
-
-gap:14px;
-
+    display:flex;
+    flex-direction:column;
+    gap:10px;
 }
 
-.insight-list div{
+.insight-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f8fafc;
+    padding:12px 16px;
+    border-left:4px solid #3b82f6;
+    border-radius:8px;
+    font-size:13.5px;
+    color:#334155;
+}
 
-background:#f8fafc;
+.insight-row svg{
+    flex-shrink:0;
+}
 
-padding:15px 18px;
+.insight-row.good{
+    border-left-color:#22c55e;
+}
 
-border-left:5px solid #3b82f6;
+.insight-row.good svg{
+    color:#22c55e;
+}
 
-border-radius:10px;
+.insight-row.warning{
+    border-left-color:#f59e0b;
+    background:#fffbeb;
+}
 
-font-size:15px;
+.insight-row.warning svg{
+    color:#f59e0b;
+}
 
-color:#334155;
+/* Refresh button spin animation */
+.spin{
+    animation:spin 0.8s linear infinite;
+}
 
+@keyframes spin{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
 }
 
 /* ===========================================
@@ -333,57 +252,38 @@ color:#334155;
 =========================================== */
 
 .analytics-loading{
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-height:80vh;
-
-font-size:26px;
-
-font-weight:700;
-
-color:#64748b;
-
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:80vh;
+    font-size:15px;
+    font-weight:600;
+    color:#6b7280;
 }
 
 /* ===========================================
-   TABLE
+   TABLE (matches .custom-table look elsewhere in app)
 =========================================== */
 
 .analytics-card table{
-
-width:100%;
-
-border-collapse:collapse;
-
+    width:100%;
+    border-collapse:collapse;
 }
 
 .analytics-card table th{
-
-background:#eff6ff;
-
-padding:12px;
-
-font-size:14px;
-
-font-weight:700;
-
-color:#334155;
-
+    background:#f9fafb;
+    padding:10px 12px;
+    font-size:12px;
+    font-weight:700;
+    color:#374151;
+    text-transform:uppercase;
+    letter-spacing:.02em;
 }
 
 .analytics-card table td{
-
-padding:12px;
-
-border-bottom:1px solid #edf2f7;
-
-font-size:14px;
-
+    padding:10px 12px;
+    border-bottom:1px solid #f1f5f9;
+    font-size:13.5px;
 }
 
 /* ===========================================
@@ -391,17 +291,12 @@ font-size:14px;
 =========================================== */
 
 .analytics-card::-webkit-scrollbar{
-
-height:8px;
-
+    height:8px;
 }
 
 .analytics-card::-webkit-scrollbar-thumb{
-
-background:#cbd5e1;
-
-border-radius:20px;
-
+    background:#cbd5e1;
+    border-radius:20px;
 }
 
 /* ===========================================
@@ -411,87 +306,42 @@ border-radius:20px;
 @media(max-width:1200px){
 
 .analytics-kpi-grid{
-
-grid-template-columns:repeat(2,1fr);
-
+    grid-template-columns:repeat(2,1fr);
 }
 
 .analytics-chart-layout{
-
-grid-template-columns:1fr;
-
+    grid-template-columns:1fr;
 }
 
 .analytics-performance-grid{
-
-grid-template-columns:1fr;
-
+    grid-template-columns:1fr;
 }
 
 }
 
 @media(max-width:768px){
 
-.analytics-page{
-
-padding:18px;
-
-}
-
 .analytics-header{
-
-flex-direction:column;
-
-align-items:flex-start;
-
-gap:20px;
-
+    flex-direction:column;
+    align-items:flex-start;
+    gap:14px;
 }
 
 .analytics-actions{
-
-width:100%;
-
+    width:100%;
 }
 
 .analytics-actions button{
-
-flex:1;
-
-justify-content:center;
-
+    flex:1;
+    justify-content:center;
 }
 
 .analytics-kpi-grid{
-
-grid-template-columns:1fr;
-
+    grid-template-columns:1fr;
 }
 
-.kpi-card{
-
-padding:20px;
-
-}
-
-.analytics-header h1{
-
-font-size:25px;
-
-}
-
-.card-header h3{
-
-font-size:17px;
-
-}
-
-.funnel-placeholder{
-
-flex-direction:column;
-
-gap:18px;
-
+.funnel-row{
+    grid-template-columns:100px 1fr 40px;
 }
 
 }

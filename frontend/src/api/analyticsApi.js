@@ -39,6 +39,11 @@ export const getProjectPerformance = async (projectId = "") => {
   return response.data;
 };
 
+export const getAnalyticsFunnel = async () => {
+  const response = await axiosInstance.get("/analytics/funnel/");
+  return response.data;
+};
+
 /* ===========================
    PROJECT ANALYTICS
 =========================== */
@@ -56,6 +61,28 @@ export const getAnalyticsProjectDetails = async (
 ) => {
   const response = await axiosInstance.get(
     `/analytics/projects/${projectId}/`
+  );
+
+  return response.data;
+};
+
+/* ===========================
+   VENDOR ANALYTICS
+=========================== */
+
+export const getVendorList = async () => {
+  const response = await axiosInstance.get(
+    "/analytics/vendor-list/"
+  );
+
+  return response.data;
+};
+
+export const getAnalyticsVendorDetails = async (
+  vendorId
+) => {
+  const response = await axiosInstance.get(
+    `/analytics/vendors/${vendorId}/`
   );
 
   return response.data;
