@@ -1,3 +1,21 @@
+# client----------------------------------------------
+
+# https://client-survey-link.com?parameter_name={{VARIABLE}}
+
+# * here we have to replace the {{VARIABLE}} name only with {{ID}} or {{panellist_id}} or {{RID-XXXX}} or [[Q3]] or any other variable name which is used in the survey link.
+
+# Note: Keep the client's parameter names unchanged (e.g., Q1, rid, CustomerRef). 
+# Replace only the value placeholder with one of the supported variables such as {{ID}}, {{PASSTHRU}}, or {{RECONNECTID}}.
+
+# vendor----------------------------------------------
+
+# {{panellist_id}}   → Vendor's panelist ID
+# {{PASSTHRU}}       → Vendor misc/ext data
+# {{RECONNECTID}}    → Reconnect ID
+# {{ID}}             → Your internal respondent ID
+
+# https://vendor.com/complete?pid={{panellist_id}}&ext={{PASSTHRU}}
+
 #Adarsh----------------------------------------------------------------------------------
 
 # https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/1/
@@ -43,24 +61,17 @@
 # https://survey.sogolytics.com/survey/form?k=WsSSWVPYsQsPsPsP&lang=0&isURLPP=1&Q3={{ID}}
 
 
-<<<<<<< Updated upstream
 #in sogolytics thankyou page link(complete redirect)
 # https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id=[[Q3]]
 
 
 
-=======
->>>>>>> Stashed changes
+
 
 # Divyaa-----------------------------------------------------------------------------------------------
 
 # client link(jotform link to store)
 # https://form.jotform.com/261580970317056?rid={{ID}}
-
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 
 # 1. Why do we have surveyProcess.php, processS2S.php, and simpleProcess.php?
 

@@ -53,6 +53,8 @@ from .views import (
 
 from core.analytics_views import *
 
+from .ai_analytics_views import ai_analytics
+
 router = routers.DefaultRouter()
 router.register("clients", ClientViewSet)
 router.register("vendors", VendorViewSet)
@@ -233,6 +235,12 @@ path(
 path(
     "panel-campaigns/<int:pk>/email-template/update/",
     update_campaign_email_template
+),
+
+############ AI integration ##############
+path(
+    "ai/analytics/",
+    ai_analytics,
 ),
     
 ]
