@@ -29,7 +29,7 @@ function EditClient() {
     state: "",
     status: true,
     check_proxy: true,
-    is_diy: true,
+    // is_diy: true,
     test_link: "",
     live_link: "",
     rid_parameter: "RID",
@@ -64,7 +64,7 @@ function EditClient() {
         state: data.state || "",
         status: data.status ?? true,
         check_proxy: data.check_proxy ?? true,
-        is_diy: data.is_diy ?? true,
+        // is_diy: data.is_diy ?? true,
         test_link: data.test_link || "",
         live_link: data.live_link || "",
         rid_parameter: data.rid_parameter || "RID",
@@ -323,7 +323,7 @@ function EditClient() {
               <label>Check Proxy</label>
             </div>
 
-            <div className="checkbox-group">
+            {/* <div className="checkbox-group">
               <input
                 type="checkbox"
                 name="is_diy"
@@ -331,7 +331,7 @@ function EditClient() {
                 onChange={handleChange}
               />
               <label>Is DIY</label>
-            </div>
+            </div> */}
           </div>
           <div className="form-actions">
             <button type="submit" className="primary-btn create-client-btn">

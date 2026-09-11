@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./ClientForm.css";
 import { createClient } from "../../api/clientApi";
 import { toast } from "react-toastify";
+
 function AddClient() {
   const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ function AddClient() {
     state: "",
     status: true,
     check_proxy: true,
-    is_diy: true,
+    // is_diy: true,
     rid_parameter: "RID",
     our_parameter: "ID",
     api_details: "",
@@ -272,7 +273,7 @@ function AddClient() {
               <label>Check Proxy</label>
             </div>
 
-            <div className="checkbox-group">
+            {/* <div className="checkbox-group">
               <input
                 type="checkbox"
                 name="is_diy"
@@ -280,7 +281,7 @@ function AddClient() {
                 onChange={handleChange}
               />
               <label>Is DIY</label>
-            </div>
+            </div> */}
           </div>
           <div className="form-actions">
             <button type="submit" className="primary-btn create-client-btn">

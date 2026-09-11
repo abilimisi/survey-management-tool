@@ -15,6 +15,7 @@ from datetime import date
 
 from .utils import is_proxy
 
+from rest_framework.permissions import AllowAny
 
 from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
 
@@ -1216,16 +1217,62 @@ def reports_data(request):
 @api_view(["GET", "POST"])
 def sync_panelists(request):
 
-    response = requests.get(
-        settings.OB_PANEL_API_URL,
-        headers={
-            "X-API-KEY": settings.OB_PANEL_API_KEY
-        }
-    )
+    try:
+        response = requests.get(
+            settings.OB_PANEL_API_URL,
+            headers={
+                "X-API-KEY": settings.OB_PANEL_API_KEY
+            },
+            timeout=10
+        )
 
-    data = response.json()
+    except requests.exceptions.RequestException as e:
 
-    users = data["users"]
+        return Response(
+            {
+                "success": False,
+                "message": "Unable to connect to OB Panel API."
+            },
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+
+    # Authentication failed
+    if response.status_code == 401:
+
+        return Response(
+            {
+                "success": False,
+                "message": "Invalid or missing OB Panel API key."
+            },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # Other HTTP errors
+    if not response.ok:
+
+        return Response(
+            {
+                "success": False,
+                "message": "OB Panel API returned an error.",
+                "status_code": response.status_code
+            },
+            status=status.HTTP_502_BAD_GATEWAY
+        )
+
+    try:
+        data = response.json()
+
+    except ValueError:
+
+        return Response(
+            {
+                "success": False,
+                "message": "OB Panel API returned invalid JSON."
+            },
+            status=status.HTTP_502_BAD_GATEWAY
+        )
+
+    users = data.get("users", [])
 
     created = 0
     updated = 0
@@ -1256,11 +1303,10 @@ def sync_panelists(request):
             updated += 1
 
     return Response({
+        "success": True,
         "created": created,
         "updated": updated
     })
-
-
 
 @api_view(["GET"])
 def panelist_list(request):
@@ -1775,6 +1821,7 @@ def delete_option(request, option_id):
     })
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def screening_questions(request, respondent_id):
 
     respondent = get_object_or_404(
@@ -1810,6 +1857,7 @@ def screening_questions(request, respondent_id):
     })
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def submit_screening(request):
 
     respondent = get_object_or_404(
@@ -2020,11 +2068,22 @@ def submit_screening(request):
 
     })
 
+from django.db.models import OuterRef, Subquery
+
 @api_view(["GET"])
 def recent_responses(request):
 
+    latest_log = RespondentLog.objects.filter(
+        respondent_id=OuterRef("respondent_id")
+    ).order_by("-timestamp")
+
     logs = (
         RespondentLog.objects
+        .filter(
+            id=Subquery(
+                latest_log.values("id")[:1]
+            )
+        )
         .select_related("project", "vendor")
         .order_by("-timestamp")[:10]
     )
@@ -2034,19 +2093,23 @@ def recent_responses(request):
     for log in logs:
 
         data.append({
-
             "id": log.id,
 
-            "project_name": log.project.name if log.project else "-",
+            "project_name": (
+                log.project.name
+                if log.project else "-"
+            ),
 
-            "vendor_name": log.vendor.name if log.vendor else "-",
+            "vendor_name": (
+                log.vendor.name
+                if log.vendor else "-"
+            ),
 
             "respondent_id": log.respondent_id,
 
             "status": log.status,
 
             "timestamp": log.timestamp,
-
         })
 
     return Response(data)
