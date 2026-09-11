@@ -1,5 +1,6 @@
 from django.db import models
 import secrets
+import uuid
 from django.contrib.auth.models import User
 import base64
 
@@ -524,6 +525,28 @@ class ProjectVendor(models.Model):
         return f"{self.project.name} - {self.vendor.name}"
 
 
+class Participant(models.Model):
+    """
+    Represents an anonymous browser/device identity, set via a secure
+    HttpOnly cookie on first survey visit. Deliberately separate from
+    Respondent: one Participant can have many Respondent rows (one per
+    Project), but at most one Respondent per (Participant, Project) pair
+    — enforced below via a DB-level UniqueConstraint on Respondent.
+    """
+
+    participant_key = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.participant_key)
+
+
 class Respondent(models.Model):
     STATUS_CHOICES = [
         ("started", "Started"),
@@ -538,6 +561,16 @@ class Respondent(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="respondents")
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="respondents")
     project_vendor = models.ForeignKey(ProjectVendor, on_delete=models.CASCADE, related_name="respondents")
+
+    # Which browser/device this participation belongs to (nullable so
+    # existing pre-migration Respondent rows remain valid with no participant).
+    participant = models.ForeignKey(
+        Participant,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="respondents",
+    )
 
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="started")
     termination_reason = models.CharField(max_length=100, blank=True, null=True)
@@ -574,7 +607,21 @@ class Respondent(models.Model):
     )
 
     screening_score = models.DecimalField( max_digits=5,decimal_places=2, default=0)
-    
+
+    class Meta:
+        constraints = [
+            # DB-level backstop (in addition to the app-level check in
+            # views.py) — guarantees at most one Respondent per
+            # (Participant, Project) pair, even under race conditions.
+            # NULL participant values are excluded so existing/legacy
+            # respondents created before this feature are unaffected.
+            models.UniqueConstraint(
+                fields=["participant", "project"],
+                condition=models.Q(participant__isnull=False),
+                name="unique_participant_per_project",
+            )
+        ]
+
     def __str__(self):
         return self.respondent_id
 
