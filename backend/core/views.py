@@ -291,7 +291,52 @@ def set_participant_cookie(response, participant):
     return response
 
 
-def _redirect_for_existing_participation(request, existing_respondent):
+def _log_duplicate_attempt(request, existing_respondent, outcome_status, current_project_vendor):
+    """
+    Records a duplicate participation attempt as its own lightweight
+    Respondent row, purely so it's correctly counted in Hits / Terminates /
+    Quota Full / Security Terminate on the Analytics dashboard and in
+    Vendor/Project performance — WITHOUT ever creating a second real
+    participation for this participant+project.
+
+    IMPORTANT: attributed to current_project_vendor (the vendor link that
+    was actually clicked THIS time), not existing_respondent.project_vendor
+    (whichever vendor happened to create the original participation). A
+    project can have several vendors sending traffic to it — if the same
+    browser first completes via Vendor A and later clicks Vendor B's link
+    for the same project, this duplicate attempt belongs to Vendor B, not A.
+
+    participant is deliberately left NULL here: unique_participant_per_project
+    only applies where participant IS NOT NULL, so this row can never violate
+    that constraint or be mistaken for a second real participation by the
+    duplicate-check query (which filters on participant=<the real one>).
+    """
+    duplicate_respondent = Respondent.objects.create(
+        respondent_id=uuid.uuid4().hex[:12].upper(),
+        project=current_project_vendor.project,
+        vendor=current_project_vendor.vendor,
+        project_vendor=current_project_vendor,
+        participant=None,
+        status=outcome_status,
+        previous_status=existing_respondent.status,
+        termination_reason="duplicate_participation",
+        ip_address=get_client_ip(request),
+        user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        completed_at=timezone.now(),
+    )
+
+    RespondentLog.objects.create(
+        project=current_project_vendor.project,
+        vendor=current_project_vendor.vendor,
+        respondent_id=duplicate_respondent.respondent_id,
+        status=outcome_status,
+        ip_address=duplicate_respondent.ip_address,
+    )
+
+    return duplicate_respondent
+
+
+def _redirect_for_existing_participation(request, existing_respondent, current_project_vendor):
     """
     A Respondent already exists for this (Participant, Project) pair.
     Reuses the SAME redirect mechanism the rest of this view already uses
@@ -299,22 +344,30 @@ def _redirect_for_existing_participation(request, existing_respondent):
     security_terminate links, run through the existing replace_tokens
     helper) — no new termination URL/mechanism is invented here.
     """
-    project_vendor = existing_respondent.project_vendor
+    # Use the CURRENTLY clicked vendor link for redirect + attribution, not
+    # existing_respondent.project_vendor (whichever vendor created the
+    # original participation) — a project can have several vendors, and a
+    # duplicate belongs to whoever sent THIS click, not the first vendor.
+    project_vendor = current_project_vendor
     status_value = existing_respondent.status
 
     fallback_template = None
     fallback_status = None
+    duplicate_respondent = None
 
     if status_value == "complete":
         # Non-negotiable rule: a completed participant revisiting must NOT
         # be able to start/submit again — send them to the existing
         # termination link, exactly like every other terminate case below.
-        link = replace_tokens(project_vendor.terminate_link, existing_respondent)
+        # Logged as a fresh "terminate" event so it's correctly counted.
+        duplicate_respondent = _log_duplicate_attempt(request, existing_respondent, "terminate", current_project_vendor)
+        link = replace_tokens(project_vendor.terminate_link, duplicate_respondent)
         redirect_type = "duplicate_completed_terminate"
         fallback_template, fallback_status = "landing/terminate.html", "terminate"
 
     elif status_value == "quota_full":
-        link = replace_tokens(project_vendor.quota_full_link, existing_respondent)
+        duplicate_respondent = _log_duplicate_attempt(request, existing_respondent, "quota_full", current_project_vendor)
+        link = replace_tokens(project_vendor.quota_full_link, duplicate_respondent)
         redirect_type = "duplicate_quota_full"
         fallback_template, fallback_status = "landing/quota_full.html", "quota_full"
 
@@ -323,20 +376,25 @@ def _redirect_for_existing_participation(request, existing_respondent):
             project_vendor.security_terminate_link
             or project_vendor.terminate_link
         )
-        link = replace_tokens(security_link, existing_respondent)
+        duplicate_respondent = _log_duplicate_attempt(request, existing_respondent, "security_terminate", current_project_vendor)
+        link = replace_tokens(security_link, duplicate_respondent)
         redirect_type = "duplicate_security_terminate"
         fallback_template, fallback_status = "landing/security_terminate.html", "security_terminate"
 
     elif status_value == "terminate":
-        link = replace_tokens(project_vendor.terminate_link, existing_respondent)
+        duplicate_respondent = _log_duplicate_attempt(request, existing_respondent, "terminate", current_project_vendor)
+        link = replace_tokens(project_vendor.terminate_link, duplicate_respondent)
         redirect_type = "duplicate_terminate"
         fallback_template, fallback_status = "landing/terminate.html", "terminate"
 
     else:
-        # status == "started" — this app has no separate "resume" URL/flow
-        # today, so rather than inventing one, we send them back into the
-        # SAME client live_link using the SAME existing respondent's
-        # tokens/respondent_id, instead of creating a second Respondent.
+        # status == "started" — this is a legitimate in-progress resume,
+        # not a rejection, so nothing is logged here (no Hits/Terminate
+        # bump) and no separate Respondent row is created. Deliberately
+        # kept on existing_respondent (their true in-progress session,
+        # whichever vendor it started with) — NOT switched to
+        # current_project_vendor, since that would abandon their real
+        # in-flight survey session.
         link = replace_tokens(
             existing_respondent.project.live_link,
             existing_respondent,
@@ -344,14 +402,15 @@ def _redirect_for_existing_participation(request, existing_respondent):
         redirect_type = "duplicate_resume"
 
     logger.info(
-        "Duplicate participation detected: participant_id=%s project_id=%s status=%s",
+        "Duplicate participation detected: participant_id=%s project_id=%s status=%s -> logged_as=%s",
         existing_respondent.participant_id,
         existing_respondent.project_id,
         status_value,
+        duplicate_respondent.respondent_id if duplicate_respondent else "resume (not logged)",
     )
 
     RedirectLog.objects.create(
-        respondent=existing_respondent,
+        respondent=duplicate_respondent or existing_respondent,
         redirect_type=redirect_type,
         redirect_url=link or "",
     )
@@ -361,7 +420,7 @@ def _redirect_for_existing_participation(request, existing_respondent):
 
     if fallback_template:
         return render(request, fallback_template, {
-            "respondent": existing_respondent,
+            "respondent": duplicate_respondent or existing_respondent,
             "status": fallback_status,
         })
 
@@ -472,7 +531,7 @@ def create_respondent_and_redirect(request, project_vendor, participant):
         )
 
         if existing_respondent:
-            return _redirect_for_existing_participation(request, existing_respondent)
+            return _redirect_for_existing_participation(request, existing_respondent, project_vendor)
 
     respondent_code = uuid.uuid4().hex[:12].upper()
 
@@ -575,7 +634,7 @@ def create_respondent_and_redirect(request, project_vendor, participant):
         ).first()
 
         if existing_respondent:
-            return _redirect_for_existing_participation(request, existing_respondent)
+            return _redirect_for_existing_participation(request, existing_respondent, project_vendor)
 
         # Extremely unlikely fallback — constraint fired but no row found.
         return render(request, "landing/error.html", {
