@@ -6,7 +6,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import uuid
+import logging
 from django.db.models import Count, Max, Q
+from django.db import transaction, IntegrityError
 from django.conf import settings
 import requests
 from user_agents import parse
@@ -17,7 +19,10 @@ from .utils import is_proxy
 
 from rest_framework.permissions import AllowAny
 
-from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
+
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile, RespondentLog, Participant
+
+logger = logging.getLogger(__name__)
 
 from django.contrib.auth.models import User
 
@@ -235,6 +240,136 @@ def get_first_query_value(request, keys):
     return None
 
 
+# ==========================================================
+# PARTICIPANT IDENTITY (cookie-based duplicate-participation prevention)
+# ==========================================================
+
+PARTICIPANT_COOKIE_NAME = "ob_pid"
+PARTICIPANT_COOKIE_MAX_AGE = 60 * 60 * 24 * 180  # 180 days
+
+
+def get_or_create_participant(request):
+    """
+    Reads the participant cookie off the incoming request and looks up the
+    matching Participant. If the cookie is missing OR invalid/corrupted OR
+    doesn't match any Participant in the DB, a brand-new Participant is
+    created instead (never trusts the cookie value beyond a DB lookup).
+
+    Returns (participant, is_new).
+    """
+    raw_key = request.COOKIES.get(PARTICIPANT_COOKIE_NAME)
+
+    if raw_key:
+        try:
+            participant_uuid = uuid.UUID(raw_key)
+            participant = Participant.objects.get(participant_key=participant_uuid)
+            return participant, False
+        except (ValueError, Participant.DoesNotExist):
+            # Malformed cookie or no matching row — fall through and issue
+            # a fresh identity. Never raises, never exposes DB details.
+            logger.info("Invalid/unknown participant cookie received — issuing a new one.")
+
+    participant = Participant.objects.create()
+    logger.info("New participant created: id=%s", participant.id)
+    return participant, True
+
+
+def set_participant_cookie(response, participant):
+    """
+    Attaches the participant cookie to an outgoing response.
+    Contains ONLY the random participant UUID — no PII, no project info,
+    no vendor info, no respondent info.
+    """
+    response.set_cookie(
+        PARTICIPANT_COOKIE_NAME,
+        str(participant.participant_key),
+        max_age=PARTICIPANT_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=not settings.DEBUG,
+        samesite="Lax",
+    )
+    return response
+
+
+def _redirect_for_existing_participation(request, existing_respondent):
+    """
+    A Respondent already exists for this (Participant, Project) pair.
+    Reuses the SAME redirect mechanism the rest of this view already uses
+    for that status (project_vendor's complete/terminate/quota_full/
+    security_terminate links, run through the existing replace_tokens
+    helper) — no new termination URL/mechanism is invented here.
+    """
+    project_vendor = existing_respondent.project_vendor
+    status_value = existing_respondent.status
+
+    fallback_template = None
+    fallback_status = None
+
+    if status_value == "complete":
+        # Non-negotiable rule: a completed participant revisiting must NOT
+        # be able to start/submit again — send them to the existing
+        # termination link, exactly like every other terminate case below.
+        link = replace_tokens(project_vendor.terminate_link, existing_respondent)
+        redirect_type = "duplicate_completed_terminate"
+        fallback_template, fallback_status = "landing/terminate.html", "terminate"
+
+    elif status_value == "quota_full":
+        link = replace_tokens(project_vendor.quota_full_link, existing_respondent)
+        redirect_type = "duplicate_quota_full"
+        fallback_template, fallback_status = "landing/quota_full.html", "quota_full"
+
+    elif status_value == "security_terminate":
+        security_link = (
+            project_vendor.security_terminate_link
+            or project_vendor.terminate_link
+        )
+        link = replace_tokens(security_link, existing_respondent)
+        redirect_type = "duplicate_security_terminate"
+        fallback_template, fallback_status = "landing/security_terminate.html", "security_terminate"
+
+    elif status_value == "terminate":
+        link = replace_tokens(project_vendor.terminate_link, existing_respondent)
+        redirect_type = "duplicate_terminate"
+        fallback_template, fallback_status = "landing/terminate.html", "terminate"
+
+    else:
+        # status == "started" — this app has no separate "resume" URL/flow
+        # today, so rather than inventing one, we send them back into the
+        # SAME client live_link using the SAME existing respondent's
+        # tokens/respondent_id, instead of creating a second Respondent.
+        link = replace_tokens(
+            existing_respondent.project.live_link,
+            existing_respondent,
+        )
+        redirect_type = "duplicate_resume"
+
+    logger.info(
+        "Duplicate participation detected: participant_id=%s project_id=%s status=%s",
+        existing_respondent.participant_id,
+        existing_respondent.project_id,
+        status_value,
+    )
+
+    RedirectLog.objects.create(
+        respondent=existing_respondent,
+        redirect_type=redirect_type,
+        redirect_url=link or "",
+    )
+
+    if link:
+        return redirect(link)
+
+    if fallback_template:
+        return render(request, fallback_template, {
+            "respondent": existing_respondent,
+            "status": fallback_status,
+        })
+
+    return render(request, "landing/error.html", {
+        "error_message": "This survey link is currently unavailable."
+    })
+
+
 # new_update-------------------------------------------
 def start_survey(request, project_vendor_id):
     project_vendor = get_object_or_404(
@@ -242,7 +377,14 @@ def start_survey(request, project_vendor_id):
         id=project_vendor_id
     )
 
-    return create_respondent_and_redirect(request, project_vendor)
+    participant, is_new_participant = get_or_create_participant(request)
+
+    response = create_respondent_and_redirect(request, project_vendor, participant)
+
+    if is_new_participant:
+        set_participant_cookie(response, participant)
+
+    return response
 
 
 def start_survey_by_gid(request):
@@ -265,9 +407,17 @@ def start_survey_by_gid(request):
         ProjectVendor,
         gid=gid
     )
-    return create_respondent_and_redirect(request, project_vendor)
 
-def create_respondent_and_redirect(request, project_vendor):
+    participant, is_new_participant = get_or_create_participant(request)
+
+    response = create_respondent_and_redirect(request, project_vendor, participant)
+
+    if is_new_participant:
+        set_participant_cookie(response, participant)
+
+    return response
+
+def create_respondent_and_redirect(request, project_vendor, participant):
     vendor = project_vendor.vendor
     project = project_vendor.project
     client = project.client
@@ -306,92 +456,132 @@ def create_respondent_and_redirect(request, project_vendor):
         return render(request, "landing/error.html", {
             "error_message": "This supplier link is currently inactive."
         })
-    
+
+    # ------------------------------------
+    # DUPLICATE PARTICIPATION CHECK
+    # (Participant + Project — checked BEFORE any Respondent is created)
+    # ------------------------------------
+
+    with transaction.atomic():
+        existing_respondent = (
+            Respondent.objects
+            .select_for_update()
+            .filter(participant=participant, project=project)
+            .order_by("-started_at")
+            .first()
+        )
+
+        if existing_respondent:
+            return _redirect_for_existing_participation(request, existing_respondent)
+
     respondent_code = uuid.uuid4().hex[:12].upper()
 
-    respondent = Respondent.objects.create(
-        respondent_id=respondent_code,
-        project=project_vendor.project,
-        vendor=project_vendor.vendor,
-        project_vendor=project_vendor,
+    try:
+        respondent = Respondent.objects.create(
+            respondent_id=respondent_code,
+            project=project_vendor.project,
+            vendor=project_vendor.vendor,
+            project_vendor=project_vendor,
+            participant=participant,
 
-        vendor_panelist_id=get_first_query_value(
-            request,
-            [
-                "pid",
-                "PID",
-                "panelist_id",
-                "panellist_id",
-                "panelistid",
-                "panellistid",
-                "PANELIST IDENTIFIER",
-                "PANELIST_IDENTIFIER",
-                "panelist_identifier",
-                "uid",
-                "UID",
-                "subid",
-                "sub_id",
-                "respondent_id",
-                "rid",
-                "Lid",
-                "lid",
-            ],
-        ),
+            vendor_panelist_id=get_first_query_value(
+                request,
+                [
+                    "pid",
+                    "PID",
+                    "panelist_id",
+                    "panellist_id",
+                    "panelistid",
+                    "panellistid",
+                    "PANELIST IDENTIFIER",
+                    "PANELIST_IDENTIFIER",
+                    "panelist_identifier",
+                    "uid",
+                    "UID",
+                    "subid",
+                    "sub_id",
+                    "respondent_id",
+                    "rid",
+                    "Lid",
+                    "lid",
+                ],
+            ),
 
-        panel_misc_data=get_first_query_value(
-            request,
-            [
-                "ext",
-                "misc",
-                "extra",
-                "data",
-                "PANEL MISC DATA",
-                "PANEL_MISC_DATA",
-                "panel_misc_data",
-                "PASSTHRU",
-                "passthru",
-                "subid",
-                "sub_id",
-            ],
-        ),
+            panel_misc_data=get_first_query_value(
+                request,
+                [
+                    "ext",
+                    "misc",
+                    "extra",
+                    "data",
+                    "PANEL MISC DATA",
+                    "PANEL_MISC_DATA",
+                    "panel_misc_data",
+                    "PASSTHRU",
+                    "passthru",
+                    "subid",
+                    "sub_id",
+                ],
+            ),
 
-        reconnect_id=get_first_query_value(
-            request,
-            [
-                "reconnectID",
-                "RECONNECTID",
-                "reconnect_id",
-                "reconnectid",
-                "re_connect_id",
-                "reconnect",
-            ],
-        ),
+            reconnect_id=get_first_query_value(
+                request,
+                [
+                    "reconnectID",
+                    "RECONNECTID",
+                    "reconnect_id",
+                    "reconnectid",
+                    "re_connect_id",
+                    "reconnect",
+                ],
+            ),
 
-        email=get_first_query_value(
-            request,
-            ["email", "Email", "EMAIL"]
-        ),
+            email=get_first_query_value(
+                request,
+                ["email", "Email", "EMAIL"]
+            ),
 
-        zip_code=get_first_query_value(
-            request,
-            ["zip", "Zip", "ZIP", "zipcode", "zip_code"]
-        ),
+            zip_code=get_first_query_value(
+                request,
+                ["zip", "Zip", "ZIP", "zipcode", "zip_code"]
+            ),
 
-        age=get_first_query_value(
-            request,
-            ["age", "Age", "AGE"]
-        ),
+            age=get_first_query_value(
+                request,
+                ["age", "Age", "AGE"]
+            ),
 
-        gender=get_first_query_value(
-            request,
-            ["gender", "Gender", "GENDER"]
-        ),
+            gender=get_first_query_value(
+                request,
+                ["gender", "Gender", "GENDER"]
+            ),
 
-        ip_address=get_client_ip(request),
-        user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        status="started",
-    )
-    
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            status="started",
+        )
+    except IntegrityError:
+        # Race condition: another near-simultaneous request for the same
+        # participant+project won the insert first. The DB-level
+        # unique_participant_per_project constraint is our final backstop —
+        # fetch the winning row and treat this request as a duplicate too.
+        logger.info(
+            "IntegrityError on Respondent create (participant=%s, project=%s) — "
+            "treating as duplicate participation from a concurrent request.",
+            participant.id, project.id,
+        )
+        existing_respondent = Respondent.objects.filter(
+            participant=participant, project=project
+        ).first()
+
+        if existing_respondent:
+            return _redirect_for_existing_participation(request, existing_respondent)
+
+        # Extremely unlikely fallback — constraint fired but no row found.
+        return render(request, "landing/error.html", {
+            "error_message": "This survey link is currently unavailable."
+        })
+
     # ------------------------------------
     # CREATE RESPONDENT LOG
     # ------------------------------------
