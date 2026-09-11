@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 import {
   Activity,
@@ -20,6 +21,7 @@ import {
   getVendorPerformance,
   getProjectPerformance,
   getAnalyticsFunnel,
+  askAIAnalytics,
 } from "../../api/analyticsApi";
 
 import HitsChart from "./HitsChart";
@@ -40,6 +42,21 @@ export default function AnalyticsDashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiAnswer, setAiAnswer] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+ 
+
+      const suggestedQuestions = [
+          "Which vendor is performing best?",
+          "Which project needs attention?",
+          "What is the overall completion rate?",
+          "How are survey hits trending?",
+          "Give me recommendations to improve survey performance.",
+      ];
 
   useEffect(() => {
     loadDashboard();
@@ -135,7 +152,69 @@ export default function AnalyticsDashboard() {
     return <div className="analytics-loading">Loading Analytics...</div>;
   }
 
-  const insights = buildInsights();
+  const handleAskAI = async () => {
+
+      if (aiLoading) {
+          return;
+      }
+
+      if (!aiQuestion.trim()) {
+          return;
+      }
+
+      setAiLoading(true);
+      setAiError("");
+      setAiAnswer("");
+
+      try {
+          const data = await askAIAnalytics(aiQuestion);
+
+          setAiAnswer(data.answer);
+
+      } catch (error) {
+
+          console.error("AI Analytics Error:", error);
+
+          setAiError(
+              error.response?.data?.error ||
+              "Unable to get AI analytics response."
+          );
+
+      } finally {
+
+          setAiLoading(false);
+
+      }
+  };
+
+  const handleSuggestedQuestion = async (question) => {
+      setAiQuestion(question);
+
+      setAiLoading(true);
+      setAiError("");
+      setAiAnswer("");
+
+      try {
+          const data = await askAIAnalytics(question);
+
+          setAiAnswer(data.answer);
+      } catch (error) {
+          console.error("AI Analytics Error:", error);
+
+          setAiError(
+              error.response?.data?.error ||
+              "Unable to get AI analytics response."
+          );
+      } finally {
+          setAiLoading(false);
+      }
+  };
+
+  const handleClearAI = () => {
+      setAiQuestion("");
+      setAiAnswer("");
+      setAiError("");
+  };
 
   return (
     <div className="analytics-page">
@@ -234,22 +313,112 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* AI / RULE-BASED INSIGHTS */}
-      <div className="analytics-card">
-        <div className="card-header">
-          <h3><Sparkles size={18} /> Insights</h3>
+      {/* AI ANALYTICS ASSISTANT */}
+
+      <div className="ai-analytics-card">
+
+        <div className="ai-analytics-header">
+            <div>
+                <h2>✨ PANELSPHERE AI Analytics Assistant</h2>
+
+                <p>
+                    Ask questions about your survey analytics,
+                    vendors, projects and performance.
+                </p>
+            </div>
         </div>
 
-        <div className="insight-list">
-          {insights.map((insight, index) => (
-            <div key={index} className={`insight-row ${insight.type}`}>
-              {insight.type === "good"
-                ? <CheckCircle2 size={16} />
-                : <AlertTriangle size={16} />}
-              <span>{insight.text}</span>
-            </div>
-          ))}
+        <div className="ai-question-box">
+
+            <input
+                type="text"
+                value={aiQuestion}
+                onChange={(e) => setAiQuestion(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        handleAskAI();
+                    }
+                }}
+                placeholder="Ask something about your survey analytics..."
+            />
+
+            <button
+                onClick={handleAskAI}
+                disabled={aiLoading || !aiQuestion.trim()}
+            >
+                {aiLoading ? "Analyzing..." : "Ask AI"}
+            </button>
+
+            <button
+                onClick={handleClearAI}
+                disabled={aiLoading}
+            >
+                Clear
+            </button>
+
         </div>
+
+
+        <div className="ai-suggestions">
+
+            <span>Try asking:</span>
+
+            <div className="suggestion-buttons">
+
+                {suggestedQuestions.map((question) => (
+                    <button
+                        key={question}
+                        onClick={() => setAiQuestion(question)}
+                    >
+                        {question}
+                    </button>
+                ))}
+
+            </div>
+
+        </div>
+
+
+        {aiLoading && (
+            <div className="ai-loading">
+                <div className="ai-loading-spinner"></div>
+
+                <div>
+                    <div className="ai-loading-title">
+                        Analyzing analytics...
+                    </div>
+
+                    <div className="ai-loading-text">
+                        PANELSPHERE AI is analyzing your survey data.
+                    </div>
+                </div>
+            </div>
+        )}
+
+
+        {aiError && (
+            <div className="ai-error">
+                {aiError}
+            </div>
+        )}
+
+
+        {aiAnswer && !aiLoading && (
+            <div className="ai-answer">
+
+                <div className="ai-answer-title">
+                    ✨ AI Analysis
+                </div>
+
+                <div className="ai-answer-content">
+                    <ReactMarkdown>
+                        {aiAnswer}
+                    </ReactMarkdown>
+                </div>
+
+            </div>
+        )}
+
       </div>
 
     </div>

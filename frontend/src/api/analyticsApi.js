@@ -87,3 +87,14 @@ export const getAnalyticsVendorDetails = async (
 
   return response.data;
 };
+
+/* ===========================
+   AI ANALYTICS
+=========================== */
+export const askAIAnalytics = async (question) => {
+    const response = await axiosInstance.post("/ai/analytics/", {
+        question,
+    });
+
+    return response.data;
+};
