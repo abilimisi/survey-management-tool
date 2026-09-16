@@ -18,7 +18,7 @@ from .utils import is_proxy
 from rest_framework.permissions import AllowAny
 
 
-from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant
 
 from django.contrib.auth.models import User
 
@@ -268,7 +268,7 @@ def start_survey_by_gid(request):
     )
     return create_respondent_and_redirect(request, project_vendor)
 
-def create_respondent_and_redirect(request, project_vendor):
+def create_respondent_and_redirect(request, project_vendor):    
     vendor = project_vendor.vendor
     project = project_vendor.project
     client = project.client
@@ -307,16 +307,212 @@ def create_respondent_and_redirect(request, project_vendor):
         return render(request, "landing/error.html", {
             "error_message": "This supplier link is currently inactive."
         })
+        
+    # ------------------------------------
+    # PARTICIPANT COOKIE
+    # ------------------------------------
+
+    PARTICIPANT_COOKIE_NAME = "survey_participant_id"
+
+    participant_key = request.COOKIES.get(
+        PARTICIPANT_COOKIE_NAME
+    )
+
+    participant = None
+
+    if participant_key:
+        try:
+            participant = Participant.objects.filter(
+                participant_key=participant_key
+            ).first()
+        except (ValueError, TypeError):
+            participant = None
+
+    # If cookie does not exist or is invalid,
+    # create a new anonymous participant.
+    if participant is None:
+        participant = Participant.objects.create()
     
-    respondent_code = uuid.uuid4().hex[:12].upper()
+    # ------------------------------------
+    # CHECK EXISTING PARTICIPATION
+    # ------------------------------------
+    existing_respondent = Respondent.objects.filter(
+        participant=participant,
+        project=project,
+    ).first()
 
-    respondent = Respondent.objects.create(
-        respondent_id=respondent_code,
-        project=project_vendor.project,
-        vendor=project_vendor.vendor,
-        project_vendor=project_vendor,
 
-        vendor_panelist_id=get_first_query_value(
+    # ------------------------------------
+    # DUPLICATE PARTICIPATION
+    # ------------------------------------
+    if existing_respondent:
+        if existing_respondent.status == "complete":
+
+            # Use CURRENT vendor's termination link
+            terminate_link = replace_tokens(
+                project_vendor.terminate_link,
+                existing_respondent
+            )
+
+            # ------------------------------------
+            # RECORD DUPLICATE HIT
+            # ------------------------------------
+            RespondentLog.objects.create(
+                project=project,
+                vendor=vendor,
+                respondent_id=existing_respondent.respondent_id,
+                status="duplicate_hit",
+                ip_address=existing_respondent.ip_address,
+            )
+
+            # ------------------------------------
+            # RECORD DUPLICATE TERMINATION
+            # ------------------------------------
+            RespondentLog.objects.create(
+                project=project,
+                vendor=vendor,
+                respondent_id=existing_respondent.respondent_id,
+                status="duplicate_terminate",
+                ip_address=existing_respondent.ip_address,
+            )
+
+            # ------------------------------------
+            # REDIRECT LOG
+            # ------------------------------------
+            RedirectLog.objects.create(
+                respondent=existing_respondent,
+                redirect_type="duplicate_terminate",
+                redirect_url=terminate_link or ""
+            )
+
+            if terminate_link:
+                response = redirect(terminate_link)
+
+                response.set_cookie(
+                    "survey_participant_id",
+                    str(participant.participant_key),
+                    max_age=60 * 60 * 24 * 365,
+                    httponly=True,
+                    secure=True,
+                    samesite="None",
+                )
+
+                return response
+
+            return render(
+                request,
+                "landing/terminate.html",
+                {
+                    "respondent": existing_respondent,
+                    "status": "terminate",
+                    "reason": "Already completed this survey."
+                }
+            )
+
+        # ------------------------------------
+        # STARTED → RESUME EXISTING RESPONDENT
+        # ------------------------------------
+        if existing_respondent.status == "started":
+            respondent = existing_respondent
+
+        # ------------------------------------
+        # TERMINAL STATUS → BLOCK PARTICIPANT
+        # ------------------------------------
+        else:
+
+            terminal_status = existing_respondent.status
+
+            # Choose the CURRENT vendor's redirect link.
+            # Do NOT change the existing respondent's status.
+            if terminal_status == "quota_full":
+                final_link = project_vendor.quota_full_link
+                fallback_template = "landing/quota_full.html"
+
+            elif terminal_status == "terminate":
+                final_link = project_vendor.terminate_link
+                fallback_template = "landing/terminate.html"
+
+            elif terminal_status == "security_terminate":
+                final_link = (
+                    project_vendor.security_terminate_link
+                    or project_vendor.terminate_link
+                )
+                fallback_template = "landing/security_terminate.html"
+
+            else:
+                return render(
+                    request,
+                    "landing/error.html",
+                    {
+                        "error_message": (
+                            f"Unexpected respondent status: {terminal_status}"
+                        )
+                    },
+                    status=500,
+                )
+
+            # Replace tokens using the existing respondent.
+            final_link = replace_tokens(
+                final_link,
+                existing_respondent
+            ) if final_link else None
+
+            # Record this attempt for the CURRENT vendor.
+            RespondentLog.objects.create(
+                project=project,
+                vendor=vendor,
+                respondent_id=existing_respondent.respondent_id,
+                status=f"duplicate_{terminal_status}",
+                ip_address=existing_respondent.ip_address,
+            )
+
+            # Keep redirect history.
+            RedirectLog.objects.create(
+                respondent=existing_respondent,
+                redirect_type=f"duplicate_{terminal_status}",
+                redirect_url=final_link or fallback_template,
+            )
+
+            if final_link:
+                response = redirect(final_link)
+
+                response.set_cookie(
+                    "survey_participant_id",
+                    str(participant.participant_key),
+                    max_age=60 * 60 * 24 * 365,
+                    httponly=True,
+                    secure=True,
+                    samesite="None",
+                )
+
+                return response
+
+            return render(
+                request,
+                fallback_template,
+                {
+                    "respondent": existing_respondent,
+                    "status": terminal_status,
+                    "reason": "Participant has already reached a final status for this project."
+                }
+            )
+
+
+            
+        
+
+    else:
+        # Create a NEW respondent
+        respondent_code = uuid.uuid4().hex[:12].upper()
+
+        respondent = Respondent.objects.create(
+            respondent_id=respondent_code,
+            project=project_vendor.project,
+            vendor=project_vendor.vendor,
+            project_vendor=project_vendor,
+            participant=participant,
+
+             vendor_panelist_id=get_first_query_value(
             request,
             [
                 "pid",
@@ -643,7 +839,18 @@ def create_respondent_and_redirect(request, project_vendor):
     )
   
 
-    return redirect(final_client_link)
+    response = redirect(final_client_link)
+
+    response.set_cookie(
+        "survey_participant_id",
+        str(participant.participant_key),
+        max_age=60 * 60 * 24 * 365,
+        httponly=True,
+        secure=True,
+        samesite="None",
+    )
+
+    return response
 
 #new_update-------------------------------------------
 def simple_process(request):
@@ -906,9 +1113,22 @@ def supplier_statistics(request, project_id):
     for pv in project_vendors:
         respondents = Respondent.objects.filter(project_vendor=pv)
 
-        hits = respondents.count()
+        normal_hits = respondents.count()
+
+        duplicate_hits = RespondentLog.objects.filter(
+            project=pv.project,
+            vendor=pv.vendor,
+            status="hit"
+        ).count()
+
+        hits = normal_hits + duplicate_hits
         completes = respondents.filter(status="complete").count()
-        terminates = respondents.filter(status__in=["terminate", "security_terminate"]).count()
+        terminates = RespondentLog.objects.filter(
+            project=pv.project,
+            vendor=pv.vendor,
+            status__in=["terminate", "security_terminate"]
+        ).count()
+        
         quota_full = respondents.filter(status="quota_full").count()
         security_terms = respondents.filter(status="security_terminate").count()
 

@@ -526,14 +526,7 @@ class ProjectVendor(models.Model):
 
 
 class Participant(models.Model):
-    """
-    Represents an anonymous browser/device identity, set via a secure
-    HttpOnly cookie on first survey visit. Deliberately separate from
-    Respondent: one Participant can have many Respondent rows (one per
-    Project), but at most one Respondent per (Participant, Project) pair
-    — enforced below via a DB-level UniqueConstraint on Respondent.
-    """
-
+    
     participant_key = models.UUIDField(
         default=uuid.uuid4,
         unique=True,
@@ -562,8 +555,7 @@ class Respondent(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="respondents")
     project_vendor = models.ForeignKey(ProjectVendor, on_delete=models.CASCADE, related_name="respondents")
 
-    # Which browser/device this participation belongs to (nullable so
-    # existing pre-migration Respondent rows remain valid with no participant).
+    
     participant = models.ForeignKey(
         Participant,
         on_delete=models.SET_NULL,
@@ -610,11 +602,7 @@ class Respondent(models.Model):
 
     class Meta:
         constraints = [
-            # DB-level backstop (in addition to the app-level check in
-            # views.py) — guarantees at most one Respondent per
-            # (Participant, Project) pair, even under race conditions.
-            # NULL participant values are excluded so existing/legacy
-            # respondents created before this feature are unaffected.
+         
             models.UniqueConstraint(
                 fields=["participant", "project"],
                 condition=models.Q(participant__isnull=False),

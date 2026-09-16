@@ -179,19 +179,43 @@ def analytics_vendor_performance(request):
         if not respondents.exists():
             continue
 
-        total_hits = respondents.count()
+        normal_hits = respondents.count()
+
+        duplicate_hits = RespondentLog.objects.filter(
+            vendor=vendor,
+            status="duplicate_hit",
+            project__in=respondents.values("project")
+        ).count()
+
+        total_hits = normal_hits + duplicate_hits
 
         completes = respondents.filter(
             status="complete"
         ).count()
 
-        terminates = respondents.filter(
-            status__in=["terminate", "security_terminate"]
+        normal_terminates = respondents.filter(
+            status="terminate"
         ).count()
 
-        security = respondents.filter(
+        duplicate_terminates = RespondentLog.objects.filter(
+            vendor=vendor,
+            status="duplicate_terminate",
+            project__in=respondents.values("project")
+        ).count()
+
+        terminates = normal_terminates + duplicate_terminates
+
+        normal_security = respondents.filter(
             status="security_terminate"
         ).count()
+
+        duplicate_security = RespondentLog.objects.filter(
+            vendor=vendor,
+            status="duplicate_security_terminate",
+            project__in=respondents.values("project")
+        ).count()
+
+        security = normal_security + duplicate_security
 
         quota_full = respondents.filter(
             status="quota_full"
@@ -272,24 +296,52 @@ def analytics_project_performance(request):
         respondents = Respondent.objects.filter(
             project=project
         )
+        
+        normal_hits = respondents.count()
 
-        total_hits = respondents.count()
+        duplicate_hits = RespondentLog.objects.filter(
+            project=project,
+            status="duplicate_hit"
+        ).count()
+
+        total_hits = normal_hits + duplicate_hits
 
         completes = respondents.filter(
             status="complete"
         ).count()
 
-        terminates = respondents.filter(
+        normal_terminates = respondents.filter(
             status="terminate"
         ).count()
+
+        duplicate_terminates = RespondentLog.objects.filter(
+            project=project,
+            status="duplicate_terminate"
+        ).count()
+
+        terminates = normal_terminates + duplicate_terminates
 
         quota_full = respondents.filter(
             status="quota_full"
         ).count()
 
-        security = respondents.filter(
+        duplicate_quota_full = RespondentLog.objects.filter(
+            project=project,
+            status="duplicate_quota_full"
+        ).count()
+
+        quota_full = quota_full + duplicate_quota_full
+
+        normal_security = respondents.filter(
             status="security_terminate"
         ).count()
+
+        duplicate_security = RespondentLog.objects.filter(
+            project=project,
+            status="duplicate_security_terminate"
+        ).count()
+
+        security = normal_security + duplicate_security
 
         started = respondents.filter(
             status="started"
@@ -314,8 +366,6 @@ def analytics_project_performance(request):
             "ir": ir,
         })
 
-    # Rank by IR desc, then total hits desc — was previously missing,
-    # so ProjectPerformance.jsx's "#{project.rank}" rendered "#undefined".
     data.sort(key=lambda x: (x["ir"], x["total_hits"]), reverse=True)
 
     for index, row in enumerate(data, start=1):
@@ -386,7 +436,6 @@ def analytics_project_details(request, project_id):
         2
     ) if total_hits else 0
 
-    # --- Daily trend (last 7 days) for THIS project ---
     today = timezone.localdate()
     start_date = today - timedelta(days=6)
 
@@ -408,7 +457,6 @@ def analytics_project_details(request, project_id):
             "hits": trend_dict.get(current_day, 0),
         })
 
-    # --- Status breakdown (for donut) ---
     status_breakdown = [
         {"name": "Complete", "status": "complete", "value": completes, "color": "#22c55e"},
         {"name": "Terminate", "status": "terminate", "value": terminates, "color": "#ef4444"},
@@ -418,7 +466,6 @@ def analytics_project_details(request, project_id):
     ]
     status_breakdown = [row for row in status_breakdown if row["value"] > 0]
 
-    # --- Vendor split (who is delivering this project) ---
     vendor_split_qs = (
         respondents.values("vendor__id", "vendor__name")
         .annotate(hits=Count("id"))
@@ -521,11 +568,6 @@ def analytics_vendor_list(request):
 
 @api_view(["GET"])
 def analytics_vendor_details(request, vendor_id):
-    """
-    Returns complete analytics for one selected vendor:
-    summary cards, 7-day trend, status breakdown (donut),
-    and a breakdown of which projects this vendor is delivering on.
-    """
 
     vendor = get_object_or_404(Vendor, id=vendor_id)
 
