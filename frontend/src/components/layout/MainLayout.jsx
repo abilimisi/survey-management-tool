@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Footer from "./Footer";
+import AIChatAssistant from "../ai/AIChatAssistant";
 
 const OVERLAY_BREAKPOINT = 1023; // px — below this, sidebar overlays
 
@@ -69,6 +70,9 @@ function MainLayout({ children }) {
 
         <Footer />
       </main>
+      {/* Global PanelSphere AI */}
+
+            <AIChatAssistant />
     </div>
   );
 }

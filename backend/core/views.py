@@ -2024,11 +2024,22 @@ def submit_screening(request):
 
     })
 
+from django.db.models import OuterRef, Subquery
+
 @api_view(["GET"])
 def recent_responses(request):
 
+    latest_log = RespondentLog.objects.filter(
+        respondent_id=OuterRef("respondent_id")
+    ).order_by("-timestamp")
+
     logs = (
         RespondentLog.objects
+        .filter(
+            id=Subquery(
+                latest_log.values("id")[:1]
+            )
+        )
         .select_related("project", "vendor")
         .order_by("-timestamp")[:10]
     )
@@ -2038,19 +2049,23 @@ def recent_responses(request):
     for log in logs:
 
         data.append({
-
             "id": log.id,
 
-            "project_name": log.project.name if log.project else "-",
+            "project_name": (
+                log.project.name
+                if log.project else "-"
+            ),
 
-            "vendor_name": log.vendor.name if log.vendor else "-",
+            "vendor_name": (
+                log.vendor.name
+                if log.vendor else "-"
+            ),
 
             "respondent_id": log.respondent_id,
 
             "status": log.status,
 
             "timestamp": log.timestamp,
-
         })
 
     return Response(data)

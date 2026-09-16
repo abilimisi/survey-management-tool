@@ -12,6 +12,12 @@ PROXYCHECK_TOKEN = os.getenv("PROXYCHECK_TOKEN")
 OB_PANEL_API_KEY = os.getenv("OB_PANEL_API_KEY")
 OB_PANEL_API_URL = os.getenv("OB_PANEL_API_URL")
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv(
+    "GROQ_MODEL",
+    "openai/gpt-oss-120b"
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -57,6 +57,7 @@ def get_overview_analytics():
         "total_vendors": total_vendors,
         "active_vendors": active_vendors,
         "total_hits": total_hits,
+        "total_completes": completes,
         "today_hits": today_hits,
         "today_completes": today_completes,
         "completion_rate": completion_rate,
@@ -82,6 +83,7 @@ def get_status_analytics():
         ).count()
 
     return result
+
 
 def get_vendor_analytics():
 
@@ -144,67 +146,6 @@ def get_vendor_analytics():
 
     return data
 
-def get_project_analytics():
-
-    projects = Project.objects.all()
-
-    data = []
-
-    for project in projects:
-
-        respondents = Respondent.objects.filter(
-            project=project
-        )
-
-        total_hits = respondents.count()
-
-        if total_hits == 0:
-            continue
-
-        completes = respondents.filter(
-            status="complete"
-        ).count()
-
-        terminates = respondents.filter(
-            status="terminate"
-        ).count()
-
-        quota_full = respondents.filter(
-            status="quota_full"
-        ).count()
-
-        security = respondents.filter(
-            status="security_terminate"
-        ).count()
-
-        started = respondents.filter(
-            status="started"
-        ).count()
-
-        ir = round(
-            (completes / total_hits) * 100,
-            2
-        )
-
-        data.append({
-            "project_id": project.id,
-            "project_name": project.name,
-            "status": project.status,
-            "hits": total_hits,
-            "completes": completes,
-            "terminates": terminates,
-            "quota_full": quota_full,
-            "security_terminate": security,
-            "started": started,
-            "ir": ir,
-        })
-
-    data.sort(
-        key=lambda item: item["ir"],
-        reverse=True
-    )
-
-    return data
 
 def get_project_analytics():
 
@@ -310,6 +251,7 @@ def get_hits_trend():
         })
 
     return trend
+
 
 def get_ai_analytics_context():
 
