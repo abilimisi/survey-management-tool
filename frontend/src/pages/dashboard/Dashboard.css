@@ -116,8 +116,26 @@
 .hero-badge {
   position: relative;
   z-index: 2;
+
+}
+.hero-badge{
+   display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  
+  color: black;
+  border: 1.5px solid #b8f4cc;
+  border-radius: 20px;
+  padding: 4px 10px;
+  
+  font-size: 13px;
+  font-weight: 600;
+
 }
 
+.hero-badge svg {
+  color: #f97316;
+}
 
 /* ===================================
    KPI CARDS
@@ -198,39 +216,45 @@
   justify-content: center;
   flex-shrink: 0;
 }
-
-/* Icon Colors */
+/* ================================
+   KPI CARD ICON COLORS + BORDERS
+   ================================ */
 
 .card-blue .dashboard-icon {
   background: #dbeafe;
-  color: var(--blue);
+  color: #1d4ed8;
+  border: 1.5px solid #1d4ed8;
 }
 
 .card-green .dashboard-icon {
   background: #dcfce7;
-  color: var(--green);
+  color: #15803d;
+  border: 1.5px solid #15803d;
 }
 
 .card-red .dashboard-icon {
   background: #fee2e2;
-  color: var(--red);
+  color: #b91c1c;
+  border: 1.5px solid #b91c1c;
 }
 
 .card-orange .dashboard-icon {
   background: #ffedd5;
-  color: var(--orange);
+  color: #b45309;
+  border: 1.5px solid #b45309;
 }
 
 .card-purple .dashboard-icon {
   background: #f3e8ff;
-  color: var(--purple);
+  color: #6d28d9;
+  border: 1.5px solid #6d28d9;
 }
 
 .card-indigo .dashboard-icon {
   background: #e0e7ff;
-  color: var(--indigo);
+  color: #3730a3;
+  border: 1.5px solid #3730a3;
 }
-
 
 /* ================================================
    SHARED PANEL
@@ -273,9 +297,9 @@
   font-weight: 600;
   padding: 3px 9px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: var(--c-muted);
-  border: 1px solid var(--c-border);
+  background: #cdf1da;
+  color: var(--c-green);
+  border: 1px solid #4ade80;
   white-space: nowrap;
 }
 

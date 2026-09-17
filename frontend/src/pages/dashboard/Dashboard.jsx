@@ -132,7 +132,7 @@ const cards = [
       <div className="dashboard-header">
         
           <div className="header-content">
-              <h1>Survey Dashboard</h1>
+              <h1>PanelSphere Dashboard</h1>
               <p>Monitor survey traffic, completions and respondent activity</p>
           </div>
 

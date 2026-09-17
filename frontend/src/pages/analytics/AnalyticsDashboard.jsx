@@ -183,17 +183,6 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-
-      {/* <AIChatLauncher
-          onClick={() => setIsAIChatOpen(true)}
-      />
-
-      <AIAnalyticsChat
-          isOpen={isAIChatOpen}
-          onClose={() => setIsAIChatOpen(false)}
-      /> */}
-
-      
     </div>
   );
 }
