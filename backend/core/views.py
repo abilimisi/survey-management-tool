@@ -497,10 +497,6 @@ def create_respondent_and_redirect(request, project_vendor):
                 }
             )
 
-
-            
-        
-
     else:
         # Create a NEW respondent
         respondent_code = uuid.uuid4().hex[:12].upper()

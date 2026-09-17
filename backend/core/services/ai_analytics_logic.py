@@ -97,7 +97,7 @@ def get_deterministic_answer(intent, analytics):
                     0
                 ),
                 "total_completes": overview.get(
-                    "total_respondents",
+                     "total_completes",
                     0
                 ),
             }
