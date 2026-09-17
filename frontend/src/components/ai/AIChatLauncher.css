@@ -14,6 +14,31 @@
     z-index: 900;
 
     pointer-events: none;
+
+    user-select: none;
+
+    transition: none;
+}
+
+
+/* =========================================================
+   DRAGGING
+   ========================================================= */
+
+.ai-chat-launcher.is-dragging {
+    transition: none;
+
+    cursor: grabbing;
+}
+
+
+/* =========================================================
+   POSITIONED MODE
+   ========================================================= */
+
+.ai-chat-launcher.is-positioned {
+    right: auto;
+    bottom: auto;
 }
 
 
@@ -37,9 +62,27 @@
 
     background: transparent;
 
-    cursor: pointer;
+    cursor: grab;
 
     pointer-events: auto;
+
+    user-select: none;
+
+    touch-action: none;
+
+    -webkit-user-select: none;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =========================================================
+   DRAGGING CURSOR
+   ========================================================= */
+
+.ai-chat-launcher.is-dragging
+.ai-launcher-button {
+    cursor: grabbing;
 }
 
 
@@ -50,37 +93,45 @@
 .ai-robot-svg {
     display: block;
 
-    transform-origin: center;
+    /*
+       IMPORTANT:
+       No floating animation.
+       No automatic movement.
+    */
 
-    transition:
-        transform 0.25s ease,
-        filter 0.25s ease;
+    transform: none;
 
-    animation:
-        ai-robot-hover 4s ease-in-out infinite;
+    transition: none;
+
+    pointer-events: none;
 }
 
 
-/* Hover */
+/* =========================================================
+   HOVER
+   ========================================================= */
 
-.ai-launcher-button:hover .ai-robot-svg {
-    transform: scale(1.07);
+/*
+   Intentionally no transform or movement on hover.
 
-    filter:
-        drop-shadow(
-            0 10px 18px rgba(79, 70, 229, 0.28)
-        );
+   The robot stays completely stationary when the cursor
+   is simply placed over it.
+*/
+
+
+/* =========================================================
+   ACTIVE
+   ========================================================= */
+
+.ai-launcher-button:active
+.ai-robot-svg {
+    transform: none;
 }
 
 
-/* Active */
-
-.ai-launcher-button:active .ai-robot-svg {
-    transform: scale(1.02);
-}
-
-
-/* Focus */
+/* =========================================================
+   FOCUS
+   ========================================================= */
 
 .ai-launcher-button:focus-visible {
     outline: 3px solid rgba(99, 102, 241, 0.35);
@@ -112,10 +163,14 @@
 
     box-shadow:
         0 2px 7px rgba(34, 197, 94, 0.35);
+
+    pointer-events: none;
 }
 
 
-/* Pulse */
+/* =========================================================
+   ONLINE PULSE
+   ========================================================= */
 
 .ai-launcher-online::after {
     content: "";
@@ -176,7 +231,9 @@
 }
 
 
-/* Tooltip arrow */
+/* =========================================================
+   TOOLTIP ARROW
+   ========================================================= */
 
 .ai-launcher-tooltip::after {
     content: "";
@@ -192,6 +249,7 @@
     background: #ffffff;
 
     border-top: 1px solid #eef2ff;
+
     border-right: 1px solid #eef2ff;
 
     transform:
@@ -200,9 +258,12 @@
 }
 
 
-/* Show tooltip */
+/* =========================================================
+   SHOW TOOLTIP
+   ========================================================= */
 
-.ai-chat-launcher:hover .ai-launcher-tooltip {
+.ai-chat-launcher:hover
+.ai-launcher-tooltip {
     opacity: 1;
 
     transform:
@@ -212,25 +273,20 @@
 
 
 /* =========================================================
-   ANIMATIONS
+   HIDE TOOLTIP WHILE DRAGGING
    ========================================================= */
 
-@keyframes ai-robot-hover {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-4px);
-    }
-
+.ai-chat-launcher.is-dragging
+.ai-launcher-tooltip {
+    opacity: 0;
 }
 
 
-@keyframes ai-online-pulse {
+/* =========================================================
+   ONLINE ANIMATION
+   ========================================================= */
 
+@keyframes ai-online-pulse {
     0% {
         transform: scale(0.7);
         opacity: 0.7;
@@ -245,7 +301,6 @@
         transform: scale(1.4);
         opacity: 0;
     }
-
 }
 
 
@@ -290,7 +345,6 @@
     .ai-launcher-tooltip {
         display: none;
     }
-
 }
 
 
@@ -305,4 +359,7 @@
         animation: none;
     }
 
+    .ai-chat-launcher {
+        transition: none;
+    }
 }

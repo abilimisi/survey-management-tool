@@ -18,6 +18,7 @@ def detect_analytics_intent(question):
         "best vendor" in question
         or "best-performing vendor" in question
         or "best performing vendor" in question
+        or "vendor is performing best" in question
         or "top vendor" in question
         or "highest vendor" in question
     ):
