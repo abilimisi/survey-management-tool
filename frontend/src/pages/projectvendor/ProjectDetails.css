@@ -336,3 +336,16 @@
   .pd-foreign-btns { flex-direction: row; }
   .pd-link-row { grid-template-columns: 90px 1fr 70px; gap: 10px; padding: 12px 16px; }
 }
+
+
+.remaining-completes-message {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.remaining-completes-message.completed {
+    color: #16a34a;
+}

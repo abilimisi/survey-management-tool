@@ -8,8 +8,8 @@
     right: 22px;
     bottom: 20px;
 
-    width: 118px;
-    height: 118px;
+    width: 95px;
+    height: 95px;
 
     z-index: 900;
 
@@ -49,8 +49,8 @@
 .ai-launcher-button {
     position: relative;
 
-    width: 118px;
-    height: 118px;
+    width: 95px;
+    height: 95px;
 
     display: flex;
     align-items: center;
@@ -93,17 +93,13 @@
 .ai-robot-svg {
     display: block;
 
-    /*
-       IMPORTANT:
-       No floating animation.
-       No automatic movement.
-    */
-
     transform: none;
 
     transition: none;
 
     pointer-events: none;
+
+    animation: ai-robot-float 3s ease-in-out infinite;
 }
 
 
@@ -303,6 +299,19 @@
     }
 }
 
+@keyframes ai-robot-float {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
 
 /* =========================================================
    RESPONSIVE

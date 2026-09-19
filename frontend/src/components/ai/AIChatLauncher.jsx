@@ -470,7 +470,7 @@ export default function AIChatLauncher({ onClick }) {
             >
 
                 <AIRobotIcon
-                    size={112}
+                    size={85}
                     className="ai-robot-svg"
                 />
 

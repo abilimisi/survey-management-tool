@@ -8,9 +8,11 @@ import {
     Send,
     RotateCcw,
     Bot,
-    User,
+    CircleUserRound,
     Lightbulb,
 } from "lucide-react";
+
+import AIRobotIcon from "./AIRobotIcon";
 
 import { askAIAnalytics } from "../../api/analyticsApi";
 
@@ -208,7 +210,10 @@ export default function AIAnalyticsChat({ isOpen, onClose }) {
                     <div className="ai-chat-brand">
 
                         <div className="ai-chat-logo">
-                            <Sparkles size={20} />
+                            <AIRobotIcon
+                                size={28}
+                                className="ai-chat-robot-icon"
+                            />
                         </div>
 
                         <div>
@@ -258,7 +263,10 @@ export default function AIAnalyticsChat({ isOpen, onClose }) {
                         <div className="ai-welcome">
 
                             <div className="ai-welcome-icon">
-                                <Bot size={28} />
+                                <AIRobotIcon
+                                    size={34}
+                                    className="ai-chat-robot-icon"
+                                />
                             </div>
 
                             <h3>
@@ -354,7 +362,10 @@ export default function AIAnalyticsChat({ isOpen, onClose }) {
                             {message.role === "assistant" && (
 
                                 <div className="ai-message-avatar assistant-avatar">
-                                    <Sparkles size={15} />
+                                    <AIRobotIcon
+                                        size={20}
+                                        className="ai-chat-robot-icon"
+                                    />
                                 </div>
 
                             )}
@@ -405,8 +416,11 @@ export default function AIAnalyticsChat({ isOpen, onClose }) {
                             {/* User icon */}
                             {message.role === "user" && (
 
-                                <div className="ai-message-avatar user-avatar">
-                                    <User size={15} />
+                                <div className="ai-message-avatar user-avatar" aria-hidden="true">
+                                    <CircleUserRound
+                                        size={18}
+                                        strokeWidth={1.8}
+                                    />
                                 </div>
 
                             )}

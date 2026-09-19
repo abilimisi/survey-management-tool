@@ -197,6 +197,18 @@ function ProjectDetails() {
   const quotaFullUrl = `${backendBaseUrl}/api/simple-process/?status=3&pid={{OBID}}`;
   const securityUrl  = `${backendBaseUrl}/api/simple-process/?status=4&pid={{OBID}}`;
 
+  const projectRequiredCompletes = Number(project?.target || 0);
+
+  const allocatedCompletes = supplierStats.reduce(
+    (total, supplier) => total + Number(supplier.target || 0),
+    0
+  );
+
+  const remainingCompletes = Math.max(
+    projectRequiredCompletes - allocatedCompletes,
+    0
+  );
+
   return (
     <div>
       <ToastContainer position="top-right" autoClose={2000} />
@@ -350,8 +362,25 @@ function ProjectDetails() {
                   <input type="number" step="0.01" name="vendor_cpc" value={formData.vendor_cpc} onChange={handleChange} />
                 </div>
                 <div className="form-group">
-                  <label>Req. Completes</label>
-                  <input type="number" name="target" value={formData.target} onChange={handleChange} />
+                    <label>Req. Completes</label>
+
+                    <input
+                        type="number"
+                        name="target"
+                        value={formData.target}
+                        onChange={handleChange}
+                        min="0"
+                    />
+
+                    {remainingCompletes > 0 ? (
+                        <small className="remaining-completes-message">
+                            {remainingCompletes} more completes needed for this project.
+                        </small>
+                    ) : (
+                        <small className="remaining-completes-message completed">
+                            ✓ Project required completes fully allocated.
+                        </small>
+                    )}
                 </div>
                 <div className="form-group">
                   <label>Max Redirects</label>

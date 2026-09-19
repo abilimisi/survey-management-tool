@@ -362,9 +362,8 @@
    ========================================================= */
 
 .ai-message-avatar {
-    width: 30px;
-    height: 30px;
-
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
 
     display: flex;
@@ -382,10 +381,68 @@
 
 
 .user-avatar {
-    background: #e2e8f0;
-    color: #475569;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            #ffffff 0%,
+            #f1f5f9 38%,
+            #dbe4ef 100%
+        );
+
+    color: #334155;
+
+    border: 1px solid #cbd5e1;
+
+    box-shadow:
+        0 2px 5px rgba(15, 23, 42, 0.08),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9);
+
+    position: relative;
+    overflow: hidden;
 }
 
+.user-avatar::before {
+    content: "";
+    position: absolute;
+
+    top: 3px;
+    left: 5px;
+
+    width: 10px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.65);
+
+    transform: rotate(-25deg);
+
+    pointer-events: none;
+}
+
+.user-avatar svg {
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+
+.user-message-row:hover .user-avatar {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 10px rgba(15, 23, 42, 0.12);
+}
 
 /* =========================================================
    MESSAGE BUBBLES
@@ -906,4 +963,9 @@
         padding: 10px 12px 12px;
     }
 
+}
+
+.ai-chat-robot-icon {
+    display: block;
+    pointer-events: none;
 }
