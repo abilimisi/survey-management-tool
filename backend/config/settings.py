@@ -159,10 +159,19 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+#     "https://backwater-muster-repayment.ngrok-free.dev",
+# ]
+
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://backwater-muster-repayment.ngrok-free.dev",
+    origin.strip()
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(",")
+    if origin.strip()
 ]
 
 
