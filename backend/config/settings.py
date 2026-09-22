@@ -178,8 +178,16 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
-FRONTEND_URL = "http://localhost:5173"
+PUBLIC_BACKEND_URL = os.getenv(
+    "PUBLIC_BACKEND_URL",
+    "http://127.0.0.1:8000"
+)
+# FRONTEND_URL = "http://localhost:5173"
+
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:5173"
+)
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:5173",
