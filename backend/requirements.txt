@@ -1,84 +1,33 @@
-# client----------------------------------------------
-
-# https://client-survey-link.com?parameter_name={{VARIABLE}}
-
-# * here we have to replace the {{VARIABLE}} name only with {{ID}} or {{panellist_id}} or {{RID-XXXX}} or [[Q3]] or any other variable name which is used in the survey link.
-
-# Note: Keep the client's parameter names unchanged (e.g., Q1, rid, CustomerRef). 
-# Replace only the value placeholder with one of the supported variables such as {{ID}}, {{PASSTHRU}}, or {{RECONNECTID}}.
-
-# vendor----------------------------------------------
-
-# {{panellist_id}}   → Vendor's panelist ID
-# {{PASSTHRU}}       → Vendor misc/ext data
-# {{RECONNECTID}}    → Reconnect ID
-# {{ID}}             → Your internal respondent ID
-
-# https://vendor.com/complete?pid={{panellist_id}}&ext={{PASSTHRU}}
-
-#Adarsh----------------------------------------------------------------------------------
-
-# https://backwater-muster-repayment.ngrok-free.dev/api/survey/start/1/
-
-
-# client redirect links
-# Complete:
-# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id={{ID}}
-
-# Terminate:
-# https://backwater-muster-repayment.ngrok-free.dev/api/terminate/?id={{ID}} or
-# https://backwater-muster-repayment.ngrok-free.dev/api/terminate/?id=RID-XXXX
-
-# Quota Full:
-# https://backwater-muster-repayment.ngrok-free.dev/api/quota-full/?id={{ID}}
-
-# Security Term:
-# https://backwater-muster-repayment.ngrok-free.dev/api/security-terminate/?id={{ID}}
-
-# vendor links
-# Complete:
-# https://vendor.com/complete?rid={{ID}}  or
-# https://example.com/complete?pid={{panellist_id}}
-
-# Terminate:
-# https://vendor.com/terminate?rid={{ID}}
-
-# Quota Full:
-# https://vendor.com/quota-full?rid={{ID}}
-
-# Security Term:
-# https://vendor.com/security?rid={{ID}}
-
-# this link have to be put in "complete" redirect in jotform
-# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id={rid}
-
-# main client link to store 
-# https://form.jotform.com/261383078966066?rid={{ID}}
-
-
-
-# sogolytics link to store
-# https://survey.sogolytics.com/survey/form?k=WsSSWVPYsQsPsPsP&lang=0&isURLPP=1&Q3={{ID}}
-
-
-#in sogolytics thankyou page link(complete redirect)
-# https://backwater-muster-repayment.ngrok-free.dev/api/complete/?id=[[Q3]]
-
-
-
-
-
-# Divyaa-----------------------------------------------------------------------------------------------
-
-# client link(jotform link to store)
-# https://form.jotform.com/261580970317056?rid={{ID}}
-
-# 1. Why do we have surveyProcess.php, processS2S.php, and simpleProcess.php?
-
-# 2. What tokens do vendors expect in redirect URLs?
-
-# 3. Should quotas be project-level or vendor-level?
-
-# 4. How is fraud/security terminate handled today?
-
-# 5. What is the biggest limitation of the current PHP tool?
+annotated-types==0.8.0
+anyio==4.15.1
+asgiref==3.11.1
+certifi==2026.5.20
+charset-normalizer==3.4.7
+distro==1.9.0
+Django==5.2.14
+django-cors-headers==4.9.0
+djangorestframework==3.17.1
+djangorestframework_simplejwt==5.5.1
+groq==1.7.0
+gunicorn==26.2.0
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.18
+mysqlclient==2.2.8
+pycountry==26.2.16
+pydantic==2.13.5
+pydantic_core==2.46.5
+PyJWT==2.12.1
+python-decouple==3.8
+python-dotenv==1.2.2
+requests==2.34.2
+sniffio==1.3.1
+sqlparse==0.5.5
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+tzdata==2026.2
+ua-parser==1.0.2
+ua-parser-builtins==202606
+urllib3==2.7.0
+user-agents==2.2.0

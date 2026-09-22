@@ -9,6 +9,7 @@
   gap: 12px;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 12px;
 }
 
 .campaign-header h2 {
