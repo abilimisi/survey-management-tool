@@ -249,19 +249,6 @@ def start_survey(request, project_vendor_id):
 def start_survey_by_gid(request):
     gid = request.GET.get("gid")
 
-    print("================================")
-    print("Incoming URL:", request.get_full_path())
-    print("Incoming GID:", repr(gid))
-
-    matches = ProjectVendor.objects.filter(gid=gid)
-
-    print("Matching Count:", matches.count())
-
-    if matches.exists():
-        print("Matched ProjectVendor ID:", matches.first().id)
-    else:
-        print("No matching ProjectVendor found.")
-
     project_vendor = get_object_or_404(
         ProjectVendor,
         gid=gid
@@ -1459,7 +1446,10 @@ def sync_panelists(request):
                 "gender": user["gender"],
                 "dob": user["dob"],
                 "country": user["country"],
+                "state": user.get("state"),
                 "industry": user["industry"],
+                "designation": user.get("designation"),
+                "annual_income": user.get("annual_income"),
                 "code": user["code"],
                 "registered_at": user["created_at"],
                 "email_verified": user["email_verified"],
@@ -1510,8 +1500,11 @@ def panelist_list(request):
             "email": p.email,
             "gender": p.gender,
             "country": p.country,
+            "state": p.state,
             "industry": p.industry,
-            "age": age,  
+            "designation": p.designation,
+            "annual_income": p.annual_income,
+            "age": age,
             "registered_at": p.registered_at,
             "email_verified": p.email_verified,
             "optin_type": p.optin_type,

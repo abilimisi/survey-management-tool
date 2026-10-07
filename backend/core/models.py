@@ -642,7 +642,18 @@ class Panelist(models.Model):
 
     country = models.CharField(max_length=100, blank=True, null=True)
 
+    state = models.CharField(max_length=100, blank=True, null=True)
+
     industry = models.CharField(max_length=100, blank=True, null=True)
+
+    designation = models.CharField(max_length=100, blank=True, null=True)
+
+    annual_income = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
 
     code = models.CharField(max_length=50, blank=True, null=True)
 

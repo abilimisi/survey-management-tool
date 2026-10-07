@@ -37,9 +37,7 @@ function Panelists() {
 
       const result = await syncPanelists();
 
-      alert(
-        `Sync completed. Created: ${result.created}, Updated: ${result.updated}`
-      );
+      alert(JSON.stringify(result, null, 2));
 
       fetchPanelists();
     } catch (error) {
@@ -121,7 +119,10 @@ function Panelists() {
         "Email",
         "Gender",
         "Country",
+        "State",
         "Industry",
+        "Designation",
+        "Annual Income",
         "Age",
         "Registered",
         "Opt-in",
@@ -152,7 +153,10 @@ function Panelists() {
           p.email,
           p.gender,
           p.country,
+          p.state,
           p.industry,
+          p.designation,
+          p.annual_income,
           p.age,
           p.registered_at,
           p.optin_type,
@@ -322,12 +326,15 @@ function Panelists() {
                 <th>Email</th>
                 <th>Gender</th>
                 <th>Country</th>
+                <th>State</th>
                 <th>Industry</th>
+                <th>Designation</th>
+                <th>Annual Income</th>
                 <th>AGE</th>
                 <th>Registered</th>
                 <th>Opt-in</th>
-                <th>Verified</th>
-                <th>Verified Date</th>
+                {/* <th>Verified</th> */}
+                {/* <th>Verified Date</th> */}
                 <th>Total</th>
                 <th>Completed</th>
                 <th>Terminated</th>
@@ -369,7 +376,16 @@ function Panelists() {
                     <span className="badge">{p.gender || "-"}</span>
                   </td>
                   <td>{p.country || "-"}</td>
+                  <td>{p.state || "-"}</td>
                   <td>{p.industry || "-"}</td>
+                  <td>{p.designation || "-"}</td>
+                  <td>
+                    {p.annual_income !== null &&
+                    p.annual_income !== undefined &&
+                    p.annual_income !== ""
+                      ? p.annual_income
+                      : "-"}
+                  </td>
                   <td>{p.age || "-"}</td>
                   <td>{p.registered_at || "-"}</td>
                   <td>
@@ -378,19 +394,19 @@ function Panelists() {
                     </span>
                   </td>
 
-                  <td>
+                  {/* <td>
                     {p.email_verified ? (
                       <span className="badge badge-success">Verified</span>
                     ) : (
                       <span className="badge badge-danger">Pending</span>
                     )}
-                  </td>
+                  </td> */}
 
-                  <td>
+                  {/* <td>
                     {p.verified_at
                       ? new Date(p.verified_at).toLocaleDateString()
                       : "-"}
-                  </td>
+                  </td> */}
                   <td>{p.total_surveys}</td>
                   <td>{p.completed_surveys}</td>
                   <td>{p.terminated_surveys}</td>
@@ -404,7 +420,7 @@ function Panelists() {
 
               {filteredPanelists.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="empty-table">
+                  <td colSpan="18" className="empty-table">
                     No panelists found. Click Sync Website Users.
                   </td>
                 </tr>
