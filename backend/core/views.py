@@ -1494,7 +1494,8 @@ def sync_panelists(request):
 @api_view(["GET"])
 def panelist_list(request):
 
-    panelists = Panelist.objects.all().order_by("-registered_at")
+    # panelists = Panelist.objects.all().order_by("-registered_at")
+    panelists = Panelist.objects.filter(is_active=True).order_by("-registered_at")
 
     data = []
 
