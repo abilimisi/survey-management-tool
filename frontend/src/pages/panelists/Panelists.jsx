@@ -9,12 +9,14 @@ function Panelists() {
   const [filters, setFilters] = useState({
     country: "",
     gender: "",
+    industry: "",
   });
 
   const [appliedFilters, setAppliedFilters] =
     useState({
       country: "",
       gender: "",
+      industry: "",
     });
   const [syncing, setSyncing] = useState(false);
 
@@ -37,7 +39,9 @@ function Panelists() {
 
       const result = await syncPanelists();
 
-      alert(JSON.stringify(result, null, 2));
+      alert(
+        `Sync completed. Created: ${result.created}, Updated: ${result.updated}`
+      );
 
       fetchPanelists();
     } catch (error) {
@@ -64,6 +68,7 @@ function Panelists() {
     const emptyFilters = {
       country: "",
       gender: "",
+      industry: ""
     };
 
     setFilters(emptyFilters);
@@ -85,9 +90,15 @@ function Panelists() {
         p.gender ===
           appliedFilters.gender;
 
+      const matchesIndustry =
+        !appliedFilters.industry ||
+        p.industry ===
+          appliedFilters.industry;
+
       return (
         matchesCountry &&
-        matchesGender
+        matchesGender &&
+        matchesIndustry
       );
     });
 
@@ -280,6 +291,31 @@ function Panelists() {
           <option value="Female">
             Female
           </option>
+        </select>
+
+        <select
+          name="industry"
+          value={filters.industry}
+          onChange={handleFilterChange}
+        >
+          <option value="">
+            Select Industry
+          </option>
+
+          {[...new Set(
+            panelists.map(
+              (p) => p.industry
+            )
+          )].map((industry) => (
+
+            <option
+              key={industry}
+              value={industry}
+            >
+              {industry}
+            </option>
+
+          ))}
         </select>
 
       </div>

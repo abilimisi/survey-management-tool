@@ -1428,14 +1428,23 @@ def sync_panelists(request):
         }
     )
 
+    response.raise_for_status()
+
     data = response.json()
 
     users = data["users"]
 
     created = 0
     updated = 0
+    deactivated = 0
+
+    active_external_ids = set()
 
     for user in users:
+
+        external_id = user["id"]
+
+        active_external_ids.add(external_id)
 
         obj, is_created = Panelist.objects.update_or_create(
             external_id=user["id"],
@@ -1455,6 +1464,7 @@ def sync_panelists(request):
                 "email_verified": user["email_verified"],
                 "optin_type": user["optin_type"],
                 "verified_at": user["verified_at"],
+                "is_active": True,
             }
         )
 
@@ -1463,9 +1473,20 @@ def sync_panelists(request):
         else:
             updated += 1
 
+    # Deactivate PanelSphere panelists who no longer exist
+    # in the Opinion Bunch PHP panel.
+    deactivated = Panelist.objects.exclude(
+        external_id__in=active_external_ids
+    ).filter(
+        is_active=True
+    ).update(
+        is_active=False
+    )
+
     return Response({
         "created": created,
-        "updated": updated
+        "updated": updated,
+        "deactivated": deactivated
     })
 
 
