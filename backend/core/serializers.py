@@ -55,6 +55,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = "__all__"
+        read_only_fields = [
+            "project_source",
+            "external_reference",
+        ]
 
     def get_hits(self, obj):
         return obj.respondents.count()
@@ -236,3 +240,4 @@ class CampaignEmailTemplateSerializer(serializers.ModelSerializer):
             "body",
             "updated_at",
         ]
+

@@ -1,0 +1,247 @@
+
+/* ================================
+   DIY All Studies
+================================ */
+
+.diy-all-studies {
+  width: 100%;
+  min-width: 0;
+  padding: 28px;
+  color: #172033;
+  box-sizing: border-box;
+}
+
+.diy-all-studies *,
+.diy-all-studies *::before,
+.diy-all-studies *::after {
+  box-sizing: border-box;
+}
+
+.diy-all-studies__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.diy-all-studies__header h1 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.diy-all-studies__header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.diy-all-studies__header > span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Search and filters */
+
+.diy-all-studies__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.diy-all-studies__filters input,
+.diy-all-studies__filters select {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.diy-all-studies__filters input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.diy-all-studies__filters select {
+  min-width: 160px;
+  cursor: pointer;
+}
+
+.diy-all-studies__filters input:focus,
+.diy-all-studies__filters select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
+}
+
+/* Table container */
+
+.diy-all-studies__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(15 23 42 / 4%);
+}
+
+.diy-all-studies__table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 14px;
+}
+
+.diy-all-studies__table thead {
+  background: #f8fafc;
+}
+
+.diy-all-studies__table th {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.diy-all-studies__table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #edf1f6;
+  color: #334155;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.diy-all-studies__table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.diy-all-studies__table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.diy-all-studies__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.diy-all-studies__table td a {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.diy-all-studies__table td a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.diy-all-studies__table td[colspan] {
+  padding: 36px 16px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* Status badges */
+
+.diy-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.diy-status--approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.diy-status--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.diy-status--submitted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.diy-status--under_review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.diy-status--draft {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Loading and errors */
+
+.diy-all-studies > p {
+  margin: 16px 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.diy-all-studies > p[role="alert"] {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .diy-all-studies {
+    padding: 18px 14px;
+  }
+
+  .diy-all-studies__header h1 {
+    font-size: 24px;
+  }
+
+  .diy-all-studies__filters {
+    flex-direction: column;
+  }
+
+  .diy-all-studies__filters input,
+  .diy-all-studies__filters select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .diy-all-studies__table {
+    min-width: 950px;
+  }
+}

@@ -11,6 +11,8 @@ function EditProject() {
 
   const [clients, setClients] = useState([]);
   const [error, setError] = useState("");
+  const [projectSource, setProjectSource] = useState("internal");
+  const [externalReference, setExternalReference] = useState("");
 
   const [formData, setFormData] = useState({
     parent_project: "Self Parent",
@@ -59,6 +61,8 @@ function EditProject() {
   const fetchProject = async () => {
     try {
       const data = await getSingleProject(id);
+      setProjectSource(data.project_source || "internal");
+      setExternalReference(data.external_reference || "");
 
       setFormData({
         parent_project: data.parent_project || "Self Parent",
@@ -151,6 +155,38 @@ function EditProject() {
     } catch (error) {
       console.log("API Error");
       console.error(error);
+
+      const data = error.response?.data;
+
+      if (data && typeof data === "object") {
+        const messages = Object.entries(data).flatMap(
+          ([field, value]) => {
+            const errors = Array.isArray(value) ? value : [value];
+
+            return errors.map((message) => {
+              const fieldName = field
+                .replaceAll("_", " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase());
+
+              return `${fieldName}: ${
+                typeof message === "string"
+                  ? message
+                  : JSON.stringify(message)
+              }`;
+            });
+          }
+        );
+
+        setError(
+          messages.length
+            ? messages.join("\n")
+            : "Unable to update the project. Please check the required fields."
+        );
+      } else {
+        setError("Unable to update the project. Please try again.");
+      }
+
+      toast.error("Please check the highlighted validation errors.");
     }
   };
 
@@ -159,6 +195,20 @@ function EditProject() {
       <div className="page-header">
         <h1>Edit Project</h1>
         <p>Update project with survey links, metrics and timeline</p>
+
+        <div className="project-source-info">
+          <span
+            className={`source-badge source-badge--${projectSource}`}
+          >
+            {projectSource === "diy_portal" ? "DIY Portal" : "Internal"}
+          </span>
+
+          {externalReference && (
+            <span className="project-reference-label">
+              DIY Reference: <strong>{externalReference}</strong>
+            </span>
+          )}
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}
@@ -502,6 +552,7 @@ function EditProject() {
               <input
                 type="date"
                 name="start_date"
+                required
                 value={formData.start_date}
                 onChange={handleChange}
               />
@@ -512,6 +563,8 @@ function EditProject() {
               <input
                 type="date"
                 name="end_date"
+                required
+                min={formData.start_date || undefined}
                 value={formData.end_date}
                 onChange={handleChange}
               />

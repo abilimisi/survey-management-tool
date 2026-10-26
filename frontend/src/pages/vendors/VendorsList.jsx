@@ -8,14 +8,12 @@ import {
 } from "../../api/vendorApi";
 
 function VendorsList() {
-
   const [vendors, setVendors] = useState([]);
+
   const isSuperUser =
     localStorage.getItem("is_superuser") === "true";
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
+  const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
   const [filters, setFilters] = useState({
@@ -23,15 +21,16 @@ function VendorsList() {
     vendorName: "",
     country: "",
     status: "",
+    is_diy: "",
   });
 
-  const [appliedFilters, setAppliedFilters] =
-    useState({
-      id: "",
-      vendorName: "",
-      country: "",
-      status: "",
-    });
+  const [appliedFilters, setAppliedFilters] = useState({
+    id: "",
+    vendorName: "",
+    country: "",
+    status: "",
+    is_diy: "",
+  });
 
   useEffect(() => {
     fetchVendors();
@@ -43,128 +42,107 @@ function VendorsList() {
       setVendors(data);
     } catch (error) {
       console.error(error);
+      toast.error("Failed to load vendors!");
     }
   };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this vendor?"
+    );
 
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this vendor?"
-  );
+    if (!confirmDelete) return;
 
-  if (!confirmDelete) return;
+    try {
+      await deleteVendor(id);
 
-  try {
+      await fetchVendors();
 
-    await deleteVendor(id);
+      toast.success("Vendor deleted successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      console.error(error);
 
-    // Refresh the table
-    fetchVendors();
-
-    // Success Toast
-    toast.success("Vendor deleted successfully!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    toast.error("Failed to delete vendor!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-
-  }
-};
+      toast.error("Failed to delete vendor!", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  };
 
   const handleFilterChange = (e) => {
-  setFilters({
-    ...filters,
-    [e.target.name]: e.target.value,
-  });
-};
-
-const handleSubmit = () => {
-  setAppliedFilters(filters);
-  setCurrentPage(1);
-};
-
-const handleReset = () => {
-
-  const emptyFilters = {
-    id: "",
-    vendorName: "",
-    country: "",
-    status: "",
+    setFilters({
+      ...filters,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  setFilters(emptyFilters);
-  setAppliedFilters(emptyFilters);
-  setCurrentPage(1);
-};
-
-  const getInvoiceLabel = (value) => {
-    if (value === "monthly_basis") return "Monthly Basis";
-    if (value === "project_basis") return "Project Basis";
-    return "-";
+  const handleSubmit = () => {
+    setAppliedFilters({ ...filters });
+    setCurrentPage(1);
   };
 
-  const filteredVendors = vendors.filter(
-  (vendor) => {
+  const handleReset = () => {
+    const emptyFilters = {
+      id: "",
+      vendorName: "",
+      country: "",
+      status: "",
+      is_diy: "",
+    };
 
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setCurrentPage(1);
+  };
+
+  const filteredVendors = vendors.filter((vendor) => {
     const matchesId =
       !appliedFilters.id ||
-      String(vendor.id).includes(
-        appliedFilters.id
-      );
+      String(vendor.id).includes(appliedFilters.id);
 
     const matchesVendor =
       !appliedFilters.vendorName ||
-      vendor.name
-        ?.toLowerCase()
-        .includes(
-          appliedFilters.vendorName.toLowerCase()
-        );
+      (vendor.name || "")
+        .toLowerCase()
+        .includes(appliedFilters.vendorName.toLowerCase());
 
     const matchesCountry =
       !appliedFilters.country ||
-      vendor.country
-        ?.toLowerCase()
-        .includes(
-          appliedFilters.country.toLowerCase()
-        );
+      (vendor.country || "")
+        .toLowerCase()
+        .includes(appliedFilters.country.toLowerCase());
 
     const matchesStatus =
       !appliedFilters.status ||
-      String(vendor.status) ===
-        appliedFilters.status;
+      String(vendor.status) === appliedFilters.status;
+
+    const matchesSource =
+      appliedFilters.is_diy === "" ||
+      String(vendor.is_diy) === appliedFilters.is_diy;
 
     return (
       matchesId &&
       matchesVendor &&
       matchesCountry &&
-      matchesStatus
+      matchesStatus &&
+      matchesSource
     );
-  }
-);
+  });
 
-const indexOfLastRow =
-  currentPage * rowsPerPage;
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
-const indexOfFirstRow =
-  indexOfLastRow - rowsPerPage;
-
-const currentVendors =
-  filteredVendors.slice(
+  const currentVendors = filteredVendors.slice(
     indexOfFirstRow,
     indexOfLastRow
   );
 
-const totalPages = Math.ceil(
-  filteredVendors.length / rowsPerPage
-);
+  const totalPages = Math.ceil(
+    filteredVendors.length / rowsPerPage
+  );
 
   return (
     <div>
@@ -181,7 +159,6 @@ const totalPages = Math.ceil(
       </div>
 
       <div className="search-panel">
-
         <input
           type="text"
           name="id"
@@ -211,23 +188,24 @@ const totalPages = Math.ceil(
           value={filters.status}
           onChange={handleFilterChange}
         >
-          <option value="">
-            All Status
-          </option>
-
-          <option value="true">
-            Active
-          </option>
-
-          <option value="false">
-            Inactive
-          </option>
+          <option value="">All Status</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
         </select>
 
+        <select
+          id="is_diy"
+          name="is_diy"
+          value={filters.is_diy}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Sources</option>
+          <option value="false">Internal</option>
+          <option value="true">DIY</option>
+        </select>
       </div>
 
       <div className="search-actions">
-
         <button
           className="submit-btn"
           type="button"
@@ -243,11 +221,9 @@ const totalPages = Math.ceil(
         >
           Reset
         </button>
-
       </div>
 
       <hr className="project-divider" />
-
 
       <div className="table-wrapper">
         <table className="custom-table">
@@ -255,6 +231,7 @@ const totalPages = Math.ceil(
             <tr>
               <th>ID</th>
               <th>Vendor Name</th>
+              <th>Source</th>
               <th>Email</th>
               <th>Contact</th>
               <th>Country</th>
@@ -269,6 +246,16 @@ const totalPages = Math.ceil(
                 <td>{vendor.id}</td>
 
                 <td>{vendor.name || "-"}</td>
+
+                <td>
+                  {vendor.is_diy === true ||
+                  vendor.is_diy === "true"
+                    ? "DIY"
+                    : vendor.is_diy === false ||
+                      vendor.is_diy === "false"
+                      ? "Internal"
+                      : "-"}
+                </td>
 
                 <td>{vendor.email || "-"}</td>
 
@@ -295,18 +282,17 @@ const totalPages = Math.ceil(
                       className="edit-btn"
                       title="Edit Vendor"
                     >
-                       <Pencil size={14} strokeWidth={2} />
+                      <Pencil size={14} strokeWidth={2} />
                     </Link>
 
-
                     {isSuperUser && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(vendor.id)}
-                      title="Delete Vendor"
-                    >
-                      <Trash2 size={14} strokeWidth={2} />
-                    </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(vendor.id)}
+                        title="Delete Vendor"
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                      </button>
                     )}
                   </div>
                 </td>
@@ -315,7 +301,7 @@ const totalPages = Math.ceil(
 
             {filteredVendors.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
+                <td colSpan="8" style={{ textAlign: "center" }}>
                   No vendors found
                 </td>
               </tr>
@@ -324,71 +310,51 @@ const totalPages = Math.ceil(
         </table>
       </div>
 
-
       <div className="pagination-container">
-
         <div className="pagination-info">
-
-          Showing {filteredVendors.length === 0
+          Showing{" "}
+          {filteredVendors.length === 0
             ? 0
             : indexOfFirstRow + 1}
           {" "}to{" "}
-          {Math.min(
-            indexOfLastRow,
-            filteredVendors.length
-          )}
+          {Math.min(indexOfLastRow, filteredVendors.length)}
           {" "}of{" "}
           {filteredVendors.length}
           {" "}entries
-
         </div>
 
         <div className="pagination-controls">
-
           <button
             disabled={currentPage === 1}
-            onClick={() =>
-              setCurrentPage(currentPage - 1)
-            }
+            onClick={() => setCurrentPage(currentPage - 1)}
           >
             Previous
           </button>
 
-          {[...Array(totalPages)].map(
-            (_, index) => (
-              <button
-                key={index + 1}
-                className={
-                  currentPage === index + 1
-                    ? "active-page"
-                    : ""
-                }
-                onClick={() =>
-                  setCurrentPage(index + 1)
-                }
-              >
-                {index + 1}
-              </button>
-            )
-          )}
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              className={
+                currentPage === index + 1
+                  ? "active-page"
+                  : ""
+              }
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
 
           <button
             disabled={
-              currentPage === totalPages ||
-              totalPages === 0
+              currentPage === totalPages || totalPages === 0
             }
-            onClick={() =>
-              setCurrentPage(currentPage + 1)
-            }
+            onClick={() => setCurrentPage(currentPage + 1)}
           >
             Next
           </button>
-
         </div>
-
       </div>
-
-
     </div>
   );
 }

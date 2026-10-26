@@ -50,6 +50,25 @@ import AnalyticsDashboard from "../pages/analytics/AnalyticsDashboard";
 import ProjectAnalytics from "../pages/analytics/projectAnalytics/ProjectAnalytics";
 import VendorAnalytics from "../pages/analytics/vendorAnalytics/VendorAnalytics";
 
+// DIY
+import DIYDashboard from "../pages/diy/DIYDashboard";
+import CreateStudy from "../pages/diy/CreateStudy";
+
+import ClientLogin from "../pages/clientPortal/ClientLogin";
+import ClientDashboard from "../pages/clientPortal/ClientDashboard";
+import ClientRegister from "../pages/clientPortal/ClientRegister";
+import ClientStudyDetails from "../pages/clientPortal/ClientStudyDetails";
+
+import DIYStudyReview from "../pages/diy/DIYStudyReview";
+import DIYAllStudies from "../pages/diy/DIYAllStudies";
+import DIYStudyDetails from "../pages/diy/DIYStudyDetails";
+
+
+import VendorRegister from "../pages/vendorPortal/VendorRegister";
+import VendorLogin from "../pages/vendorPortal/VendorLogin";
+import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
+import VendorProfile from "../pages/vendorPortal/VendorProfile";
+import VendorApplications from "../pages/vendors/VendorApplications";
 
 function ProtectedLayout({ children }) {
   return (
@@ -319,6 +338,108 @@ function AppRoutes() {
             </ProtectedLayout>
         }
     />
+
+    {/* DIY Routes */}
+    <Route
+        path="/diy"
+        element={
+          <ProtectedLayout>
+            <DIYDashboard />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/diy/studies/create"
+        element={
+          <ProtectedLayout>
+            <CreateStudy />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/client-portal/login"
+        element={<ClientLogin />}
+      />
+
+      <Route
+        path="/client-portal/dashboard"
+        element={<ClientDashboard />}
+      />
+
+      <Route
+        path="/client-portal/register"
+        element={<ClientRegister />}
+      />
+
+      <Route
+        path="/client-portal/studies/:studyId"
+        element={<ClientStudyDetails />}
+      />
+
+      <Route
+        path="/diy/reviews"
+        element={
+          <ProtectedLayout>
+            <DIYStudyReview />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/diy/studies"
+        element={
+          <ProtectedLayout>
+            <DIYAllStudies />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/diy/studies/:studyId"
+        element={
+          <ProtectedLayout>
+            <DIYStudyDetails />
+          </ProtectedLayout>
+        }
+      />
+
+      
+      <Route
+        path="/vendor/register"
+        element={<VendorRegister />}
+      />
+
+      <Route
+        path="/vendor/login"
+        element={<VendorLogin />}
+      />
+
+      <Route
+        path="/vendor/dashboard"
+        element={<VendorDashboard />}
+      />
+
+      <Route
+        path="/vendor/profile"
+        element={<VendorProfile />}
+      />
+
+      
+      <Route
+        path="/vendors/applications"
+        element={
+          localStorage.getItem("is_superuser") === "true" ? (
+            <ProtectedLayout>
+              <VendorApplications />
+            </ProtectedLayout>
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )
+        }
+      />
+
 
 
     </Routes>

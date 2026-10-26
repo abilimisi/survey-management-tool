@@ -4,6 +4,7 @@ import {
   Users,
   Building2,
   FolderKanban,
+  ClipboardList,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -30,18 +31,53 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
       icon: Building2,
       color: "icon-purple",
     },
+    
     {
       name: "Vendors",
       path: "/vendors",
       icon: Users,
       color: "icon-orange",
+      ...(isSuperuser
+        ? {
+            children: [
+              {
+                name: "Vendor Applications",
+                path: "/vendors/applications",
+                icon: ClipboardList,
+                color: "icon-orange",
+              },
+            ],
+          }
+        : {}),
     },
+
     {
       name: "Projects",
       path: "/projects",
       icon: FolderKanban,
       color: "icon-green",
     },
+    {
+      name: "DIY",
+      path: "/diy/studies",
+      icon: ClipboardList,
+      color: "icon-teal",
+      children: [
+        {
+          name: "All Studies",
+          path: "/diy/studies",
+          icon: ClipboardList,
+          color: "icon-teal",
+        },
+        {
+          name: "Pending Reviews",
+          path: "/diy/reviews",
+          icon: FolderKanban,
+          color: "icon-orange",
+        },
+      ],
+    },
+
     {
       name: "Reports",
       path: "/reports",

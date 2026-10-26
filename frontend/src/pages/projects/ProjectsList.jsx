@@ -278,6 +278,8 @@ const handleDelete = async (id) => {
             <tr>
               <th>ID</th>
               <th>Project Name</th>
+              <th>Source</th>
+              <th>DIY Reference</th>
               <th>Client</th>
               <th>Country</th>
               <th>Start Date</th>
@@ -304,6 +306,20 @@ const handleDelete = async (id) => {
                   </span>
                 </div>
               </td>
+
+              <td>
+                <span
+                  className={`source-badge source-badge--${
+                    project.project_source || "internal"
+                  }`}
+                >
+                  {project.project_source === "diy_portal"
+                    ? "DIY Portal"
+                    : "Internal"}
+                </span>
+              </td>
+
+              <td>{project.external_reference || "—"}</td>
 
               <td>{project.client_name || "-"}</td>
 

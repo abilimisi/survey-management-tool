@@ -4,6 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .panel_campaign_views import *
 
+from .DIY.diy_urls import urlpatterns as diy_urlpatterns
+from .DIY.client_portal_urls import urlpatterns as client_portal_urlpatterns
+from .DIY.vendor.vendor_portal_urls import urlpatterns as vendor_portal_urls
+
 from .views import (
     create_option,
     create_question,
@@ -244,5 +248,19 @@ path(
 ),
     
 ]
+
+urlpatterns += [
+    path("diy/", include(diy_urlpatterns)),
+]
+
+urlpatterns += [
+    path(
+        "client-portal/",
+        include(client_portal_urlpatterns),
+    ),
+    path("vendor-portal/", include(vendor_portal_urls)),
+]
+
+
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

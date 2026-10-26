@@ -4,6 +4,11 @@ import uuid
 from django.contrib.auth.models import User
 import base64
 
+RECORD_SOURCE_CHOICES = [
+    ("internal", "Internal"),
+    ("diy_portal", "DIY Portal"),
+]
+
 class UserProfile(models.Model):
 
     ROLE_CHOICES = [
@@ -133,6 +138,13 @@ class Client(models.Model):
     check_proxy = models.BooleanField(default=True)
 
     is_diy = models.BooleanField(default=True)
+
+    client_source = models.CharField(
+        max_length=20,
+        choices=RECORD_SOURCE_CHOICES,
+        default="internal",
+        db_index=True,
+    )
 
     # Survey Links
 
@@ -308,7 +320,10 @@ class Vendor(models.Model):
 
     check_proxy = models.BooleanField(default=True)
 
-    is_diy = models.BooleanField(default=True)
+    is_diy = models.BooleanField(
+        default=False,
+        help_text="False = Internal vendor, True = DIY vendor registered through the Vendor Portal."
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -456,8 +471,29 @@ class Project(models.Model):
     enable_screening = models.BooleanField(default=False)
     screening_pass_percentage = models.PositiveIntegerField(default=100,null=True,blank=True)
 
+    project_source = models.CharField(
+        max_length=20,
+        choices=RECORD_SOURCE_CHOICES,
+        default="internal",
+        db_index=True,
+    )
+
+    external_reference = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     def __str__(self):
         return self.name
+
+class DIYProjectReference(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OB{self.pk:02d}"
 
 class ProjectVendor(models.Model):
 
@@ -987,3 +1023,312 @@ class RespondentLog(models.Model):
     status      = models.CharField(max_length=50)   # complete / terminate / quota_full / started
     timestamp   = models.DateTimeField(auto_now_add=True)
     ip_address  = models.GenericIPAddressField(null=True, blank=True)
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+# DIY Models
+
+from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class ClientPortalUser(models.Model):
+    """
+    Separate identity for external client portal accounts.
+    Does not use the internal staff user table.
+    """
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_email_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["email"]
+        verbose_name = "Client Portal User"
+        verbose_name_plural = "Client Portal Users"
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+
+class DIYCompany(models.Model):
+    name = models.CharField(max_length=255)
+    created_by = models.ForeignKey(
+        "core.ClientPortalUser",
+        on_delete=models.PROTECT,
+        related_name="created_diy_companies",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "DIY Company"
+        verbose_name_plural = "DIY Companies"
+
+    def __str__(self):
+        return self.name
+
+
+class DIYCompanyMembership(models.Model):
+    ROLE_CHOICES = [
+        ("owner", "Owner"),
+        ("employee", "Employee"),
+    ]
+
+    user = models.ForeignKey(
+        "core.ClientPortalUser",
+        on_delete=models.CASCADE,
+        related_name="diy_company_memberships",
+    )
+
+    company = models.ForeignKey(
+        "core.DIYCompany",
+        on_delete=models.PROTECT,
+        related_name="memberships",
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="employee",
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "company"],
+                name="unique_diy_user_company_membership",
+            )
+        ]
+        ordering = ["-created_at"]
+        verbose_name = "DIY Company Membership"
+        verbose_name_plural = "DIY Company Memberships"
+
+    def __str__(self):
+        return f"{self.user.email} - {self.company.name} ({self.role})"
+
+
+class DIYStudy(models.Model):
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("submitted", "Submitted"),
+        ("under_review", "Under Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("project_created", "Project Created"),
+        ("in_fieldwork", "In Fieldwork"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    STUDY_TYPE_CHOICES = [
+        ("online_survey", "Online Survey"),
+        ("customer_satisfaction", "Customer Satisfaction"),
+        ("brand_awareness", "Brand Awareness"),
+        ("product_research", "Product Research"),
+        ("other", "Other"),
+    ]
+
+    # DIY company that owns this study
+    company = models.ForeignKey(
+        "core.DIYCompany",
+        on_delete=models.PROTECT,
+        related_name="diy_studies",
+        null=True,
+        blank=True,
+    )
+
+    # Client portal user who created the study
+    created_by = models.ForeignKey(
+        "core.ClientPortalUser",
+        on_delete=models.PROTECT,
+        related_name="created_diy_studies",
+    )
+
+    # Link to the operational project after approval.
+    # A Project can be linked to only one DIYStudy.
+    project = models.OneToOneField(
+        "core.Project",
+        on_delete=models.PROTECT,
+        related_name="diy_study",
+        null=True,
+        blank=True,
+    )
+
+    # Basic study information
+    name = models.CharField(max_length=255)
+
+    study_type = models.CharField(
+        max_length=50,
+        choices=STUDY_TYPE_CHOICES,
+        default="online_survey",
+    )
+
+    country = models.CharField(max_length=100)
+    language = models.CharField(max_length=100, default="English")
+
+    survey_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    # Sample requirements
+    target_completes = models.PositiveIntegerField()
+
+    survey_length = models.PositiveIntegerField(
+        help_text="Expected survey duration in minutes.",
+    )
+
+    incidence_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        help_text="Expected incidence rate as a percentage.",
+    )
+
+    description = models.TextField(blank=True, null=True)
+
+    # DIY review and fieldwork lifecycle
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="draft",
+        db_index=True,
+    )
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_diy_studies",
+        null=True,
+        blank=True,
+    )
+
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "DIY Study"
+        verbose_name_plural = "DIY Studies"
+
+    def __str__(self):
+        return f"{self.name} ({self.status})"
+
+
+# -------------------------------------------------------------------
+
+# DIY Vendor
+
+
+class VendorPortalUser(models.Model):
+    APPLICATION_STATUS = [
+        ("pending", "Pending Approval"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    application_status = models.CharField(
+        max_length=20,
+        choices=APPLICATION_STATUS,
+        default="pending",
+    )
+
+    # Filled when the admin approves the vendor application.
+    vendor = models.OneToOneField(
+        "Vendor",
+        on_delete=models.PROTECT,
+        related_name="portal_account",
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    
+    # Vendor company profile — completed in the vendor portal
+    company_name = models.CharField(max_length=255, blank=True)
+    abrv_name = models.CharField(max_length=100, blank=True)
+    contact_number = models.CharField(max_length=30, blank=True)
+    invoice_email = models.EmailField(blank=True)
+    tax_id = models.CharField(max_length=100, blank=True)
+    address = models.TextField(blank=True)
+
+    invoicing_method = models.CharField(
+        max_length=50,
+        choices=[
+            ("monthly_basis", "Monthly Basis"),
+            ("project_basis", "Project Basis"),
+        ],
+        blank=True,
+    )
+
+    payment_terms = models.CharField(
+        max_length=50,
+        choices=[
+            ("15", "15 Days"),
+            ("30", "30 Days"),
+            ("45", "45 Days"),
+            ("60", "60 Days"),
+        ],
+        blank=True,
+    )
+
+    city = models.CharField(max_length=100, blank=True)
+    zip_code = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+
+    # Tracks profile submission separately from account creation
+    profile_submitted = models.BooleanField(default=False)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    admin_note = models.TextField(blank=True, default="")
+
+
+    class Meta:
+        ordering = ["email"]
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False

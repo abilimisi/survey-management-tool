@@ -10,6 +10,7 @@ function Panelists() {
     country: "",
     gender: "",
     industry: "",
+    state: "",
   });
 
   const [appliedFilters, setAppliedFilters] =
@@ -17,6 +18,7 @@ function Panelists() {
       country: "",
       gender: "",
       industry: "",
+      state: "",
     });
   const [syncing, setSyncing] = useState(false);
 
@@ -68,7 +70,8 @@ function Panelists() {
     const emptyFilters = {
       country: "",
       gender: "",
-      industry: ""
+      industry: "",
+      state: ""
     };
 
     setFilters(emptyFilters);
@@ -94,11 +97,17 @@ function Panelists() {
         !appliedFilters.industry ||
         p.industry ===
           appliedFilters.industry;
+      
+      const matchesState =
+        !appliedFilters.state ||
+        p.state ===
+          appliedFilters.state;
 
       return (
         matchesCountry &&
         matchesGender &&
-        matchesIndustry
+        matchesIndustry &&
+        matchesState
       );
     });
 
@@ -318,6 +327,30 @@ function Panelists() {
           ))}
         </select>
 
+        <select
+          name="state"
+          value={filters.state}
+          onChange={handleFilterChange}
+        >
+          <option value="">
+            Select State
+          </option>
+
+          {[...new Set(
+            panelists.map(
+              (p) => p.state
+            )
+          )].map((state) => (
+
+            <option
+              key={state}
+              value={state}
+            >
+              {state}
+            </option>
+
+          ))}
+        </select>
       </div>
 
       <div className="search-actions">

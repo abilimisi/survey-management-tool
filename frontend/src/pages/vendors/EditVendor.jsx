@@ -36,7 +36,7 @@ function EditVendor() {
     cpc: "0.00",
     status: true,
     check_proxy: true,
-    is_diy: true,
+    is_diy: false,
   });
 
   const [error, setError] = useState("");
@@ -73,7 +73,7 @@ function EditVendor() {
         cpc: data.cpc || "0.00",
         status: data.status ?? true,
         check_proxy: data.check_proxy ?? true,
-        is_diy: data.is_diy ?? true,
+        is_diy: data.is_diy ?? false,
       });
     } catch (error) {
       console.error(error);

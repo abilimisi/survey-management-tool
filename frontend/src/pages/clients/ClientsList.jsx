@@ -302,6 +302,7 @@ function ClientsList() {
               <th>ID</th>
               <th>Company Type</th>
               <th>Company Name</th>
+              <th>Source</th>
               <th>Email</th>
               <th>Contact</th>
               <th>Country</th>
@@ -318,6 +319,18 @@ function ClientsList() {
                 <td>{getCompanyTypeLabel(client.company_type)}</td>
 
                 <td>{client.name || "-"}</td>
+
+                <td>
+                  <span
+                    className={`source-badge source-badge--${
+                      client.client_source || "internal"
+                    }`}
+                  >
+                    {client.client_source === "diy_portal"
+                      ? "DIY Portal"
+                      : "Internal"}
+                  </span>
+                </td>
 
                 <td>{client.email || "-"}</td>
 
@@ -365,7 +378,7 @@ function ClientsList() {
 
             {clients.length === 0 && (
               <tr>
-                <td colSpan="8" style={{ textAlign: "center" }}>
+                <td colSpan="9" style={{ textAlign: "center" }}>
                   No clients found
                 </td>
               </tr>

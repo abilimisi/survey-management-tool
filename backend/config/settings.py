@@ -31,18 +31,19 @@ SECRET_KEY = 'django-insecure-&8)-+8x)139krwh3qj5ux6+m$u@$*o^$s^r1^(0hq8n6#mn%i@
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 
-DEBUG = os.getenv("DEBUG", "True") == "True"
+# DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        "ALLOWED_HOSTS",
-        "localhost,127.0.0.1"
-    ).split(",")
-    if host.strip()
-]
+# ALLOWED_HOSTS = [
+#     host.strip()
+#     for host in os.getenv(
+#         "ALLOWED_HOSTS",
+#         "localhost,127.0.0.1",
+#     ).split(",")
+#     if host.strip()
+    
+# ]
 
 # Application definition
 
@@ -162,43 +163,20 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:5173",
-#     "http://127.0.0.1:5173",
-#     "https://backwater-muster-repayment.ngrok-free.dev",
-# ]
-
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv(
-        "CSRF_TRUSTED_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173"
-    ).split(",")
-    if origin.strip()
-]
-
-
-PUBLIC_BACKEND_URL = os.getenv(
-    "PUBLIC_BACKEND_URL",
-    "http://127.0.0.1:8000"
-)
-# FRONTEND_URL = "http://localhost:5173"
-
-FRONTEND_URL = os.getenv(
-    "FRONTEND_URL",
-    "http://localhost:5173"
-)
-
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",
-#     "https://backwater-muster-repayment.ngrok-free.dev",
-# ]
-
-CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://backwater-muster-repayment.ngrok-free.dev",
-    "https://survey-management-tool-kappa.vercel.app",
+]
+
+PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
+
+FRONTEND_URL = "http://localhost:5173"
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://backwater-muster-repayment.ngrok-free.dev",
 ]
 
 #email configuaration

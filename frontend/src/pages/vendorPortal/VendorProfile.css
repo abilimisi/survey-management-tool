@@ -1,0 +1,213 @@
+
+.vendor-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.vendor-profile-field {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.vendor-profile-field label {
+  margin-bottom: 7px;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vendor-profile-field input,
+.vendor-profile-field select,
+.vendor-profile-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.vendor-profile-field textarea {
+  resize: vertical;
+}
+
+.vendor-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.vendor-profile-actions button {
+  margin-top: 0;
+}
+
+.vendor-profile-actions button:last-child {
+  background: #167442;
+}
+
+@media (max-width: 600px) {
+  .vendor-profile-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .vendor-profile-actions {
+    flex-direction: column;
+  }
+}
+
+
+.vendor-profile-submitted {
+  padding: 12px 0 4px;
+  text-align: center;
+}
+
+.vendor-profile-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  color: #16834b;
+  background: #e5f8ed;
+  border-radius: 50%;
+}
+
+.vendor-profile-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #16834b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.vendor-profile-submitted h2 {
+  margin: 0 0 12px;
+  color: #172b4d;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.vendor-profile-submitted > p {
+  max-width: 570px;
+  margin: 0 auto 24px;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.vendor-submission-status {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  max-width: 500px;
+  margin: 0 auto 25px;
+  padding: 17px;
+  color: #946200;
+  text-align: left;
+  background: #fff8e6;
+  border: 1px solid #f4e2ad;
+  border-radius: 12px;
+}
+
+.vendor-submission-status > svg {
+  flex-shrink: 0;
+}
+
+.vendor-submission-status strong,
+.vendor-submission-status span {
+  display: block;
+}
+
+.vendor-submission-status strong {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.vendor-submission-status span {
+  color: #8b7950;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.vendor-profile-submitted-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.vendor-profile-submitted-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 45px;
+  padding: 12px 20px;
+  color: #fff;
+  background: #2563eb;
+  border: 0;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vendor-profile-submitted-actions button:hover {
+  background: #1d4ed8;
+}
+
+
+.vendor-rejection-notice {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid #f0b4b4;
+  border-radius: 10px;
+  background: #fff5f5;
+  color: #7f1d1d;
+}
+
+.vendor-rejection-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vendor-rejection-heading h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.vendor-rejection-notice > p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.vendor-rejection-note {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f0b4b4;
+}
+
+.vendor-rejection-note strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.vendor-rejection-note p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.vendor-profile-field input[readonly],
+.vendor-profile-field textarea[readonly] {
+  background: #f3f4f6;
+  color: #4b5563;
+  cursor: default;
+}

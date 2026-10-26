@@ -31,8 +31,7 @@ function ProjectDetails() {
   const [redirectIdsInput, setRedirectIdsInput]   = useState("");
   const [mappedResults, setMappedResults]         = useState([]);
 
-  // const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
-  const backendBaseUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
 
   const initialFormData = {
     project: id,

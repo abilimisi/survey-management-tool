@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  // baseURL: "http://127.0.0.1:8000/api/",
-  baseURL: "https://survey-management-tool-production.up.railway.app/api/",
+  baseURL: "http://127.0.0.1:8000/api/",
 });
 
 axiosInstance.interceptors.request.use((config) => {
@@ -31,8 +30,7 @@ axiosInstance.interceptors.response.use(
         const refreshToken = localStorage.getItem("refresh_token");
 
         const response = await axios.post(
-          // "http://127.0.0.1:8000/api/token/refresh/",
-          "https://survey-management-tool-production.up.railway.app/api/token/refresh/",
+          "http://127.0.0.1:8000/api/token/refresh/",
 
           {
             refresh: refreshToken,

@@ -1,0 +1,307 @@
+
+.client-dashboard-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f4f7fb;
+  color: #172033;
+  font-family: Arial, sans-serif;
+}
+
+.client-dashboard-header,
+.client-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.client-dashboard-header {
+  margin: 0 auto 28px;
+  max-width: 1440px;
+}
+
+.client-dashboard-header h1 {
+  margin: 4px 0 8px;
+  font-size: 30px;
+}
+
+.client-dashboard-header p,
+.client-company-section p,
+.client-studies-section p {
+  color: #64748b;
+}
+
+.client-dashboard-eyebrow {
+  margin: 0;
+  color: #1d4ed8 !important;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.client-company-section,
+.client-studies-section {
+  max-width: 1440px;
+  margin: 0 auto 24px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.client-company-section h2,
+.client-studies-section h2 {
+  margin-top: 0;
+}
+
+.client-company-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.client-company-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.client-company-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 10px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.client-company-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.client-company-card p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.client-primary-button,
+.client-secondary-button,
+.client-table-button {
+  padding: 10px 15px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.client-primary-button {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.client-primary-button:disabled,
+.client-table-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.client-secondary-button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+}
+
+.client-study-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.client-study-form h3 {
+  margin-top: 0;
+}
+
+.client-study-form label {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.client-study-form input,
+.client-study-form select,
+.client-study-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+}
+
+.client-study-form small {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.client-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.client-form-grid > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.client-empty-state {
+  padding: 48px 16px;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+}
+
+.client-studies-table-wrapper {
+  width: 100%;
+  margin-top: 22px;
+  overflow-x: auto;
+}
+
+.client-studies-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.client-studies-table th,
+.client-studies-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.client-studies-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.client-studies-table td {
+  font-size: 14px;
+}
+
+.client-studies-table td small {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+}
+
+.client-status-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.client-status-draft {
+  background: #f1f5f9;
+}
+
+.client-status-submitted,
+.client-status-under_review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.client-status-approved,
+.client-status-project_created {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.client-status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.client-table-button {
+  background: #eff6ff;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.client-muted-text {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.client-dashboard-loading {
+  padding: 60px 20px;
+  color: #64748b;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .client-dashboard-page {
+    padding: 16px;
+  }
+
+  .client-dashboard-header,
+  .client-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .client-dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .client-company-section,
+  .client-studies-section {
+    padding: 16px;
+  }
+
+  .client-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.client-study-link {
+  color: #172033;
+  text-decoration: none;
+}
+
+.client-study-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.client-study-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}

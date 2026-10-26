@@ -99,3 +99,34 @@
     color:#1f2937;
     line-height:1;
 }
+
+.project-source-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.source-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.source-badge--diy_portal {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.source-badge--internal {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.project-reference-label {
+  font-size: 13px;
+  color: #475569;
+}

@@ -29,7 +29,7 @@ function AddVendor() {
     cpc: "0.00",
     status: true,
     check_proxy: true,
-    is_diy: true,
+    is_diy: false,
   });
 
   const [error, setError] = useState("");

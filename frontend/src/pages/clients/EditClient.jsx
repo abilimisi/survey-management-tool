@@ -38,6 +38,7 @@ function EditClient() {
   });
 
   const [error, setError] = useState("");
+  const [clientSource, setClientSource] = useState("internal");
 
   useEffect(() => {
     fetchClient();
@@ -46,6 +47,7 @@ function EditClient() {
   const fetchClient = async () => {
     try {
       const data = await getSingleClient(id);
+      setClientSource(data.client_source || "internal");
 
       setFormData({
         company_type: data.company_type || "client",
@@ -119,6 +121,16 @@ function EditClient() {
       <div className="page-header">
         <h1>Edit Client</h1>
         <p>Update client company details</p>
+
+        <div className="project-source-info">
+          <span
+            className={`source-badge source-badge--${clientSource}`}
+          >
+            {clientSource === "diy_portal"
+              ? "DIY Portal"
+              : "Internal"}
+          </span>
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}
