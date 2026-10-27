@@ -11,7 +11,13 @@ from django.conf import settings
 import requests
 from user_agents import parse
 import pycountry
-from datetime import date
+from datetime import datetime, timezone as dt_timezone
+from datetime import date,datetime
+from django.utils import timezone as django_timezone
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .utils import is_proxy
 
@@ -1418,37 +1424,79 @@ def reports_data(request):
         "respondent_report": respondent_report,
     })
 
+
+def parse_panelist_datetime(value):
+    if value is None or value == "":
+        return None
+
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        value = str(value).strip()
+
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+
+        dt = datetime.fromisoformat(value)
+
+    # Treat timestamps without a timezone as UTC.
+    # Confirm that the PHP API actually sends UTC timestamps.
+    if django_timezone.is_naive(dt):
+        dt = dt.replace(tzinfo=dt_timezone.utc)
+
+    return dt
+
 @api_view(["GET", "POST"])
 def sync_panelists(request):
+    try:
+        # Fetch panelists from the Opinion Bunch PHP API
+        response = requests.get(
+            settings.OB_PANEL_API_URL,
+            headers={
+                "X-API-KEY": settings.OB_PANEL_API_KEY
+            },
+            timeout=30,
+        )
 
-    response = requests.get(
-        settings.OB_PANEL_API_URL,
-        headers={
-            "X-API-KEY": settings.OB_PANEL_API_KEY
-        }
-    )
+        response.raise_for_status()
+        data = response.json()
 
-    response.raise_for_status()
+        # Validate the API response
+        if not isinstance(data, dict) or "users" not in data:
+            raise ValueError(
+                "Invalid API response: missing 'users' field."
+            )
 
-    data = response.json()
+        users = data["users"]
 
-    users = data["users"]
+        if not isinstance(users, list):
+            raise ValueError(
+                "Invalid API response: 'users' must be a list."
+            )
 
-    created = 0
-    updated = 0
-    deactivated = 0
+        # Prevent accidental deactivation if the API returns no users
+        if not users:
+            logger.warning(
+                "OB Panel API returned zero users. "
+                "No panelists were changed."
+            )
 
-    active_external_ids = set()
+            return Response({
+                "created": 0,
+                "updated": 0,
+                "deactivated": 0,
+                "message": "No users returned; no records were changed."
+            })
 
-    for user in users:
+        created = 0
+        updated = 0
+        active_external_ids = set()
 
-        external_id = user["id"]
+        for user in users:
+            external_id = user["id"]
+            active_external_ids.add(external_id)
 
-        active_external_ids.add(external_id)
-
-        obj, is_created = Panelist.objects.update_or_create(
-            external_id=user["id"],
-            defaults={
+            defaults = {
                 "fname": user["fname"],
                 "lname": user["lname"],
                 "email": user["email"],
@@ -1460,35 +1508,63 @@ def sync_panelists(request):
                 "designation": user.get("designation"),
                 "annual_income": user.get("annual_income"),
                 "code": user["code"],
-                "registered_at": user["created_at"],
+                "registered_at": parse_panelist_datetime(
+                    user.get("created_at")
+                ),
                 "email_verified": user["email_verified"],
                 "optin_type": user["optin_type"],
-                "verified_at": user["verified_at"],
+                "verified_at": parse_panelist_datetime(
+                    user.get("verified_at")
+                ),
                 "is_active": True,
             }
+
+            obj, is_created = Panelist.objects.update_or_create(
+                external_id=external_id,
+                defaults=defaults,
+            )
+
+            if is_created:
+                created += 1
+            else:
+                updated += 1
+
+        # Deactivate local panelists that no longer exist
+        # in the external PHP panel.
+        deactivated = (
+            Panelist.objects
+            .exclude(external_id__in=active_external_ids)
+            .filter(is_active=True)
+            .update(is_active=False)
         )
 
-        if is_created:
-            created += 1
-        else:
-            updated += 1
+        logger.info(
+            "Panelist sync completed: created=%s, updated=%s, "
+            "deactivated=%s",
+            created,
+            updated,
+            deactivated,
+        )
 
-    # Deactivate PanelSphere panelists who no longer exist
-    # in the Opinion Bunch PHP panel.
-    deactivated = Panelist.objects.exclude(
-        external_id__in=active_external_ids
-    ).filter(
-        is_active=True
-    ).update(
-        is_active=False
-    )
+        return Response({
+            "created": created,
+            "updated": updated,
+            "deactivated": deactivated,
+        })
 
-    return Response({
-        "created": created,
-        "updated": updated,
-        "deactivated": deactivated
-    })
+    except Exception:
+        # Writes the full exception and traceback to the Django logs
+        logger.exception("Panelist synchronization failed")
 
+        return Response(
+            {
+                "error": (
+                    "Synchronization failed. "
+                    "Check the Django server log."
+                )
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @api_view(["GET"])
