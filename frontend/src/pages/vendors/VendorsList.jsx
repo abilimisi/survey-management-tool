@@ -73,10 +73,24 @@ function VendorsList() {
   };
 
   const handleFilterChange = (e) => {
-    setFilters({
+    const { name, value } = e.target;
+
+    const updatedFilters = {
       ...filters,
-      [e.target.name]: e.target.value,
-    });
+      [name]: value,
+    };
+
+    setFilters(updatedFilters);
+
+    // Apply Source and Status filters immediately.
+    if (name === "is_diy" || name === "status") {
+      setAppliedFilters((previousFilters) => ({
+        ...previousFilters,
+        [name]: value,
+      }));
+
+      setCurrentPage(1);
+    }
   };
 
   const handleSubmit = () => {

@@ -1,7 +1,6 @@
 import uuid
 from django.conf import settings
-
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from core.serializers import CampaignEmailTemplateSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -346,56 +345,79 @@ def campaign_survey_links(request, pk):
 
     return Response(data)
 
-def panel_start(request):
 
+def panel_start(request):
     token = request.GET.get("token")
 
     recipient = get_object_or_404(
         PanelCampaignRecipient,
         survey_token=token
     )
-    
 
     recipient.clicked = True
     recipient.save(update_fields=["clicked"])
 
+    campaign = recipient.campaign
+    project_vendor = campaign.project_vendor
+
+    # Check whether this panelist already completed this project
+    existing_respondent = Respondent.objects.filter(
+        project=campaign.project,
+        email__iexact=recipient.panelist.email,
+        status="complete",
+    ).first()
+
+    if existing_respondent:
+        return render(
+            request,
+            "landing/terminate.html",
+            {
+                "respondent": existing_respondent,
+                "status": "terminate",
+                "reason": "You have already completed this survey.",
+            },
+        )
+
     if recipient.respondent:
         respondent = recipient.respondent
-
     else:
-
-        campaign = recipient.campaign
-
-        project_vendor = campaign.project_vendor
-
         respondent = Respondent.objects.create(
-
             respondent_id=uuid.uuid4().hex[:12].upper(),
-
             project=campaign.project,
-
             vendor=project_vendor.vendor,
-
             project_vendor=project_vendor,
-
             email=recipient.panelist.email,
-
             ip_address=get_client_ip(request),
-
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
-
             status="started"
-
         )
+
         recipient.respondent = respondent
         recipient.save(update_fields=["respondent"])
 
+    # Screening check
+    if respondent.project.enable_screening:
+        screening_url = (
+            f"{settings.FRONTEND_URL}/screening/"
+            f"{respondent.respondent_id}"
+        )
+
+        RedirectLog.objects.create(
+            respondent=respondent,
+            redirect_type="screening_start",
+            redirect_url=screening_url,
+        )
+
+        return redirect(screening_url)
+
+    # No screening: redirect to the main survey
     survey_link = replace_tokens(
-    respondent.project.live_link,
-    respondent
+        respondent.project.live_link,
+        respondent
     )
 
     return redirect(survey_link)
+
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response

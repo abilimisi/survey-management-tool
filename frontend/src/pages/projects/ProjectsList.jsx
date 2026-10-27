@@ -17,6 +17,7 @@ function ProjectsList() {
     client: "",
     country: "",
     status: "",
+    project_source: "",
   });
   const [appliedFilters, setAppliedFilters] =
     useState({
@@ -25,6 +26,7 @@ function ProjectsList() {
       client: "",
       country: "",
       status: "",
+      project_source: "",
     });
 
   useEffect(() => {
@@ -41,52 +43,67 @@ function ProjectsList() {
         client: "",
         country: "",
         status: "",
+        project_source: "",
       });
     } catch (error) {
       console.error(error);
     }
   };
 
-const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
 
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this project?"
-  );
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this project?"
+    );
 
-  if (!confirmDelete) return;
+    if (!confirmDelete) return;
 
-  try {
+    try {
 
-    await deleteProject(id);
+      await deleteProject(id);
 
-    toast.success("Project deleted successfully!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
+      toast.success("Project deleted successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+      });
 
-    setTimeout(() => {
-      fetchProjects();
-    }, 2000);
+      setTimeout(() => {
+        fetchProjects();
+      }, 2000);
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error(error);
+      console.error(error);
 
-    toast.error("Project deletion failed!", {
-      position: "top-right",
-      autoClose: 2500,
-    });
+      toast.error("Project deletion failed!", {
+        position: "top-right",
+        autoClose: 2500,
+      });
 
-  }
+    }
 
-};
-
-  const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value,
-    });
   };
+
+  
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+
+    setFilters((previousFilters) => ({
+      ...previousFilters,
+      [name]: value,
+    }));
+
+    // Apply Status and Source filters immediately.
+    if (name === "status" || name === "project_source") {
+      setAppliedFilters((previousFilters) => ({
+        ...previousFilters,
+        [name]: value,
+      }));
+
+      setCurrentPage(1);
+    }
+  };
+
 
   const handleSubmit = () => {
     setAppliedFilters(filters);
@@ -100,6 +117,7 @@ const handleDelete = async (id) => {
       client: "",
       country: "",
       status: "",
+      project_source: "",
     };
 
     setFilters(emptyFilters);
@@ -159,13 +177,22 @@ const handleDelete = async (id) => {
       !appliedFilters.status ||
       project.status === appliedFilters.status;
 
+    
+    const matchesSource =
+      !appliedFilters.project_source ||
+      (appliedFilters.project_source === "diy_portal"
+        ? project.project_source === "diy_portal"
+        : (project.project_source || "internal") === "internal");
+
     return (
       matchesId &&
       matchesName &&
       matchesClient &&
       matchesCountry &&
-      matchesStatus
+      matchesStatus &&
+      matchesSource
     );
+
   });
 
   
@@ -243,6 +270,16 @@ const handleDelete = async (id) => {
           <option value="testing">Testing</option>
           <option value="completed">Completed</option>
           <option value="closed">Closed</option>
+        </select>
+
+        <select
+          name="project_source"
+          value={filters.project_source}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Sources</option>
+          <option value="internal">Internal</option>
+          <option value="diy_portal">DIY</option>
         </select>
 
       </div>

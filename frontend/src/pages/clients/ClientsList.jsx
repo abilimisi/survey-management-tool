@@ -25,6 +25,7 @@ function ClientsList() {
     companyName: "",
     country: "",
     status: "",
+    client_source: "",
   });
 
   const [appliedFilters, setAppliedFilters] =
@@ -34,6 +35,7 @@ function ClientsList() {
       companyName: "",
       country: "",
       status: "",
+      client_source: "",
     });
 
   useEffect(() => {
@@ -76,12 +78,28 @@ function ClientsList() {
     }
   };
 
+  
+  
   const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setFilters((previousFilters) => ({
+      ...previousFilters,
+      [name]: value,
+    }));
+
+    // Apply Source and Status filters immediately.
+    if (name === "client_source" || name === "status") {
+      setAppliedFilters((previousFilters) => ({
+        ...previousFilters,
+        [name]: value,
+      }));
+
+      setCurrentPage(1);
+    }
   };
+
+
 
   const handleSubmit = () => {
     setAppliedFilters(filters);
@@ -96,6 +114,7 @@ function ClientsList() {
       companyName: "",
       country: "",
       status: "",
+      client_source: "",
     };
 
   setFilters(emptyFilters);
@@ -157,13 +176,24 @@ function ClientsList() {
         String(client.status) ===
           appliedFilters.status;
 
+      
+      const matchesSource =
+        !appliedFilters.client_source ||
+        (appliedFilters.client_source === "diy_portal"
+          ? client.client_source === "diy_portal"
+          : (client.client_source || "internal") === "internal");
+
+
+      
       return (
         matchesId &&
         matchesType &&
         matchesName &&
         matchesCountry &&
-        matchesStatus
+        matchesStatus &&
+        matchesSource
       );
+
     }
   );
 
@@ -270,6 +300,18 @@ function ClientsList() {
             Inactive
           </option>
         </select>
+
+        
+        <select
+          name="client_source"
+          value={filters.client_source}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Sources</option>
+          <option value="internal">Internal</option>
+          <option value="diy_portal">DIY</option>
+        </select>
+
 
       </div>
 
