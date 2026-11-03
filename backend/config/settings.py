@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&8)-+8x)139krwh3qj5ux6+m$u@$*o^$s^r1^(0hq8n6#mn%i@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,6 +50,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'axes',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 
     'core',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
@@ -69,20 +71,23 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "core.jwt_authentication.RevocableJWTAuthentication",
     ),
-     "DEFAULT_PERMISSION_CLASSES": (
-         "rest_framework.permissions.IsAuthenticated",
-     ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
 }
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 ROOT_URLCONF = 'config.urls'
@@ -166,17 +171,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://backwater-muster-repayment.ngrok-free.dev",
+    "https://carpenter-trodden-upstate.ngrok-free.dev",
 ]
 
-PUBLIC_BACKEND_URL = "https://backwater-muster-repayment.ngrok-free.dev"
+PUBLIC_BACKEND_URL = "https://carpenter-trodden-upstate.ngrok-free.dev"
 
 FRONTEND_URL = "http://localhost:5173"
 
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://backwater-muster-repayment.ngrok-free.dev",
+    "https://carpenter-trodden-upstate.ngrok-free.dev",
 ]
 
 #email configuaration
@@ -196,3 +201,18 @@ RESEND_FROM_EMAIL = os.getenv(
     "RESEND_FROM_EMAIL",
     "onboarding@resend.dev"
 )
+
+# Django Axes - Login Brute Force Protection
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+AXES_FAILURE_LIMIT = 5
+
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+
+AXES_RESET_ON_SUCCESS = True
+
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]

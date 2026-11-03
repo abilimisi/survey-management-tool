@@ -7,18 +7,22 @@ function Panelists() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
+    name: "",
     country: "",
     gender: "",
     industry: "",
     state: "",
+    optin_type: "",
   });
 
   const [appliedFilters, setAppliedFilters] =
     useState({
+      name: "",
       country: "",
       gender: "",
       industry: "",
       state: "",
+      optin_type: "",
     });
   const [syncing, setSyncing] = useState(false);
 
@@ -54,12 +58,27 @@ function Panelists() {
     }
   };
 
+  
+  
   const handleFilterChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setFilters((previousFilters) => ({
+      ...previousFilters,
+      [name]: value,
+    }));
+
+    // Apply Name and Opt-in filters immediately.
+    if (name === "name" || name === "optin_type") {
+      setAppliedFilters((previousFilters) => ({
+        ...previousFilters,
+        [name]: value,
+      }));
+
+      setCurrentPage(1);
+    }
   };
+
 
   const handleSubmit = () => {
     setAppliedFilters(filters);
@@ -67,11 +86,14 @@ function Panelists() {
   };
 
   const handleReset = () => {
+    
     const emptyFilters = {
+      name: "",
       country: "",
       gender: "",
       industry: "",
-      state: ""
+      state: "",
+      optin_type: "",
     };
 
     setFilters(emptyFilters);
@@ -82,6 +104,16 @@ function Panelists() {
 
   const filteredPanelists =
     panelists.filter((p) => {
+
+      const matchesName =
+        !appliedFilters.name ||
+        `${p.fname || ""} ${p.lname || ""}`
+          .toLowerCase()
+          .includes(appliedFilters.name.trim().toLowerCase());
+
+      const matchesOptIn =
+        !appliedFilters.optin_type ||
+        p.optin_type === appliedFilters.optin_type;
 
       const matchesCountry =
         !appliedFilters.country ||
@@ -103,15 +135,19 @@ function Panelists() {
         p.state ===
           appliedFilters.state;
 
+      
       return (
+        matchesName &&
+        matchesOptIn &&
         matchesCountry &&
         matchesGender &&
         matchesIndustry &&
         matchesState
       );
+
     });
 
-    const recordsPerPage = 5;
+    const recordsPerPage = 10;
 
     const indexOfLastRecord =
       currentPage * recordsPerPage;
@@ -259,6 +295,16 @@ function Panelists() {
 
       <div className="search-panel">
 
+        
+      <input
+        type="text"
+        name="name"
+        placeholder="Name"
+        value={filters.name}
+        onChange={handleFilterChange}
+      />
+
+
         <select
           name="country"
           value={filters.country}
@@ -351,6 +397,18 @@ function Panelists() {
 
           ))}
         </select>
+
+        
+        <select
+          name="optin_type"
+          value={filters.optin_type}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Opt-in</option>
+          <option value="SOI">SOI</option>
+          <option value="DOI">DOI</option>
+        </select>
+
       </div>
 
       <div className="search-actions">
@@ -496,68 +554,69 @@ function Panelists() {
               )}
             </tbody>
           </table>
+          
+        </div>
 
           <div className="pagination-container">
 
-            <div className="pagination-info">
+          <div className="pagination-info">
 
-              {filteredPanelists.length > 0
-                ? `Showing ${indexOfFirstRecord + 1}
-                  to ${Math.min(
-                    indexOfLastRecord,
-                    filteredPanelists.length
-                  )}
-                  of ${filteredPanelists.length}
-                  entries`
-                : "Showing 0 to 0 of 0 entries"}
-
-            </div>
-
-            <div className="pagination-controls">
-
-              <button
-                disabled={currentPage === 1}
-                onClick={() =>
-                  setCurrentPage(currentPage - 1)
-                }
-              >
-                Previous
-              </button>
-
-              {[...Array(totalPages)].map(
-                (_, index) => (
-                  <button
-                    key={index + 1}
-                    className={
-                      currentPage === index + 1
-                        ? "active-page"
-                        : ""
-                    }
-                    onClick={() =>
-                      setCurrentPage(index + 1)
-                    }
-                  >
-                    {index + 1}
-                  </button>
-                )
-              )}
-
-              <button
-                disabled={
-                  currentPage === totalPages
-                }
-                onClick={() =>
-                  setCurrentPage(currentPage + 1)
-                }
-              >
-                Next
-              </button>
-
-            </div>
+            {filteredPanelists.length > 0
+              ? `Showing ${indexOfFirstRecord + 1}
+                to ${Math.min(
+                  indexOfLastRecord,
+                  filteredPanelists.length
+                )}
+                of ${filteredPanelists.length}
+                entries`
+              : "Showing 0 to 0 of 0 entries"}
 
           </div>
-          
+
+          <div className="pagination-controls">
+
+            <button
+              disabled={currentPage === 1}
+              onClick={() =>
+                setCurrentPage(currentPage - 1)
+              }
+            >
+              Previous
+            </button>
+
+            {[...Array(totalPages)].map(
+              (_, index) => (
+                <button
+                  key={index + 1}
+                  className={
+                    currentPage === index + 1
+                      ? "active-page"
+                      : ""
+                  }
+                  onClick={() =>
+                    setCurrentPage(index + 1)
+                  }
+                >
+                  {index + 1}
+                </button>
+              )
+            )}
+
+            <button
+              disabled={
+                currentPage === totalPages
+              }
+              onClick={() =>
+                setCurrentPage(currentPage + 1)
+              }
+            >
+              Next
+            </button>
+
+          </div>
+
         </div>
+          
       </div>
     </div>
   );

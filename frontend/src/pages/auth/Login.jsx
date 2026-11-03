@@ -34,11 +34,31 @@ function Login() {
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
       localStorage.setItem("username", formData.username);
-      localStorage.setItem("is_superuser", data.is_superuser);
+      localStorage.setItem(
+        "is_superuser",
+        String(data.is_superuser === true)
+      );
+      localStorage.setItem(
+        "role",
+        data.is_superuser ? "Admin" : (data.role || "User")
+      );
+
 
       navigate("/dashboard");
     } catch (error) {
-      setError("Invalid username or password");
+      const backendMessage = error.response?.data?.detail;
+
+      if (
+        backendMessage?.toLowerCase().includes("already logged in")
+      ) {
+        setError(
+          "This account is already logged in on another device or browser. Please log out from your previous session or wait 5 minutes for it to expire."
+        );
+      } else if (backendMessage) {
+        setError(backendMessage);
+      } else {
+        setError("Unable to log in. Please check your connection and try again.");
+      }
     }
   };
 

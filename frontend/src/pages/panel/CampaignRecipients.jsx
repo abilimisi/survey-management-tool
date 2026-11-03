@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import {
     getCampaignRecipients,
     generateRecipients,
-    getCampaignSurveyLinks,
     sendCampaignEmails,
 } from "../../api/panelCampaignApi";
 
@@ -13,10 +12,10 @@ import "./CampaignRecipients.css";
 export default function CampaignRecipients() {
 
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [recipients, setRecipients] = useState([]);
 
-    const [links, setLinks] = useState([]);
 
     const loadRecipients = async () => {
 
@@ -54,11 +53,9 @@ export default function CampaignRecipients() {
 
     };
 
-    const handleLinks = async () => {
+    const handleLinks = () => {
 
-        const data = await getCampaignSurveyLinks(id);
-
-        setLinks(data);
+        navigate(`/panel-campaigns/${id}/survey-links`);
 
     };
 
@@ -164,71 +161,6 @@ export default function CampaignRecipients() {
 
             </div>
 
-            {
-                links.length>0 &&
-
-                <>
-
-                    <h3>Survey Links</h3>
-
-                    <div className="table-scroll">
-
-                    <table className="recipients-table">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Name</th>
-
-                                <th>Email</th>
-
-                                <th>Survey Link</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {
-
-                                links.map(link=>(
-
-                                    <tr key={link.recipient_id}>
-
-                                        <td>{link.panelist}</td>
-
-                                        <td>{link.email}</td>
-
-                                        <td>
-
-                                            <a
-                                                className="link-pill"
-                                                href={link.survey_link}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                Open Survey
-                                            </a>
-
-                                        </td>
-
-                                    </tr>
-
-                                ))
-
-                            }
-
-                        </tbody>
-
-                    </table>
-
-                    </div>
-
-                </>
-
-            }
 
         </div>
 

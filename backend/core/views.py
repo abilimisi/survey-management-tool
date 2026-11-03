@@ -22,8 +22,11 @@ logger = logging.getLogger(__name__)
 
 from .utils import is_proxy
 
-from rest_framework.permissions import AllowAny
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
+from .models import RevokedAccessToken
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany
 
@@ -40,19 +43,156 @@ from .serializers import (
     RespondentSerializer,
     RedirectLogSerializer,
     UserSerializer,
+    CustomTokenObtainPairSerializer,
+    CustomTokenRefreshSerializer
+     
 )
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import permission_classes
+from datetime import timedelta
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from .models import RevokedAccessToken, ActiveLoginSession
 
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer    
 
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def session_heartbeat(request):
+    session_id = request.auth.get("session_id")
+
+    if not session_id:
+        return Response(
+            {"detail": "Invalid login session."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    active_session = ActiveLoginSession.objects.filter(
+        user=request.user,
+        session_id=session_id
+    ).first()
+
+    if not active_session:
+        return Response(
+            {"detail": "Active session not found."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    now = timezone.now()
+
+    # Enforce the eight-hour absolute lifetime.
+    if now >= active_session.created_at + timedelta(hours=8):
+        active_session.delete()
+        return Response(
+            {"detail": "Your session has expired. Please log in again."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # Enforce the five-minute inactivity timeout.
+    if now >= active_session.last_seen_at + timedelta(minutes=5):
+        active_session.delete()
+        return Response(
+            {"detail": "Your session expired due to inactivity. Please log in again."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    # Update activity only after successful validation.
+    active_session.last_seen_at = now
+    active_session.save(update_fields=["last_seen_at"])
+
+    return Response(
+        {"detail": "Session is active."},
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def logout_user(request):
+    refresh_token = request.data.get("refresh")
+    access_token = request.data.get("access")
+
+    if not refresh_token or not access_token:
+        return Response(
+            {"detail": "Both refresh and access tokens are required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        refresh = RefreshToken(refresh_token)
+        access = AccessToken(access_token)
+
+        # Verify both tokens belong to the same user.
+        if refresh["user_id"] != access["user_id"]:
+            return Response(
+                {"detail": "Tokens do not belong to the same user."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify both tokens belong to the same login session.
+        refresh_session_id = refresh.get("session_id")
+        access_session_id = access.get("session_id")
+
+        if (
+            not refresh_session_id
+            or refresh_session_id != access_session_id
+        ):
+            return Response(
+                {"detail": "Invalid login session."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Confirm this is the user's currently active session.
+        active_session = ActiveLoginSession.objects.filter(
+            user_id=access["user_id"],
+            session_id=access_session_id
+        ).first()
+
+        if not active_session:
+            return Response(
+                {"detail": "This login session is already inactive."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Revoke the access token.
+        RevokedAccessToken.objects.get_or_create(
+            jti=access["jti"],
+            defaults={
+                "expires_at": timezone.datetime.fromtimestamp(
+                    access["exp"],
+                    tz=timezone.get_current_timezone()
+                )
+            }
+        )
+
+        # Blacklist the refresh token.
+        refresh.blacklist()
+
+        # Release the account only after successful token processing.
+        active_session.delete()
+
+        return Response(
+            {"detail": "Logout successful."},
+            status=status.HTTP_200_OK
+        )
+
+    except TokenError:
+        return Response(
+            {"detail": "Invalid or expired token."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+        
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all().order_by("-id")
     serializer_class = ClientSerializer
@@ -1840,70 +1980,101 @@ class CompanyContactViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs) 
     
     
+
 @api_view(["GET"])
+@permission_classes([IsAdminUser])
 def get_users(request):
-
-    users = User.objects.all()
-
+    users = User.objects.select_related("userprofile").all()
     data = []
 
     for user in users:
-
-        role = "No Role"
-
-        if hasattr(user, "userprofile"):
-            role = user.userprofile.role
+        profile = getattr(user, "userprofile", None)
 
         data.append({
             "id": user.id,
             "username": user.username,
-            "role": role,
+            "role": profile.role if profile else "viewer",
+            "dob": profile.dob.isoformat() if profile and profile.dob else None,
+            "joining_date": (
+                profile.joining_date.isoformat()
+                if profile and profile.joining_date else None
+            ),
+            "email": user.email,
+            "mobile": profile.mobile if profile else "",
             "is_active": user.is_active,
         })
 
     return Response(data)
 
     
+
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def update_user(request, pk):
-
     try:
         user = User.objects.get(id=pk)
-
     except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
 
-        return Response(
-            {"error": "User not found"},
-            status=404
-        )
+    username = request.data.get("username", user.username).strip()
 
-    user.username = request.data.get(
-        "username",
-        user.username
-    )
-    password = request.data.get("password")
+    if not username:
+        return Response({"error": "Username is required."}, status=400)
 
-    if password:
-        user.set_password(password)
-
-    user.save()
+    if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+        return Response({"error": "This username already exists."}, status=400)
 
     role = request.data.get("role")
 
-    if role:
-
-        profile, created = UserProfile.objects.get_or_create(
-            user=user
+    if role == "admin":
+        return Response(
+            {"error": "Administrator role cannot be assigned through user management."},
+            status=403,
         )
 
-        profile.role = role
-        profile.save()
+    if role is not None and role not in dict(UserProfile.ROLE_CHOICES):
+        return Response({"error": "Invalid user group."}, status=400)
 
-    return Response({
-        "message": "User updated successfully"
-    })
-    
+    user.username = username
+    user.email = request.data.get("email", user.email).strip()
+
+    password = request.data.get("password")
+
+    if password:
+        try:
+            validate_password(password, user=user)
+        except ValidationError as error:
+            return Response(
+                {"error": error.messages},
+                status=400,
+            )
+
+        user.set_password(password)
+
+    if "is_active" in request.data:
+        user.is_active = request.data["is_active"]
+
+    user.save()
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    if role is not None:
+        profile.role = role
+
+    if "dob" in request.data:
+        profile.dob = request.data.get("dob") or None
+
+    if "joining_date" in request.data:
+        profile.joining_date = request.data.get("joining_date") or None
+
+    if "mobile" in request.data:
+        profile.mobile = request.data.get("mobile", "").strip()
+
+    profile.email = user.email
+    profile.save()
+
+    return Response({"message": "User updated successfully"})
+
 @api_view(["DELETE"])
 @permission_classes([IsAdminUser])
 def delete_user(request, pk):
@@ -1925,28 +2096,71 @@ def delete_user(request, pk):
     })
     
     
+
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
 def create_user(request):
+    username = request.data.get("username", "").strip()
+    password = request.data.get("password", "")
+    role = request.data.get("role", "viewer")
 
-    username = request.data.get("username")
-    password = request.data.get("password")
-    role = request.data.get("role")
+    if not username or not password:
+        return Response(
+            {"error": "Username and password are required."},
+            status=400,
+        )
+        
+    try:
+        validate_password(password)
+    except ValidationError as error:
+        return Response(
+            {"error": error.messages},
+            status=400,
+        )
+
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {"error": "This username already exists."},
+            status=400,
+        )
+
+    if role == "admin":
+        return Response(
+            {"error": "Administrator role cannot be assigned through user management."},
+            status=403,
+        )
+
+    if role not in dict(UserProfile.ROLE_CHOICES):
+        return Response({"error": "Invalid user group."}, status=400)
+    
+
+    email = request.data.get("email", "").strip()
+    mobile = request.data.get("mobile", "").strip()
+    dob = request.data.get("dob") or None
+    joining_date = request.data.get("joining_date") or None
+    is_active = request.data.get("is_active", True)
 
     user = User.objects.create_user(
         username=username,
-        password=password
+        password=password,
+        email=email,
+        is_active=is_active,
     )
 
     UserProfile.objects.create(
         user=user,
-        role=role
+        role=role,
+        dob=dob,
+        joining_date=joining_date,
+        email=email,
+        mobile=mobile,
     )
 
-    return Response({
-        "message": "User created"
-    })
-    
+    return Response(
+        {"message": "User created", "id": user.id},
+        status=201,
+    )
+ 
     
 # reportsection
 @api_view(["GET"])

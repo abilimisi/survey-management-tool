@@ -384,6 +384,9 @@ const CampaignList = () => {
               <th>Project</th>
               <th>Status</th>
               <th>Target</th>
+              <th>Hits</th>
+              <th>Completes</th>
+              <th>IR%</th>
               <th>Actions</th>
           </tr>
 
@@ -394,7 +397,7 @@ const CampaignList = () => {
           {filteredCampaigns.length === 0 && (
 
             <tr className="empty-row">
-              <td colSpan={6}>No campaigns found.</td>
+              <td colSpan={9}>No campaigns found.</td>
             </tr>
 
           )}
@@ -428,6 +431,28 @@ const CampaignList = () => {
               </td>
 
               <td className="mono-cell">{campaign.target}</td>
+
+              {/* Hits */}
+              <td className="mono-cell">
+                {campaign.hits ?? 0}
+              </td>
+
+              {/* Completes */}
+              <td className="mono-cell">
+                {campaign.completes ?? 0}
+              </td>
+
+              {/* IR */}
+              <td className="mono-cell">
+                <span
+                  style={{
+                    color: Number(campaign.ir) > 0 ? "#16a34a" : "#dc2626",
+                    fontWeight: 600
+                  }}
+                >
+                  {Number(campaign.ir ?? 0).toFixed(2)}%
+                </span>
+              </td>
 
               <td>
 

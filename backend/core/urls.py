@@ -14,6 +14,8 @@ from .views import (
     delete_option,
     delete_question,
     get_users,
+    logout_user,
+    session_heartbeat,
     create_user,
     map_foreign_ids,
     project_questions,
@@ -70,6 +72,8 @@ router.register("company-contacts", CompanyContactViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("token/blacklist/", logout_user, name="token_blacklist"),
+    path("session/heartbeat/", session_heartbeat, name="session-heartbeat"),
 
     path("survey/start/<int:project_vendor_id>/", start_survey, name="start-survey"),
 
