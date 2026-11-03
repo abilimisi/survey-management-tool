@@ -69,11 +69,15 @@ import VendorLogin from "../pages/vendorPortal/VendorLogin";
 import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
 import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
+import SessionHeartbeat from "../components/SessionHeartbeat";
 
 function ProtectedLayout({ children }) {
   return (
     <ProtectedRoute>
-      <MainLayout>{children}</MainLayout>
+      <>
+        <SessionHeartbeat />
+        <MainLayout>{children}</MainLayout>
+      </>
     </ProtectedRoute>
   );
 }

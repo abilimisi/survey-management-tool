@@ -124,16 +124,6 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
       ],
     },
 
-    ...(isSuperuser
-      ? [
-          {
-            name: "Users",
-            path: "/users",
-            icon: Users,
-            color: "icon-red",
-          },
-        ]
-      : []),
   ];
 
   return (

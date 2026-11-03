@@ -9,12 +9,20 @@ RECORD_SOURCE_CHOICES = [
     ("diy_portal", "DIY Portal"),
 ]
 
-class UserProfile(models.Model):
 
+class UserProfile(models.Model):
     ROLE_CHOICES = [
-        ("admin", "Admin"),
+        ("admin", "Administrator"),
         ("pm", "Project Manager"),
         ("sales", "Sales"),
+        ("support", "Support"),
+        ("accounts_pay", "Accounts Pay"),
+        ("account_manager", "Account Manager"),
+        ("panel_manager", "Panel Manager"),
+        ("team_leader", "Team Leader"),
+        ("affiliate_manager", "Affiliate Manager"),
+        ("content_manager", "Content Manager"),
+        ("dashboard_manager", "Dashboard Manager"),
         ("viewer", "Viewer"),
     ]
 
@@ -24,13 +32,35 @@ class UserProfile(models.Model):
     )
 
     role = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=ROLE_CHOICES,
         default="viewer"
     )
 
+    dob = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    joining_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    email = models.EmailField(
+        blank=True,
+        default=""
+    )
+
+    mobile = models.CharField(
+        max_length=30,
+        blank=True,
+        default=""
+    )
+
     def __str__(self):
         return self.user.username
+
 
 class Client(models.Model):
 
@@ -1332,3 +1362,41 @@ class VendorPortalUser(models.Model):
     @property
     def is_anonymous(self):
         return False
+
+class RevokedAccessToken(models.Model):
+    jti = models.CharField(
+        max_length=255,
+        unique=True
+    )
+
+    expires_at = models.DateTimeField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.jti
+    
+class ActiveLoginSession(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="active_login_session"
+    )
+
+    session_id = models.UUIDField(
+        unique=True,
+        editable=False
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    
+    last_seen_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.session_id}"
