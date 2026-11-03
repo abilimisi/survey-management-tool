@@ -51,40 +51,35 @@ function ProjectsList() {
   };
 
   const handleDelete = async (id) => {
-
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this project?"
+      "Are you sure you want to delete this project?\n\n" +
+      "All DIY studies linked to this project will also be deleted. " +
+      "This action cannot be undone."
     );
 
     if (!confirmDelete) return;
 
     try {
-
       await deleteProject(id);
 
-      toast.success("Project deleted successfully!", {
+      toast.success("Project and related studies deleted successfully!", {
         position: "top-right",
         autoClose: 2000,
       });
 
-      setTimeout(() => {
-        fetchProjects();
-      }, 2000);
-
+      await fetchProjects();
     } catch (error) {
+      console.error("Project deletion failed:", error);
 
-      console.error(error);
-
-      toast.error("Project deletion failed!", {
-        position: "top-right",
-        autoClose: 2500,
-      });
-
+      toast.error(
+        error.response?.data?.error || "Project deletion failed!",
+        {
+          position: "top-right",
+          autoClose: 2500,
+        }
+      );
     }
-
   };
-
-  
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
 
@@ -351,7 +346,7 @@ function ProjectsList() {
                   }`}
                 >
                   {project.project_source === "diy_portal"
-                    ? "DIY Portal"
+                    ? "DIY"
                     : "Internal"}
                 </span>
               </td>

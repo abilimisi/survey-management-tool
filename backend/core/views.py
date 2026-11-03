@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, get_object_or_404, render
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, request
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ import uuid
 from django.db.models import Count, Max, Q
 from django.conf import settings
 import requests
+# from ua_parser.__main__ import args
 from user_agents import parse
 import pycountry
 from datetime import datetime, timezone as dt_timezone
@@ -24,7 +25,7 @@ from .utils import is_proxy
 from rest_framework.permissions import AllowAny
 
 
-from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany
 
 from django.contrib.auth.models import User
 
@@ -46,6 +47,9 @@ from .serializers import CustomTokenObtainPairSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import permission_classes
 
+from django.db import transaction
+from django.db.models.deletion import ProtectedError
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -54,15 +58,91 @@ class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     
     def destroy(self, request, *args, **kwargs):
-
         if not request.user.is_superuser:
             return Response(
                 {"error": "Only Superuser can delete."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        return super().destroy(request, *args, **kwargs)
+        client = self.get_object()
+        projects = client.projects.all()
+        project_count = projects.count()
 
+        confirmed = (
+            request.query_params.get("confirm_cascade") == "true"
+        )
+
+        if project_count > 0 and not confirmed:
+            return Response(
+                {
+                    "requires_confirmation": True,
+                    "project_count": project_count,
+                    "message": (
+                        f"This client has {project_count} linked project(s). "
+                        "Deleting it will also delete its linked projects "
+                        "and DIY studies. Continue?"
+                    ),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        try:
+            with transaction.atomic():
+                from core.models import DIYStudy, DIYCompany
+
+                project_ids = list(
+                    client.projects.values_list("id", flat=True)
+                )
+
+                # Find DIY studies directly linked to these projects.
+                linked_studies = DIYStudy.objects.filter(
+                    project_id__in=project_ids
+                )
+
+                # Find DIY companies whose names match this client.
+                # This is a fallback because the approval code does not
+                # store a direct Client-to-DIYCompany relationship.
+                matching_companies = DIYCompany.objects.filter(
+                    name__iexact=client.name.strip()
+                )
+
+                # Include studies belonging to those companies.
+                # Delete only if this company is being treated as belonging
+                # to the client being deleted.
+                company_studies = DIYStudy.objects.filter(
+                    company__in=matching_companies
+                )
+
+                study_ids = set(linked_studies.values_list("id", flat=True))
+                study_ids.update(
+                    company_studies.values_list("id", flat=True)
+                )
+
+                # Remove the OneToOne protected references before projects.
+                DIYStudy.objects.filter(id__in=study_ids).delete()
+
+                # Delete linked projects, then the client.
+                client.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProtectedError as exc:
+            protected_models = sorted({
+                obj.__class__.__name__
+                for obj in exc.protected_objects
+            })
+
+            return Response(
+                {
+                    "error": (
+                        "Deletion was cancelled because other protected "
+                        "records still depend on this client or its projects."
+                    ),
+                    "related_models": protected_models,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all().order_by("-id")
     serializer_class = VendorSerializer
@@ -81,16 +161,56 @@ class VendorViewSet(viewsets.ModelViewSet):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all().order_by("-id")
     serializer_class = ProjectSerializer
-    
-    def destroy(self, request, *args, **kwargs):
 
+    def destroy(self, request, *args, **kwargs):
         if not request.user.is_superuser:
             return Response(
                 {"error": "Only Superuser can delete."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        return super().destroy(request, *args, **kwargs)
+        project = self.get_object()
+        project_id = project.id
+
+        try:
+            with transaction.atomic():
+                # Delete only DIY studies linked to this project.
+                DIYStudy.objects.filter(project_id=project_id).delete()
+
+                # Delete the project.
+                project.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except ProtectedError as exc:
+            protected_models = sorted({
+                obj.__class__.__name__
+                for obj in exc.protected_objects
+            })
+
+            logger.exception(
+                "Project %s deletion blocked by protected records",
+                project_id,
+            )
+
+            return Response(
+                {
+                    "error": "Project deletion is blocked by related records.",
+                    "related_models": protected_models,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        except Exception:
+            logger.exception(
+                "Unexpected error deleting project %s",
+                project_id,
+            )
+
+            return Response(
+                {"error": "An unexpected error occurred. Check the Django terminal."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class ProjectVendorViewSet(viewsets.ModelViewSet):

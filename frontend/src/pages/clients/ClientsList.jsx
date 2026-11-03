@@ -52,33 +52,33 @@ function ClientsList() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this client?"
-    );
-
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this client?")) {
+      return;
+    }
 
     try {
-      await deleteClient(id);
+      const result = await deleteClient(id);
 
-      // Show success toast
-      toast.success("Client deleted successfully!", {
-          position: "top-right",
-          autoClose: 2000,
-      });
+      if (result?.requires_confirmation) {
+        const confirmed = window.confirm(
+          `${result.message}\n\nThis action cannot be undone. Continue?`
+        );
 
-      // Wait until toast is visible
-      setTimeout(() => {
+        if (!confirmed) return;
 
-          fetchClients();
+        await deleteClient(id, true);
+      }
 
-      }, 2000);
+      toast.success("Client deleted successfully!");
+      await fetchClients();
     } catch (error) {
       console.error(error);
+      toast.error(
+        error.response?.data?.error || "Unable to delete this client."
+      );
     }
   };
-
-  
+    
   
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -369,7 +369,7 @@ function ClientsList() {
                     }`}
                   >
                     {client.client_source === "diy_portal"
-                      ? "DIY Portal"
+                      ? "DIY"
                       : "Internal"}
                   </span>
                 </td>

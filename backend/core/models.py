@@ -1130,8 +1130,18 @@ class DIYStudy(models.Model):
         ("draft", "Draft"),
         ("submitted", "Submitted"),
         ("under_review", "Under Review"),
+        ("changes_requested", "Changes Requested"),
+
+        # Quotation workflow
+        ("quote_sent", "Quotation Sent"),
+        ("client_accepted", "Client Accepted"),
+        ("client_declined", "Client Declined"),
+
+        # Existing/legacy statuses retained for compatibility
         ("approved", "Approved"),
         ("rejected", "Rejected"),
+
+        # Operational project lifecycle
         ("project_created", "Project Created"),
         ("in_fieldwork", "In Fieldwork"),
         ("completed", "Completed"),
@@ -1190,6 +1200,34 @@ class DIYStudy(models.Model):
         null=True,
     )
 
+    # Client-confirmed survey URL
+    confirmed_survey_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    SURVEY_LINK_STATUS_CHOICES = [
+        ("pending_confirmation", "Pending Confirmation"),
+        ("pending_validation", "Pending Admin Validation"),
+        ("changes_requested", "Changes Requested"),
+        ("validated", "Validated"),
+    ]
+
+    survey_link_status = models.CharField(
+        max_length=30,
+        choices=SURVEY_LINK_STATUS_CHOICES,
+        default="pending_confirmation",
+    )
+
+    survey_link_reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_diy_survey_links",
+        null=True,
+        blank=True,
+    )
+
     # Sample requirements
     target_completes = models.PositiveIntegerField()
 
@@ -1230,6 +1268,52 @@ class DIYStudy(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_notes = models.TextField(blank=True, null=True)
 
+        # Admin manual assessment
+    ASSESSMENT_STATUS_CHOICES = [
+        ("feasible", "Feasible"),
+        ("feasible_with_conditions", "Feasible with Conditions"),
+        ("not_feasible", "Not Feasible"),
+    ]
+
+    assessment_status = models.CharField(
+        max_length=30,
+        choices=ASSESSMENT_STATUS_CHOICES,
+        null=True,
+        blank=True,
+    )
+
+    proposed_completes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    estimated_timeline_days = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    estimated_budget = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    assessment_notes = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    submitted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    converted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1241,6 +1325,251 @@ class DIYStudy(models.Model):
     def __str__(self):
         return f"{self.name} ({self.status})"
 
+
+class DIYSampleRequirement(models.Model):
+
+    GENDER_CHOICES = [
+        ("all", "All"),
+        ("male", "Male"),
+        ("female", "Female"),
+    ]
+
+    study = models.OneToOneField(
+        "core.DIYStudy",
+        on_delete=models.CASCADE,
+        related_name="sample_requirement",
+    )
+
+    min_age = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    max_age = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        default="all",
+    )
+
+    industry = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    profession = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    additional_criteria = models.TextField(
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "DIY Sample Requirement"
+        verbose_name_plural = "DIY Sample Requirements"
+
+    def __str__(self):
+        return f"Sample requirements - {self.study.name}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if (
+            self.min_age is not None
+            and self.max_age is not None
+            and self.min_age > self.max_age
+        ):
+            raise ValidationError(
+                {"max_age": "Maximum age must be greater than or equal to minimum age."}
+            )
+
+class DIYQuota(models.Model):
+
+    ATTRIBUTE_CHOICES = [
+        ("gender", "Gender"),
+        ("age", "Age"),
+        ("country", "Country"),
+        ("region", "Region"),
+        ("industry", "Industry"),
+        ("other", "Other"),
+    ]
+
+    study = models.ForeignKey(
+        "core.DIYStudy",
+        on_delete=models.CASCADE,
+        related_name="quotas",
+    )
+
+    attribute = models.CharField(
+        max_length=50,
+        choices=ATTRIBUTE_CHOICES,
+    )
+
+    category = models.CharField(
+        max_length=255,
+    )
+
+    target_completes = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "DIY Quota"
+        verbose_name_plural = "DIY Quotas"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["study", "attribute", "category"],
+                name="unique_diy_study_quota_category",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.study.name} - "
+            f"{self.attribute}: {self.category}"
+        )
+
+class DIYStudyReview(models.Model):
+
+    ACTION_CHOICES = [
+        ("review_started", "Review Started"),
+        ("changes_requested", "Changes Requested"),
+        ("note_added", "Note Added"),
+        ("rejected", "Rejected"),
+        ("quotation_sent", "Quotation Sent"),
+    ]
+
+    study = models.ForeignKey(
+        "core.DIYStudy",
+        on_delete=models.CASCADE,
+        related_name="review_history",
+    )
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diy_study_review_history",
+    )
+
+    action = models.CharField(
+        max_length=30,
+        choices=ACTION_CHOICES,
+    )
+
+    comments = models.TextField(
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "DIY Study Review"
+        verbose_name_plural = "DIY Study Reviews"
+
+    def __str__(self):
+        return f"{self.study.name} - {self.get_action_display()}"
+
+class DIYStudyQuotation(models.Model):
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("sent", "Sent"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+        ("superseded", "Superseded"),
+    ]
+
+    study = models.ForeignKey(
+        "core.DIYStudy",
+        on_delete=models.CASCADE,
+        related_name="quotations",
+    )
+
+    version = models.PositiveIntegerField()
+
+    quoted_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="INR",
+    )
+
+    proposed_completes = models.PositiveIntegerField()
+
+    estimated_timeline_days = models.PositiveIntegerField()
+
+    notes = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+    )
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    responded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_diy_quotations",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-version"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["study", "version"],
+                name="unique_diy_study_quotation_version",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.study.name} - Quotation v{self.version}"
 
 # -------------------------------------------------------------------
 
@@ -1332,3 +1661,73 @@ class VendorPortalUser(models.Model):
     @property
     def is_anonymous(self):
         return False
+
+
+
+class DIYNotification(models.Model):
+
+    EVENT_TYPE_CHOICES = [
+        ("study_submitted", "Study Submitted"),
+        ("study_changes_requested", "Study Changes Requested"),
+        ("quotation_sent", "Quotation Sent"),
+        ("quotation_accepted", "Quotation Accepted"),
+        ("quotation_declined", "Quotation Declined"),
+        ("survey_link_submitted", "Survey Link Submitted"),
+        ("survey_link_changes_requested", "Survey Link Changes Requested"),
+        ("survey_link_validated", "Survey Link Validated"),
+        ("project_created", "Project Created"),
+        ("general_update", "General Update"),
+    ]
+
+    # Exactly one recipient must be assigned.
+    client_recipient = models.ForeignKey(
+        "core.ClientPortalUser",
+        on_delete=models.CASCADE,
+        related_name="diy_notifications",
+        null=True,
+        blank=True,
+    )
+
+    admin_recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="diy_notifications",
+        null=True,
+        blank=True,
+    )
+
+    # Related study
+    study = models.ForeignKey(
+        "core.DIYStudy",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+
+    event_type = models.CharField(
+        max_length=50,
+        choices=EVENT_TYPE_CHOICES,
+    )
+
+    title = models.CharField(max_length=255)
+
+    message = models.TextField()
+
+    is_read = models.BooleanField(default=False, db_index=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "DIY Notification"
+        verbose_name_plural = "DIY Notifications"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if bool(self.client_recipient_id) == bool(self.admin_recipient_id):
+            raise ValidationError(
+                "A notification must have exactly one recipient."
+            )
+
+    def __str__(self):
+        return f"{self.title} - {self.event_type}"

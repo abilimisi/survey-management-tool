@@ -1,6 +1,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 import {
   getStudiesForReview,
   reviewStudy,
@@ -211,6 +212,12 @@ function DIYStudyReview() {
 
                   <td>
                     <div className="diy-review-actions">
+                      <Link
+                        to={`/diy/studies/${study.id}`}
+                        className="diy-review-view-details"
+                      >
+                        View Details
+                      </Link>
                       <button
                         type="button"
                         onClick={() =>
@@ -285,7 +292,7 @@ function DIYStudyReview() {
                 }
                 placeholder={
                   action === "reject"
-                    ? "Explain why this study is being rejected..."
+                    ? "Explain why the study is being rejected or describe the changes required..."
                     : "Add any review notes..."
                 }
                 required={action === "reject"}
@@ -315,7 +322,7 @@ function DIYStudyReview() {
                     ? "Processing..."
                     : action === "approve"
                       ? "Confirm approval"
-                      : "Confirm rejection"}
+                      : "Confirm and return for changes"}
                 </button>
               </div>
             </form>

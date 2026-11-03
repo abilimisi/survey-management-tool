@@ -1,0 +1,223 @@
+
+.diy-quotation-page {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 30px 24px;
+}
+
+.diy-quotation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.diy-quotation-header p {
+  margin: 0 0 7px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.diy-quotation-header h1 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 27px;
+}
+
+.diy-quotation-header span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.diy-quotation-back,
+.diy-quotation-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.diy-quotation-assessment,
+.diy-quotation-form,
+.diy-quotation-warning {
+  margin-bottom: 22px;
+  padding: 25px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.diy-quotation-assessment h2,
+.diy-quotation-form-heading h2,
+.diy-quotation-warning h2 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 19px;
+}
+
+.diy-quotation-form-heading {
+  margin-bottom: 24px;
+}
+
+.diy-quotation-form-heading p,
+.diy-quotation-warning p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.diy-quotation-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.diy-quotation-summary-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fafc;
+  min-width: 0;
+}
+
+.diy-quotation-summary-grid span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.diy-quotation-summary-grid strong {
+  color: #172033;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.diy-quotation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.diy-quotation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.diy-quotation-field label {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.diy-quotation-field input,
+.diy-quotation-field select,
+.diy-quotation-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-size: 13px;
+}
+
+.diy-quotation-field textarea {
+  resize: vertical;
+}
+
+.diy-quotation-field input:focus,
+.diy-quotation-field select:focus,
+.diy-quotation-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.diy-quotation-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.diy-quotation-actions button {
+  padding: 12px 18px;
+  border: 1px solid #1d4ed8;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.diy-quotation-actions button:hover {
+  background: #1e40af;
+}
+
+.diy-quotation-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.diy-quotation-warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+@media (max-width: 750px) {
+  .diy-quotation-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 550px) {
+  .diy-quotation-page {
+    padding: 20px 15px;
+  }
+
+  .diy-quotation-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .diy-quotation-grid,
+  .diy-quotation-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .diy-quotation-form,
+  .diy-quotation-assessment {
+    padding: 18px;
+  }
+
+  .diy-quotation-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .diy-quotation-actions a,
+  .diy-quotation-actions button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

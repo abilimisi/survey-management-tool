@@ -15,8 +15,13 @@ export const updateClient = async (id, data) => {
   return response.data;
 };
 
-export const deleteClient = async (id) => {
-  const response = await axiosInstance.delete(`/clients/${id}/`);
+export const deleteClient = async (id, confirmCascade = false) => {
+  const response = await axiosInstance.delete(`/clients/${id}/`, {
+    params: confirmCascade
+      ? { confirm_cascade: "true" }
+      : {},
+  });
+
   return response.data;
 };
 

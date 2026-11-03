@@ -35,14 +35,14 @@
 .diy-study-details__header > div > a {
   display: inline-block;
   margin-bottom: 16px;
-  color: #2563eb;
+  color: white;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .diy-study-details__header > div > a:hover {
-  color: #1d4ed8;
+  color: white;
   text-decoration: underline;
 }
 
@@ -188,4 +188,141 @@
   color: #075985;
   font-size: 12px;
   font-weight: 600;
+}
+
+/* Admin study audience details */
+
+.diy-study-details__section {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.diy-study-details__section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.diy-study-details__section-heading h2 {
+  margin: 0 0 6px;
+  color: #172033;
+  font-size: 19px;
+}
+
+.diy-study-details__section-heading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.diy-study-details__audience-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.diy-study-details__audience-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fafc;
+  min-width: 0;
+}
+
+.diy-study-details__audience-field span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.diy-study-details__audience-field strong {
+  color: #172033;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.diy-study-details__quota-count {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.diy-study-details__quota-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.diy-study-details__quota-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.diy-study-details__quota-table th,
+.diy-study-details__quota-table td {
+  padding: 13px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.diy-study-details__quota-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 650;
+}
+
+.diy-study-details__quota-table td {
+  color: #172033;
+}
+
+@media (max-width: 700px) {
+  .diy-study-details__audience-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .diy-study-details__section {
+    padding: 16px;
+  }
+
+  .diy-study-details__audience-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Manual assessment summary */
+
+.diy-study-details__assessment-notes {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.diy-study-details__assessment-notes strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 13px;
+}
+
+.diy-study-details__assessment-notes p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }

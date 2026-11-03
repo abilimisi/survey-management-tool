@@ -58,10 +58,13 @@ import ClientLogin from "../pages/clientPortal/ClientLogin";
 import ClientDashboard from "../pages/clientPortal/ClientDashboard";
 import ClientRegister from "../pages/clientPortal/ClientRegister";
 import ClientStudyDetails from "../pages/clientPortal/ClientStudyDetails";
+import ClientPortalLayout from "../components/clientPortal/ClientPortalLayout";
 
 import DIYStudyReview from "../pages/diy/DIYStudyReview";
 import DIYAllStudies from "../pages/diy/DIYAllStudies";
 import DIYStudyDetails from "../pages/diy/DIYStudyDetails";
+import DIYStudyAssessment from "../pages/diy/DIYStudyAssessment";
+import DIYStudyQuotation from "../pages/diy/DIYStudyQuotation";
 
 
 import VendorRegister from "../pages/vendorPortal/VendorRegister";
@@ -358,25 +361,19 @@ function AppRoutes() {
         }
       />
 
-      <Route
-        path="/client-portal/login"
-        element={<ClientLogin />}
-      />
+      <Route path="/client-portal/login" element={<ClientLogin />} />
+      <Route path="/client-portal/register" element={<ClientRegister />} />
 
-      <Route
-        path="/client-portal/dashboard"
-        element={<ClientDashboard />}
-      />
-
-      <Route
-        path="/client-portal/register"
-        element={<ClientRegister />}
-      />
-
-      <Route
-        path="/client-portal/studies/:studyId"
-        element={<ClientStudyDetails />}
-      />
+      <Route element={<ClientPortalLayout />}>
+        <Route
+          path="/client-portal/dashboard"
+          element={<ClientDashboard />}
+        />
+        <Route
+          path="/client-portal/studies/:studyId"
+          element={<ClientStudyDetails />}
+        />
+      </Route>
 
       <Route
         path="/diy/reviews"
@@ -401,6 +398,24 @@ function AppRoutes() {
         element={
           <ProtectedLayout>
             <DIYStudyDetails />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/diy/studies/:studyId/assessment"
+        element={
+          <ProtectedLayout>
+            <DIYStudyAssessment />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/diy/studies/:studyId/quotation"
+        element={
+          <ProtectedLayout>
+            <DIYStudyQuotation />
           </ProtectedLayout>
         }
       />

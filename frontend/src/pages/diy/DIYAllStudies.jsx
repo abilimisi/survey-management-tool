@@ -9,6 +9,7 @@ const STATUS_OPTIONS = [
   "draft",
   "submitted",
   "under_review",
+  "changes_requested",
   "approved",
   "rejected",
 ];
