@@ -68,28 +68,28 @@ export default function ClientPortalNavbar() {
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
-        if (
+      if (
         notificationRef.current &&
         !notificationRef.current.contains(event.target)
-        ) {
+      ) {
         setShowNotifications(false);
-        }
+      }
     };
 
     const handleEscapeKey = (event) => {
-        if (event.key === "Escape") {
+      if (event.key === "Escape") {
         setShowNotifications(false);
-        }
+      }
     };
 
     document.addEventListener("mousedown", handleOutsideClick);
     document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
-        document.removeEventListener("mousedown", handleOutsideClick);
-        document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
-    }, []);
+  }, []);
 
   return (
     <header className="client-portal-navbar">

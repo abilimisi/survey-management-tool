@@ -2,6 +2,7 @@
 from django.urls import path
 
 from .diy_views import (
+    DIYAdminNotificationMarkAllReadView,
     DIYClientQuotationListView,
     DIYClientQuotationRespondView,
     DIYClientSurveyLinkSubmitView,
@@ -144,6 +145,11 @@ urlpatterns = [
         DIYAdminNotificationMarkReadView.as_view(),
         name="diy-admin-notification-mark-read",
     ),
+
+    path(
+        "internal/notifications/read-all/",
+        DIYAdminNotificationMarkAllReadView.as_view(),
+    ),  
 
     
 ]

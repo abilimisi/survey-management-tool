@@ -1816,3 +1816,20 @@ class DIYAdminNotificationMarkReadView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class DIYAdminNotificationMarkAllReadView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        updated_count = DIYNotification.objects.filter(
+            admin_recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        return Response(
+            {
+                "message": "All notifications marked as read.",
+                "updated_count": updated_count,
+            },
+            status=status.HTTP_200_OK,
+        )

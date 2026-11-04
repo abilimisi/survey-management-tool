@@ -10,6 +10,12 @@ import "./TopBar.css";
 import logo from "../../assets/logo_ob.jpg";
 import { logoutUser } from "../../api/authApi";
 
+import {
+  getAdminNotifications,
+  markAdminNotificationAsRead,
+  markAllAdminNotificationsAsRead,
+} from "../../api/authApi";
+
 // toggleSidebar is passed from MainLayout
 function Topbar({ toggleSidebar }) {
   const navigate = useNavigate();
@@ -36,8 +42,12 @@ function Topbar({ toggleSidebar }) {
 
   const userRole =
     roleLabels[rawRole.toLowerCase()] || rawRole;
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [notificationOpen, setNotificationOpen] = useState(false);
+    const notificationRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -55,6 +65,56 @@ function Topbar({ toggleSidebar }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const loadNotifications = async () => {
+    try {
+      const response = await getAdminNotifications();
+
+      setNotifications(response.data.notifications || []);
+      setUnreadCount(response.data.unread_count || 0);
+    } catch (error) {
+      console.error("Unable to load admin notifications:", error);
+    }
+  };
+
+  const handleAdminNotificationClick = async (notification) => {
+    try {
+      if (!notification.is_read) {
+        await markAdminNotificationAsRead(notification.id);
+
+        setNotifications((previous) =>
+          previous.map((item) =>
+            item.id === notification.id
+              ? { ...item, is_read: true }
+              : item
+          )
+        );
+
+        setUnreadCount((previous) => Math.max(0, previous - 1));
+      }
+
+      setNotificationOpen(false);
+
+      // Navigate to the relevant DIY study
+      navigate(`/diy/studies/${notification.study_id}`);
+    } catch (error) {
+      console.error("Unable to mark admin notification as read:", error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAdminNotificationsAsRead();
+
+      setNotifications((previous) =>
+        previous.map((item) => ({ ...item, is_read: true }))
+      );
+
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Unable to mark all notifications as read:", error);
+    }
+  };
 
   
   const handleLogout = async () => {
@@ -83,6 +143,39 @@ function Topbar({ toggleSidebar }) {
     }
   };
 
+  useEffect(() => {
+    loadNotifications();
+
+    const interval = setInterval(loadNotifications, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setNotificationOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
+
 
   return (
     <header className="topbar">
@@ -106,9 +199,92 @@ function Topbar({ toggleSidebar }) {
         />
       </div>
 
-            
       {/* RIGHT SIDE */}
       <div className="topbar-right">
+
+        {/* ADMIN NOTIFICATIONS */}
+        <div className="admin-notification-wrapper" ref={notificationRef}>
+          <button
+            type="button"
+            className={`admin-notification-btn ${
+              notificationOpen ? "active" : ""
+            }`}
+            onClick={() => setNotificationOpen((previous) => !previous)}
+            aria-label="Notifications"
+            aria-expanded={notificationOpen}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="21"
+              height="21"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+              <path d="M10 21h4" />
+            </svg>
+
+            {unreadCount > 0 && (
+              <span className="admin-notification-badge">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {notificationOpen && (
+            <div className="admin-notification-dropdown">
+              <div className="admin-notification-header">
+                <strong>Notifications</strong>
+
+                <div className="admin-notification-header-actions">
+                  <span>{unreadCount} unread</span>
+
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      className="admin-mark-all-read"
+                      onClick={handleMarkAllAsRead}
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="admin-notification-empty">
+                  <strong>No notifications yet</strong>
+                  <p>Client activity updates will appear here.</p>
+                </div>
+              ) : (
+                <div className="admin-notification-list">
+                  {notifications.map((notification) => (
+                    <button
+                      type="button"
+                      key={notification.id}
+                      className={`admin-notification-item ${
+                        notification.is_read ? "read" : "unread"
+                      }`}
+                      onClick={() => handleAdminNotificationClick(notification)}
+                    >
+                      <strong>{notification.title}</strong>
+                      <span>{notification.message}</span>
+                      <small>
+                        {new Date(notification.created_at).toLocaleString()}
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* EXISTING PROFILE DROPDOWN */}
         <div className="profile-dropdown" ref={dropdownRef}>
           <button
             type="button"

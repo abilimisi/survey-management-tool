@@ -40,3 +40,44 @@ export const sendSessionHeartbeat = async (accessToken) => {
 
   return response.data;
 };
+
+// Get notifications for the logged-in admin
+export const getAdminNotifications = async () => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.get(`${API_BASE}/diy/internal/notifications/`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
+// Mark an admin notification as read
+export const markAdminNotificationAsRead = async (notificationId) => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.post(
+    `${API_BASE}/diy/internal/notifications/${notificationId}/read/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
+
+// Mark all admin notifications as read
+export const markAllAdminNotificationsAsRead = async () => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.post(
+    `${API_BASE}/diy/internal/notifications/read-all/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
