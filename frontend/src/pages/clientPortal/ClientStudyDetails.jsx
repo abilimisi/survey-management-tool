@@ -7,6 +7,7 @@ import {
   getClientStudies,
   getClientStudyQuotations,
   respondToClientQuotation,
+  reopenClientQuotation,
   submitClientSurveyLink,
 } from "../../api/clientPortalApi";
 
@@ -28,6 +29,7 @@ function ClientStudyDetailsContent() {
   const [quotations, setQuotations] = useState([]);
   const [quotationLoading, setQuotationLoading] = useState(false);
   const [respondingQuotationId, setRespondingQuotationId] = useState(null);
+  const [reopeningQuotation, setReopeningQuotation] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [showSurveyConfirmation, setShowSurveyConfirmation] = useState(false);
   const [surveyLinkChoice, setSurveyLinkChoice] = useState("confirm_existing");
@@ -43,13 +45,23 @@ function ClientStudyDetailsContent() {
   ) => {
     const actionLabel = action === "accept" ? "accept" : "decline";
 
-    if (
-      action === "decline" &&
-      !window.confirm(
-        `Are you sure you want to decline quotation v${quotation.version}?`
-      )
-    ) {
-      return;
+    let declineReason = "";
+
+    if (action === "decline") {
+      declineReason = window.prompt(
+        `Please provide a reason for declining quotation v${quotation.version}:`
+      );
+
+      if (declineReason === null) {
+        return;
+      }
+
+      declineReason = declineReason.trim();
+
+      if (!declineReason) {
+        toast.error("Please provide a reason for declining the quotation.");
+        return;
+      }
     }
 
     setRespondingQuotationId(quotation.id);
@@ -60,6 +72,11 @@ function ClientStudyDetailsContent() {
         quotation.id,
         {
           action,
+          ...(action === "decline"
+            ? {
+                client_response_notes: declineReason,
+              }
+            : {}),
           ...(action === "accept"
             ? {
                 survey_link_choice: choice,
@@ -108,6 +125,42 @@ function ClientStudyDetailsContent() {
       );
     } finally {
       setRespondingQuotationId(null);
+    }
+  };
+
+  const handleReopenQuotation = async () => {
+    if (!window.confirm("Would you like to request a new quotation for this study?")) {
+      return;
+    }
+
+    try {
+      setReopeningQuotation(true);
+
+      const response = await reopenClientQuotation(studyId);
+
+      setStudy((previous) => ({
+        ...previous,
+        status: response.data.study_status || "under_review",
+      }));
+
+      toast.success(
+        response.data.message || "New quotation requested successfully."
+      );
+
+    } catch (error) {
+      console.error(
+        "Request New Quotation Error:",
+        error.response?.data || error
+      );
+
+      toast.error(
+        error.response?.data?.error ||
+          error.response?.data?.detail ||
+          JSON.stringify(error.response?.data) ||
+          "Unable to request a new quotation."
+      );
+    } finally {
+      setReopeningQuotation(false);
     }
   };
 
@@ -192,6 +245,7 @@ function ClientStudyDetailsContent() {
           "client_accepted",
           "client_declined",
           "project_created",
+          "under_review",
         ];
 
         if (quotationStatuses.includes(foundStudy.status)) {
@@ -273,6 +327,13 @@ function ClientStudyDetailsContent() {
     ["Created", study.created_at ? new Date(study.created_at).toLocaleString() : "—"],
     ["Last updated", study.updated_at ? new Date(study.updated_at).toLocaleString() : "—"],
   ];
+
+  const latestQuotation = quotations.reduce((latest, quotation) => {
+    if (!latest || Number(quotation.version) > Number(latest.version)) {
+      return quotation;
+    }
+    return latest;
+  }, null);
 
   return (
     <div className="client-dashboard-page">
@@ -381,9 +442,14 @@ function ClientStudyDetailsContent() {
         )}
       </section>
 
-      {["quote_sent", "client_accepted", "client_declined", "project_created"].includes(
-        study.status
-      ) && (
+      {[
+        "quote_sent",
+        "client_accepted",
+        "client_declined",
+        "project_created",
+        "under_review",
+      ].includes(study.status) && (
+
         <section className="client-detail-card client-quotation-card">
           <div className="client-quotation-heading">
             <div>
@@ -499,6 +565,22 @@ function ClientStudyDetailsContent() {
               ))}
             </div>
           )}
+
+          {study.status === "client_declined" &&
+            latestQuotation?.status === "declined" && (
+              <div className="client-quotation-actions">
+                <button
+                  type="button"
+                  className="client-quotation-accept"
+                  disabled={reopeningQuotation}
+                  onClick={handleReopenQuotation}
+                >
+                  {reopeningQuotation
+                    ? "Submitting Request..."
+                    : "Request New Quotation"}
+                </button>
+              </div>
+            )}
         </section>
       )}
 

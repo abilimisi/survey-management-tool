@@ -52,13 +52,18 @@ import VendorAnalytics from "../pages/analytics/vendorAnalytics/VendorAnalytics"
 
 // DIY
 import DIYDashboard from "../pages/diy/DIYDashboard";
-import CreateStudy from "../pages/diy/CreateStudy";
+// DIY
+import DIYCreateStudy from "../pages/diy/CreateStudy";
 
+// Client portal
+import ClientCreateStudy from "../pages/clientPortal/CreateStudy";
 import ClientLogin from "../pages/clientPortal/ClientLogin";
 import ClientDashboard from "../pages/clientPortal/ClientDashboard";
 import ClientRegister from "../pages/clientPortal/ClientRegister";
 import ClientStudyDetails from "../pages/clientPortal/ClientStudyDetails";
 import ClientPortalLayout from "../components/clientPortal/ClientPortalLayout";
+import ClientAllStudies from "../pages/clientPortal/ClientAllStudies";
+import ClientCompanyProfile from "../pages/clientPortal/ClientCompanyProfile";
 
 import DIYStudyReview from "../pages/diy/DIYStudyReview";
 import DIYAllStudies from "../pages/diy/DIYAllStudies";
@@ -73,6 +78,7 @@ import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
 import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
 import SessionHeartbeat from "../components/SessionHeartbeat";
+
 
 function ProtectedLayout({ children }) {
   return (
@@ -360,7 +366,7 @@ function AppRoutes() {
         path="/diy/studies/create"
         element={
           <ProtectedLayout>
-            <CreateStudy />
+            <DIYCreateStudy />
           </ProtectedLayout>
         }
       />
@@ -369,14 +375,27 @@ function AppRoutes() {
       <Route path="/client-portal/register" element={<ClientRegister />} />
 
       <Route element={<ClientPortalLayout />}>
-        <Route
+       <Route
           path="/client-portal/dashboard"
           element={<ClientDashboard />}
+        />
+        <Route
+          path="/client-portal/company-profile"
+          element={<ClientCompanyProfile />}
+        />
+        <Route
+          path="/client-portal/studies"
+          element={<ClientAllStudies  />}
         />
         <Route
           path="/client-portal/studies/:studyId"
           element={<ClientStudyDetails />}
         />
+        <Route
+          path="/client-portal/create-study"
+          element={<ClientCreateStudy />}
+        />
+      
       </Route>
 
       <Route

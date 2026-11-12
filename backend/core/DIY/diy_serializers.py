@@ -255,6 +255,7 @@ class DIYStudyQuotationSerializer(serializers.ModelSerializer):
             "proposed_completes",
             "estimated_timeline_days",
             "notes",
+            "client_response_notes",
             "status",
             "sent_at",
             "responded_at",
@@ -269,6 +270,7 @@ class DIYStudyQuotationSerializer(serializers.ModelSerializer):
             "sent_at",
             "responded_at",
             "created_at",
+            "client_response_notes",
         ]
 
     def validate_quoted_amount(self, value):

@@ -10,9 +10,9 @@ from .client_portal_auth import ClientPortalJWTAuthentication
 from .client_portal_serializers import (
     ClientPortalLoginSerializer,
     ClientPortalRegistrationSerializer,
+    DIYCompanyProfileSerializer,
 )
 from ..models import DIYCompanyMembership
-
 
 def client_token_response(client_user):
     from .client_portal_auth import ClientPortalAccessToken
@@ -109,8 +109,7 @@ class ClientPortalMeView(APIView):
 
         companies = [
             {
-                "id": membership.company_id,
-                "name": membership.company.name,
+                **DIYCompanyProfileSerializer(membership.company).data,
                 "role": membership.role,
             }
             for membership in memberships
@@ -125,6 +124,83 @@ class ClientPortalMeView(APIView):
                     "last_name": client_user.last_name,
                 },
                 "companies": companies,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ClientPortalCompanyProfileView(APIView):
+    authentication_classes = [ClientPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_membership(self, request, company_id):
+        return (
+            DIYCompanyMembership.objects
+            .select_related("company")
+            .filter(
+                user=request.user,
+                company_id=company_id,
+                is_active=True,
+                company__is_active=True,
+            )
+            .first()
+        )
+
+    def get(self, request, company_id):
+        membership = self.get_membership(request, company_id)
+
+        if membership is None:
+            return Response(
+                {"error": "You do not have access to this company."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            {
+                **DIYCompanyProfileSerializer(
+                    membership.company
+                ).data,
+                "role": membership.role,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request, company_id):
+        membership = self.get_membership(request, company_id)
+
+        if membership is None:
+            return Response(
+                {"error": "You do not have access to this company."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if membership.role != "owner":
+            return Response(
+                {"error": "Only the company owner can update the profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = DIYCompanyProfileSerializer(
+            membership.company,
+            data=request.data,
+            partial=True,
+        )
+
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer.save()
+
+        return Response(
+            {
+                "message": "Company profile updated successfully.",
+                "company": {
+                    **serializer.data,
+                    "role": membership.role,
+                },
             },
             status=status.HTTP_200_OK,
         )

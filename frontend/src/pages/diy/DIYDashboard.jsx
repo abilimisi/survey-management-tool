@@ -1,159 +1,244 @@
-import { useNavigate } from "react-router-dom";
 
-const stats = [
-  { label: "Total Studies", value: "0", description: "All your studies" },
-  { label: "In Review", value: "0", description: "Awaiting approval" },
-  { label: "In Fieldwork", value: "0", description: "Currently collecting responses" },
-  { label: "Completed", value: "0", description: "Finished studies" },
-];
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import axiosInstance from "../../api/axiosInstance";
+import "./DIYDashboard.css";
 
-function DIYDashboard() {
-  const navigate = useNavigate();
+function formatStatus(status) {
+  return (status || "unknown")
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleDateString();
+}
+
+function getStatusClass(status) {
+  return (status || "unknown").replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+export default function DIYDashboard() {
+  const [studies, setStudies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadStudies() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await axiosInstance.get(
+          "diy/internal/studies/"
+        );
+
+        if (active) {
+          setStudies(
+            Array.isArray(response.data) ? response.data : []
+          );
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err.response?.data?.detail ||
+              err.response?.data?.error ||
+              "Unable to load DIY studies. Please try again."
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadStudies();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Total Studies",
+        value: studies.length,
+        description: "All research studies",
+      },
+      {
+        label: "Submitted",
+        value: studies.filter(
+          (study) => study.status === "submitted"
+        ).length,
+        description: "Awaiting review",
+      },
+      {
+        label: "Under Review",
+        value: studies.filter(
+          (study) => study.status === "under_review"
+        ).length,
+        description: "Currently being reviewed",
+      },
+      {
+        label: "Approved",
+        value: studies.filter(
+          (study) => study.status === "approved"
+        ).length,
+        description: "Approved studies",
+      },
+    ],
+    [studies]
+  );
+
+  const recentStudies = useMemo(() => {
+    return [...studies]
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 6);
+  }, [studies]);
 
   return (
-    <div style={styles.page}>
-      <header style={styles.header}>
+    <div className="diy-dashboard">
+      <header className="diy-dashboard__header">
         <div>
-          <p style={styles.eyebrow}>PANELSPHERE DIY</p>
-          <h1 style={styles.heading}>Study Dashboard</h1>
-          <p style={styles.subtitle}>
-            Create studies, define your audience, and monitor your research.
-          </p>
+          <h1>Dashboard</h1>
+          <p>Overview of your research activity.</p>
         </div>
-
-        <button
-          type="button"
-          style={styles.primaryButton}
-          onClick={() => navigate("/diy/studies/create")}
-        >
-          + Create Study
-        </button>
       </header>
 
-      <section style={styles.statsGrid}>
+      <section className="diy-dashboard__stats">
         {stats.map((stat) => (
-          <article key={stat.label} style={styles.statCard}>
-            <p style={styles.statLabel}>{stat.label}</p>
-            <h2 style={styles.statValue}>{stat.value}</h2>
-            <p style={styles.statDescription}>{stat.description}</p>
+          <article
+            className="diy-dashboard__stat-card"
+            key={stat.label}
+          >
+            <p className="diy-dashboard__stat-label">
+              {stat.label}
+            </p>
+
+            <h2>
+              {loading ? "—" : stat.value}
+            </h2>
+
+            <p className="diy-dashboard__stat-description">
+              {stat.description}
+            </p>
           </article>
         ))}
       </section>
 
-      <section style={styles.section}>
-        <div>
-          <h2 style={styles.sectionHeading}>Your Studies</h2>
-          <p style={styles.subtitle}>
-            Your submitted and ongoing research projects will appear here.
-          </p>
+      <section className="diy-dashboard__studies">
+        <div className="diy-dashboard__section-header">
+          <div>
+            <h2>Recent Studies</h2>
+            <p>
+              Monitor your latest research submissions and their status.
+            </p>
+          </div>
+
+          <Link
+            to="/diy/studies"
+            className="diy-dashboard__view-all"
+          >
+            View all studies →
+          </Link>
         </div>
 
-        <div style={styles.emptyState}>
-          <div style={styles.icon}>📋</div>
-          <h3>No studies yet</h3>
-          <p>
-            Create your first study to start planning your research.
-          </p>
-          <button
-            type="button"
-            style={styles.primaryButton}
-            onClick={() => navigate("/diy/studies/create")}
+        {loading && (
+          <div className="diy-dashboard__message">
+            Loading studies...
+          </div>
+        )}
+
+        {!loading && error && (
+          <div
+            className="diy-dashboard__message diy-dashboard__message--error"
+            role="alert"
           >
-            Create Your First Study
-          </button>
-        </div>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && studies.length === 0 && (
+          <div className="diy-dashboard__empty">
+            <h3>No studies yet</h3>
+            <p>
+              There are currently no research studies to display.
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && studies.length > 0 && (
+          <div className="diy-dashboard__table-wrap">
+            <table className="diy-dashboard__table">
+              <thead>
+                <tr>
+                  <th>Study</th>
+                  <th>Company</th>
+                  <th>Country</th>
+                  <th>Target</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {recentStudies.map((study) => (
+                  <tr key={study.id}>
+                    <td>
+                      <Link
+                        to={`/diy/studies/${study.id}`}
+                        className="diy-dashboard__study-link"
+                      >
+                        {study.name || "Untitled study"}
+                      </Link>
+
+                      <span className="diy-dashboard__study-id">
+                        ID: {study.id}
+                      </span>
+                    </td>
+
+                    <td>{study.company_name || "—"}</td>
+                    <td>{study.country || "—"}</td>
+                    <td>{study.target_completes ?? "—"}</td>
+
+                    <td>
+                      <span
+                        className={`diy-dashboard__status diy-dashboard__status--${getStatusClass(study.status)}`}
+                      >
+                        {formatStatus(study.status)}
+                      </span>
+                    </td>
+
+                    <td>{formatDate(study.created_at)}</td>
+
+                    <td>
+                      <Link
+                        to={`/diy/studies/${study.id}`}
+                        className="diy-dashboard__action-link"
+                      >
+                        View details
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    padding: "28px",
-    maxWidth: "1400px",
-    margin: "0 auto",
-    color: "#1f2937",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "20px",
-    marginBottom: "28px",
-  },
-  eyebrow: {
-    color: "#2563eb",
-    fontSize: "12px",
-    fontWeight: 700,
-    letterSpacing: "1.5px",
-    marginBottom: "8px",
-  },
-  heading: {
-    fontSize: "28px",
-    margin: "0 0 8px",
-  },
-  subtitle: {
-    color: "#6b7280",
-    fontSize: "14px",
-    margin: 0,
-    lineHeight: 1.6,
-  },
-  primaryButton: {
-    background: "#2563eb",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "8px",
-    padding: "12px 18px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-    gap: "18px",
-    marginBottom: "36px",
-  },
-  statCard: {
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    padding: "22px",
-  },
-  statLabel: {
-    color: "#6b7280",
-    fontSize: "14px",
-    margin: "0 0 14px",
-  },
-  statValue: {
-    fontSize: "30px",
-    margin: "0 0 8px",
-  },
-  statDescription: {
-    color: "#9ca3af",
-    fontSize: "12px",
-    margin: 0,
-  },
-  section: {
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    padding: "24px",
-  },
-  sectionHeading: {
-    fontSize: "20px",
-    margin: "0 0 8px",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "48px 16px",
-    color: "#6b7280",
-  },
-  icon: {
-    fontSize: "36px",
-    marginBottom: "12px",
-  },
-};
-
-export default DIYDashboard;

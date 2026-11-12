@@ -569,82 +569,127 @@ export default function DIYStudyDetails() {
         )}
       </section>
 
-      <section className="diy-study-details__section">
-        <h2>Quotation History</h2>
+            
+      <section className="diy-study-details__section diy-quotation-history">
+        <div className="diy-study-details__section-heading">
+          <div>
+            <h2>Quotation History</h2>
+            <p>All quotation versions and the client's responses for this study.</p>
+          </div>
+
+          <span className="diy-study-details__quota-count">
+            {quotations.length} {quotations.length === 1 ? "quotation" : "quotations"}
+          </span>
+        </div>
 
         {quotationsLoading ? (
           <p>Loading quotations...</p>
         ) : quotations.length === 0 ? (
-          <p>No quotations have been created for this study yet.</p>
+          <div className="diy-quotation-empty">
+            <p>No quotations have been created for this study yet.</p>
+          </div>
         ) : (
-          <div className="diy-study-details__quotations">
+          <div className="diy-quotation-list">
             {quotations.map((quotation) => (
-              <div
+              <article
                 key={quotation.id}
-                className="diy-study-details__quotation-card"
+                className={`diy-quotation-card diy-quotation-card--${quotation.status}`}
               >
-                <div className="diy-study-details__quotation-header">
-                  <h3>Quotation Version {quotation.version}</h3>
-                  <span className={`diy-study-details__quotation-status diy-study-details__quotation-status--${quotation.status}`}>
+                <div className="diy-quotation-card__header">
+                  <div>
+                    <span className="diy-quotation-card__eyebrow">
+                      STUDY QUOTATION
+                    </span>
+                    <h3>Quotation v{quotation.version}</h3>
+                  </div>
+
+                  <span
+                    className={`diy-quotation-status diy-quotation-status--${quotation.status}`}
+                  >
                     {formatLabel(quotation.status)}
                   </span>
                 </div>
 
-                <div className="diy-study-details__quotation-grid">
-                  <div>
-                    <strong>Quoted Amount</strong>
-                    <p>
-                      {quotation.currency} {quotation.quoted_amount}
-                    </p>
+                <div className="diy-quotation-card__amount">
+                  <span>Quoted amount</span>
+                  <strong>
+                    {quotation.currency || "INR"}{" "}
+                    {Number(quotation.quoted_amount || 0).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </strong>
+                </div>
+
+                <div className="diy-quotation-card__details">
+                  <div className="diy-quotation-card__detail">
+                    <span>Proposed completes</span>
+                    <strong>{quotation.proposed_completes ?? "—"}</strong>
                   </div>
 
-                  <div>
-                    <strong>Proposed Completes</strong>
-                    <p>{quotation.proposed_completes}</p>
+                  <div className="diy-quotation-card__detail">
+                    <span>Estimated timeline</span>
+                    <strong>
+                      {quotation.estimated_timeline_days != null
+                        ? `${quotation.estimated_timeline_days} days`
+                        : "—"}
+                    </strong>
                   </div>
 
-                  <div>
-                    <strong>Estimated Timeline</strong>
-                    <p>{quotation.estimated_timeline_days} days</p>
+                  <div className="diy-quotation-card__detail">
+                    <span>Created at</span>
+                    <strong>{formatDate(quotation.created_at)}</strong>
                   </div>
 
-                  <div>
-                    <strong>Created At</strong>
-                    <p>{formatDate(quotation.created_at)}</p>
+                  <div className="diy-quotation-card__detail">
+                    <span>Sent at</span>
+                    <strong>{formatDate(quotation.sent_at)}</strong>
                   </div>
 
-                  <div>
-                    <strong>Sent At</strong>
-                    <p>{formatDate(quotation.sent_at)}</p>
-                  </div>
-
-                  <div>
-                    <strong>Responded At</strong>
-                    <p>{formatDate(quotation.responded_at)}</p>
+                  <div className="diy-quotation-card__detail">
+                    <span>Client responded at</span>
+                    <strong>{formatDate(quotation.responded_at)}</strong>
                   </div>
                 </div>
 
                 {quotation.notes && (
-                  <div className="diy-study-details__quotation-notes">
-                    <strong>Notes</strong>
+                  <div className="diy-quotation-note">
+                    <strong>Admin quotation notes</strong>
                     <p>{quotation.notes}</p>
+                  </div>
+                )}
+
+                {quotation.status === "declined" && (
+                  <div className="diy-quotation-decline">
+                    <div className="diy-quotation-decline__heading">
+                      <span className="diy-quotation-decline__icon">!</span>
+                      <strong>Client's reason for declining</strong>
+                    </div>
+
+                    <p>
+                      {quotation.client_response_notes?.trim()
+                        ? quotation.client_response_notes
+                        : "No decline reason was recorded for this quotation."}
+                    </p>
                   </div>
                 )}
 
                 {quotation.status === "draft" &&
                   study.status === "under_review" && (
-                    <button
-                      type="button"
-                      className="diy-study-details__project-link"
-                      onClick={() => handleSendQuotation(quotation.id)}
-                      disabled={sendingQuotationId === quotation.id}
-                    >
-                      {sendingQuotationId === quotation.id
-                        ? "Sending..."
-                        : "Send Quotation to Client"}
-                    </button>
+                    <div className="diy-quotation-card__actions">
+                      <button
+                        type="button"
+                        className="diy-study-details__project-link"
+                        onClick={() => handleSendQuotation(quotation.id)}
+                        disabled={sendingQuotationId === quotation.id}
+                      >
+                        {sendingQuotationId === quotation.id
+                          ? "Sending..."
+                          : "Send Quotation to Client"}
+                      </button>
+                    </div>
                   )}
-              </div>
+              </article>
             ))}
           </div>
         )}

@@ -5,6 +5,7 @@ from .diy_views import (
     DIYAdminNotificationMarkAllReadView,
     DIYClientQuotationListView,
     DIYClientQuotationRespondView,
+    DIYClientQuotationReopenView,
     DIYClientSurveyLinkSubmitView,
     DIYStudyListCreateView,
     DIYStudyProjectConversionView,
@@ -108,6 +109,12 @@ urlpatterns = [
         "studies/<int:study_id>/quotations/<int:quotation_id>/respond/",
         DIYClientQuotationRespondView.as_view(),
         name="diy-client-quotation-respond",
+    ),
+    
+    path(
+        "studies/<int:study_id>/quotations/reopen/",
+        DIYClientQuotationReopenView.as_view(),
+        name="diy-client-quotation-reopen",
     ),
 
     path(

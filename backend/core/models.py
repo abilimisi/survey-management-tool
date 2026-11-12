@@ -1092,8 +1092,25 @@ class ClientPortalUser(models.Model):
         return False
 
 
+
 class DIYCompany(models.Model):
     name = models.CharField(max_length=255)
+
+    # Basic company profile
+    industry = models.CharField(max_length=120, blank=True, default="")
+    website = models.URLField(max_length=255, blank=True, default="")
+    description = models.TextField(blank=True, default="")
+
+    # Primary business contact
+    business_email = models.EmailField(blank=True, default="")
+    business_phone = models.CharField(max_length=25, blank=True, default="")
+    contact_name = models.CharField(max_length=150, blank=True, default="")
+    contact_designation = models.CharField(max_length=120, blank=True, default="")
+
+    # Business address
+    country = models.CharField(max_length=100, blank=True, default="")
+    business_address = models.TextField(blank=True, default="")
+
     created_by = models.ForeignKey(
         "core.ClientPortalUser",
         on_delete=models.PROTECT,
@@ -1102,6 +1119,15 @@ class DIYCompany(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "DIY Company"
+        verbose_name_plural = "DIY Companies"
+
+    def __str__(self):
+        return self.name
+
 
     class Meta:
         ordering = ["name"]
@@ -1562,6 +1588,11 @@ class DIYStudyQuotation(models.Model):
         blank=True,
         null=True,
     )
+    
+    client_response_notes = models.TextField(
+        blank=True,
+        null=True,
+    )
 
     status = models.CharField(
         max_length=20,
@@ -1702,6 +1733,7 @@ class DIYNotification(models.Model):
         ("quotation_sent", "Quotation Sent"),
         ("quotation_accepted", "Quotation Accepted"),
         ("quotation_declined", "Quotation Declined"),
+        ("quotation_reopen_requested", "New Quotation Requested"),
         ("survey_link_submitted", "Survey Link Submitted"),
         ("survey_link_changes_requested", "Survey Link Changes Requested"),
         ("survey_link_validated", "Survey Link Validated"),

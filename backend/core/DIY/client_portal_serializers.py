@@ -114,3 +114,51 @@ class ClientPortalLoginSerializer(serializers.Serializer):
 
         attrs["client_user"] = client_user
         return attrs
+
+
+class DIYCompanyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DIYCompany
+        fields = [
+            "id",
+            "name",
+            "industry",
+            "website",
+            "description",
+            "business_email",
+            "business_phone",
+            "contact_name",
+            "contact_designation",
+            "country",
+            "business_address",
+            "is_active",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "is_active", "updated_at"]
+
+    def validate(self, attrs):
+        required_fields = [
+            "name",
+            "industry",
+            "business_email",
+            "business_phone",
+            "contact_name",
+            "country",
+            "business_address",
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            value = attrs.get(
+                field,
+                getattr(self.instance, field, "") if self.instance else "",
+            )
+
+            if not str(value or "").strip():
+                errors[field] = "This field is required."
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return attrs

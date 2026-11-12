@@ -3,26 +3,56 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+  CircleUserRound,
+  ChevronDown,
+} from "lucide-react";
+
+import {
   getClientNotifications,
   markClientNotificationAsRead,
 } from "../../api/clientPortalApi";
 
 import "./ClientPortalNavbar.css";
 
-export default function ClientPortalNavbar() {
+export default function ClientPortalNavbar({
+  showNotifications,
+  setShowNotifications,
+}) {
   const navigate = useNavigate();
-  const notificationRef = useRef(null);
 
+  const notificationRef = useRef(null);
+  const accountRef = useRef(null);
+
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
 
+  const storedUser = (() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("client_portal_user") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  })();
+
+  const clientName =
+    [storedUser.first_name, storedUser.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    storedUser.name ||
+    "Client";
+
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("client_portal_access_token");
     localStorage.removeItem("client_portal_user");
+
     navigate("/client-portal/login");
   };
 
+  // Load notifications
   const loadNotifications = async () => {
     try {
       const response = await getClientNotifications();
@@ -34,6 +64,7 @@ export default function ClientPortalNavbar() {
     }
   };
 
+  // Initial notification loading and automatic refresh
   useEffect(() => {
     loadNotifications();
 
@@ -42,6 +73,41 @@ export default function ClientPortalNavbar() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close dropdowns when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+
+      if (
+        accountRef.current &&
+        !accountRef.current.contains(event.target)
+      ) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setShowNotifications(false);
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [setShowNotifications]);
+
+  // Handle notification click
   const handleNotificationClick = async (notification) => {
     try {
       if (!notification.is_read) {
@@ -55,51 +121,35 @@ export default function ClientPortalNavbar() {
           )
         );
 
-        setUnreadCount((previous) => Math.max(0, previous - 1));
+        setUnreadCount((previous) =>
+          Math.max(0, previous - 1)
+        );
       }
 
       setShowNotifications(false);
 
-      navigate(`/client-portal/studies/${notification.study_id}`);
+      if (notification.study_id) {
+        navigate(
+          `/client-portal/studies/${notification.study_id}`
+        );
+      }
     } catch (error) {
-      console.error("Unable to mark notification as read:", error);
+      console.error(
+        "Unable to mark notification as read:",
+        error
+      );
     }
   };
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setShowNotifications(false);
-      }
-    };
-
-    const handleEscapeKey = (event) => {
-      if (event.key === "Escape") {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("keydown", handleEscapeKey);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
-  }, []);
 
   return (
     <header className="client-portal-navbar">
       <div className="client-navbar-inner">
 
-        {/* Company logo area */}
+        {/* Company logo */}
         <div className="client-navbar-brand">
           <img
             src="/logo_ob.jpg"
-            alt="Company Logo"
+            alt="Opinion Bunch"
             className="client-navbar-company-logo"
           />
         </div>
@@ -108,13 +158,21 @@ export default function ClientPortalNavbar() {
         <div className="client-navbar-actions">
 
           {/* Notifications */}
-          <div className="client-notification-wrapper" ref={notificationRef}>
+          <div
+            className="client-notification-wrapper"
+            ref={notificationRef}
+          >
             <button
               type="button"
               className={`client-notification-button ${
                 showNotifications ? "active" : ""
               }`}
-              aria-label="Notifications"
+              aria-label={`Notifications${
+                unreadCount > 0
+                  ? `, ${unreadCount} unread`
+                  : ""
+              }`}
+              aria-expanded={showNotifications}
               title="Notifications"
               onClick={() =>
                 setShowNotifications((previous) => !previous)
@@ -149,7 +207,9 @@ export default function ClientPortalNavbar() {
                     <h3>Notifications</h3>
                     <p>
                       {unreadCount > 0
-                        ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
+                        ? `${unreadCount} unread notification${
+                            unreadCount > 1 ? "s" : ""
+                          }`
                         : "You're all caught up"}
                     </p>
                   </div>
@@ -158,7 +218,9 @@ export default function ClientPortalNavbar() {
                 {notifications.length === 0 ? (
                   <div className="client-notification-empty">
                     <strong>No notifications yet</strong>
-                    <p>Updates about your studies will appear here.</p>
+                    <p>
+                      Updates about your studies will appear here.
+                    </p>
                   </div>
                 ) : (
                   <div className="client-notification-list">
@@ -177,7 +239,9 @@ export default function ClientPortalNavbar() {
 
                         <span className="client-notification-content">
                           <strong>{notification.title}</strong>
+
                           <span>{notification.message}</span>
+
                           <small>
                             {new Date(
                               notification.created_at
@@ -192,14 +256,51 @@ export default function ClientPortalNavbar() {
             )}
           </div>
 
-          {/* Logout */}
-          <button
-            type="button"
-            className="client-navbar-logout"
-            onClick={handleLogout}
+          {/* Client account dropdown */}
+          <div
+            className="client-navbar-account"
+            ref={accountRef}
           >
-            Log out
-          </button>
+            <button
+              type="button"
+              className="client-navbar-account-button"
+              onClick={() =>
+                setShowAccountMenu((previous) => !previous)
+              }
+              aria-expanded={showAccountMenu}
+              aria-label="Client account menu"
+            >
+              <CircleUserRound
+                size={21}
+                strokeWidth={1.8}
+              />
+
+              <span>
+                Welcome, <strong>{clientName}</strong>
+              </span>
+
+              <ChevronDown
+                size={17}
+                className={
+                  showAccountMenu ? "account-chevron-open" : ""
+                }
+              />
+            </button>
+
+            {showAccountMenu && (
+              <div className="client-navbar-account-dropdown">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAccountMenu(false);
+                    handleLogout();
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>

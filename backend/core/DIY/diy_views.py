@@ -1229,7 +1229,22 @@ class DIYClientQuotationRespondView(APIView):
 
         # DECLINE QUOTATION
         else:
+            decline_reason = (
+                request.data.get("client_response_notes") or ""
+            ).strip()
+
+            if not decline_reason:
+                return Response(
+                    {
+                        "client_response_notes": [
+                            "Please provide a reason for declining the quotation."
+                        ]
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             quotation.status = "declined"
+            quotation.client_response_notes = decline_reason
             study.status = "client_declined"
 
         quotation.responded_at = timezone.now()
@@ -1238,6 +1253,7 @@ class DIYClientQuotationRespondView(APIView):
             update_fields=[
                 "status",
                 "responded_at",
+                "client_response_notes",
             ]
         )
 
@@ -1270,7 +1286,8 @@ class DIYClientQuotationRespondView(APIView):
                 message=(
                     f'The client has declined the quotation '
                     f'for study "{study.name}". '
-                    f"Quotation Version: {quotation.version}."
+                    f"Quotation Version: {quotation.version}. "
+                    f"Reason: {quotation.client_response_notes}"
                 ),
             )
 
@@ -1290,6 +1307,101 @@ class DIYClientQuotationRespondView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+        
+class DIYClientQuotationReopenView(APIView):
+    """
+    Allow an authorized client to request a new quotation
+    after declining the latest quotation.
+    """
+
+    authentication_classes = [ClientPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, study_id):
+
+        company_ids = DIYCompanyMembership.objects.filter(
+            user=request.user,
+            is_active=True,
+            company__is_active=True,
+        ).values_list("company_id", flat=True)
+
+        study = (
+            DIYStudy.objects.select_for_update()
+            .filter(
+                id=study_id,
+                company_id__in=company_ids,
+            )
+            .first()
+        )
+
+        if study is None:
+            return Response(
+                {"error": "Study not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if study.status != "client_declined":
+            return Response(
+                {
+                    "error": (
+                        "A new quotation can only be requested "
+                        "after declining a quotation."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        latest_quotation = (
+            DIYStudyQuotation.objects
+            .select_for_update()
+            .filter(study=study)
+            .order_by("-version")
+            .first()
+        )
+
+        if latest_quotation is None or latest_quotation.status != "declined":
+            return Response(
+                {
+                    "error": (
+                        "No declined quotation is available "
+                        "to reopen."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Return the study to the existing admin review workflow.
+        study.status = "under_review"
+        study.save(update_fields=["status", "updated_at"])
+
+        notify_admins(
+            study=study,
+            event_type="quotation_reopen_requested",
+            title="New Quotation Requested",
+            message=(
+                f'The client has requested a new quotation '
+                f'for study "{study.name}". '
+                f"Previously declined quotation: "
+                f"Version {latest_quotation.version}. "
+                f"Client reason: "
+                f"{latest_quotation.client_response_notes or 'Not provided.'}"
+            ),
+        )
+
+        return Response(
+            {
+                "message": (
+                    "Your request for a new quotation "
+                    "has been submitted successfully."
+                ),
+                "study_status": study.status,
+                "previous_quotation_version": latest_quotation.version,
+            },
+            status=status.HTTP_200_OK,
+        )       
+        
+
 
 class DIYClientSurveyLinkSubmitView(APIView):
     """

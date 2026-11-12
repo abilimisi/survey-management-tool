@@ -59,10 +59,16 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
     },
     {
       name: "DIY",
-      path: "/diy/studies",
+      path: "/diy",
       icon: ClipboardList,
       color: "icon-teal",
       children: [
+        {
+          name: "Dashboard",
+          path: "/diy",
+          icon: LayoutDashboard,
+          color: "icon-teal",
+        },
         {
           name: "All Studies",
           path: "/diy/studies",

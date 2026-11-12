@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 const API_BASE_URL =
@@ -33,6 +32,12 @@ export const loginClient = (data) =>
 export const getClientProfile = () =>
   clientPortalApi.get("client-portal/me/");
 
+export const updateClientCompanyProfile = (companyId, data) =>
+  clientPortalApi.patch(
+    `client-portal/companies/${companyId}/profile/`,
+    data
+  );
+
 export const getClientStudies = () =>
   clientPortalApi.get("diy/studies/");
 
@@ -61,6 +66,12 @@ export const respondToClientQuotation = (
   clientPortalApi.post(
     `diy/studies/${studyId}/quotations/${quotationId}/respond/`,
     data
+  );
+
+export const reopenClientQuotation = (studyId) =>
+  clientPortalApi.post(
+    `diy/studies/${studyId}/quotations/reopen/`,
+    {}
   );
 
 // Client portal: submit or update survey URL after quotation acceptance
