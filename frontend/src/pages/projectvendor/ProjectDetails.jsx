@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Eye, Trash2, Pencil } from "lucide-react";
+import { Eye, Trash2, Pencil, MessageSquare } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -12,6 +12,8 @@ import {
   getSupplierStats,
   deleteProjectVendor,
   updateProjectVendor,
+  getProjectVendorMessages,
+  sendProjectVendorMessage,
 } from "../../api/projectVendorApi";
 
 import "./ProjectDetails.css";
@@ -31,7 +33,13 @@ function ProjectDetails() {
   const [redirectIdsInput, setRedirectIdsInput]   = useState("");
   const [mappedResults, setMappedResults]         = useState([]);
 
-  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
+  const [messageAssignment, setMessageAssignment] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [messageDraft, setMessageDraft] = useState("");
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messageSending, setMessageSending] = useState(false);
+
+  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
 
   const initialFormData = {
     project: id,
@@ -56,6 +64,21 @@ function ProjectDetails() {
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => { fetchData(); }, [id]);
+
+  useEffect(() => {
+    const refreshUnreadCounts = async () => {
+      try {
+        const statsData = await getSupplierStats(id);
+        setSupplierStats(statsData);
+      } catch (error) {
+        console.error("Failed to refresh unread message counts:", error);
+      }
+    };
+
+    const intervalId = setInterval(refreshUnreadCounts, 12000);
+
+    return () => clearInterval(intervalId);
+  }, [id]);
 
   const fetchData = async () => {
     try {
@@ -190,6 +213,62 @@ function ProjectDetails() {
     }
   };
 
+  const handleOpenMessages = async (supplier) => {
+    const assignmentId = supplier.project_vendor_id;
+
+    setMessageAssignment(supplier);
+    setMessages([]);
+    setMessageDraft("");
+    setMessagesLoading(true);
+
+    // Clear this assignment's unread badge immediately.
+    setSupplierStats((current) =>
+      current.map((item) =>
+        item.project_vendor_id === assignmentId
+          ? { ...item, unread_messages_count: 0 }
+          : item
+      )
+    );
+
+    try {
+      const data = await getProjectVendorMessages(assignmentId);
+      setMessages(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load messages.");
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+
+    if (!messageDraft.trim() || !messageAssignment || messageSending) {
+      return;
+    }
+
+    setMessageSending(true);
+
+    try {
+      const newMessage = await sendProjectVendorMessage(
+        messageAssignment.project_vendor_id,
+        messageDraft.trim()
+      );
+
+      setMessages((current) => [...current, newMessage]);
+      setMessageDraft("");
+      toast.success("Message sent.");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.error || "Failed to send message."
+      );
+    } finally {
+      setMessageSending(false);
+    }
+  };
+
   if (!project) return <p>Loading project...</p>;
 
   const completeUrl  = `${backendBaseUrl}/api/simple-process/?status=1&pid={{OBID}}`;
@@ -253,9 +332,18 @@ function ProjectDetails() {
           <table className="pd-supplier-table">
             <thead>
               <tr>
-                <th>ID</th><th>Panel</th><th>Status</th><th>Hits</th>
-                <th>Completed</th><th>Terminates</th><th>Quota Full</th>
-                <th>Security Term</th><th>IR</th><th>Last Completed</th><th>Action</th>
+                <th>ID</th>
+                <th>Panel</th>
+                <th>Status</th>
+                <th>Hits</th>
+                <th>Completed</th>
+                <th>Terminates</th>
+                <th>Quota Full</th>
+                <th>Security Term</th>
+                <th>IR</th>
+                {/* <th>Last Completed</th> */}
+                <th>Vendor Response</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -290,24 +378,77 @@ function ProjectDetails() {
                     </Link>
                   </td>
                   <td>{item.ir}%</td>
-                  <td>
+                  {/* <td>
                     {item.last_completed
                       ? new Date(item.last_completed).toLocaleString("en-IN", {
                           day: "2-digit", month: "short", year: "numeric",
                           hour: "2-digit", minute: "2-digit",
                         })
                       : "-"}
+                  </td> */}
+                  <td>
+                    {!item.is_diy ? (
+                      <span className="response-status-badge not-applicable">
+                        Not applicable
+                      </span>
+                    ) : item.response_status === "accepted" ? (
+                      <span className="response-status-badge accepted">
+                        Accepted
+                      </span>
+                    ) : item.response_status === "declined" ? (
+                      <span className="response-status-badge declined">
+                        Declined
+                      </span>
+                    ) : item.response_status === "clarification_requested" ? (
+                      <span className="response-status-badge clarification">
+                        Changes requested
+                      </span>
+                    ) : (
+                      <span className="response-status-badge pending">
+                        Awaiting response
+                      </span>
+                    )}
                   </td>
                   <td>
                     <div className="table-actions">
-                      <button className="small-btn" onClick={() => copyText(item.supplier_link)}>URL</button>
-                      <Link to={`/project-vendors/${item.project_vendor_id}/hints`} className="icon-btn" title="View Details">
+                      <button className="small-btn" onClick={() => copyText(item.supplier_link)}>
+                        URL
+                      </button>
+
+                      <Link
+                        to={`/project-vendors/${item.project_vendor_id}/hints`}
+                        className="icon-btn"
+                        title="View Details"
+                      >
                         <Eye size={16} />
                       </Link>
-                      <button className="edit-btn" onClick={() => handleEditSupplier(item)} title="Edit Supplier">
+
+                      <button
+                        className="icon-btn message-icon-btn"
+                        title={`${item.unread_messages_count || 0} unread messages`}
+                        onClick={() => handleOpenMessages(item)}
+                      >
+                        <MessageSquare size={16} />
+                        {(item.unread_messages_count || 0) > 0 && (
+                          <span className="unread-message-badge">
+                            {item.unread_messages_count}
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleEditSupplier(item)}
+                        title="Edit Supplier"
+                      >
                         <Pencil size={16} />
                       </button>
-                      <button className="delete-btn" onClick={() => handleDeleteSupplier(item.project_vendor_id)} title="Delete Supplier">
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteSupplier(item.project_vendor_id)}
+                        title="Delete Supplier"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -435,6 +576,109 @@ function ProjectDetails() {
                     {editingSupplier ? "Update" : "Save"}
                   </button>
                 </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Vendor Messages Modal ── */}
+      {messageAssignment && (
+        <div
+          className="modal-overlay"
+          onClick={() => setMessageAssignment(null)}
+        >
+          <div
+            className="supplier-modal vendor-message-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="pd-modal-head">
+              <div>
+                <h2>Vendor Conversation</h2>
+                <p>{messageAssignment.vendor_name}</p>
+              </div>
+
+              <button
+                className="close-btn"
+                onClick={() => setMessageAssignment(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="vendor-message-list">
+              {messagesLoading ? (
+                <p>Loading messages...</p>
+              ) : messages.length === 0 ? (
+                <p className="vendor-no-messages">
+                  No messages yet for this assignment.
+                </p>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`vendor-message-item ${
+                      message.sender_type === "admin"
+                        ? "admin-message"
+                        : "vendor-message"
+                    }`}
+                  >
+                    <div className="vendor-message-meta">
+                      <strong>
+                        {message.sender_type === "admin" ? "Admin" : "Vendor"}
+                      </strong>
+                      <span>
+                        {new Date(message.created_at).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    <p>{message.message}</p>
+
+                    <small
+                      className={
+                        message.sender_type === "vendor" &&
+                        message.message_type === "clarification"
+                          ? "message-response-label clarification"
+                          : message.sender_type === "vendor" &&
+                            message.message_type === "response"
+                          ? "message-response-label declined"
+                          : "message-response-label"
+                      }
+                    >
+                      {message.sender_type === "vendor" &&
+                      message.message_type === "clarification"
+                        ? "Changes requested"
+                        : message.sender_type === "vendor" &&
+                          message.message_type === "response"
+                        ? "Declined"
+                        : message.message_type === "clarification"
+                        ? "Clarification request"
+                        : message.message_type === "response"
+                        ? "Response"
+                        : "General message"}
+                    </small>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <form className="vendor-message-form" onSubmit={handleSendMessage}>
+              <textarea
+                rows={3}
+                value={messageDraft}
+                onChange={(e) => setMessageDraft(e.target.value)}
+                placeholder="Write a reply to the vendor..."
+                disabled={messageSending}
+              />
+
+              <div className="supplier-form-actions">
+                <button
+                  type="submit"
+                  className="primary-btn"
+                  disabled={!messageDraft.trim() || messageSending}
+                >
+                  {messageSending ? "Sending..." : "Send Reply"}
+                </button>
               </div>
             </form>
           </div>

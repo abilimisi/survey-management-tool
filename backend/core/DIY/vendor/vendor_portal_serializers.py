@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework import serializers
 
-from ...models import VendorPortalUser
+from ...models import VendorIndustry, VendorPortalUser, VendorApplication, VendorRespondentType, Project, ProjectVendor
 
 
 class VendorPortalRegistrationSerializer(serializers.Serializer):
@@ -47,14 +47,29 @@ class VendorPortalRegistrationSerializer(serializers.Serializer):
 
         return value
 
+    
     def create(self, validated_data):
         password = validated_data.pop("password")
 
-        return VendorPortalUser.objects.create(
+        vendor_user = VendorPortalUser.objects.create(
             password=make_password(password),
             application_status="pending",
             **validated_data,
         )
+
+        VendorApplication.objects.create(
+            user=vendor_user,
+            company_name="",
+            contact_number="",
+            address="",
+            city="",
+            zip_code="",
+            country="",
+            status="draft",
+        )
+
+        return vendor_user
+
 
 
 class VendorPortalLoginSerializer(serializers.Serializer):
@@ -85,17 +100,35 @@ class VendorPortalLoginSerializer(serializers.Serializer):
         return attrs
 
 
-class VendorPortalProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        from ...models import VendorPortalUser
 
-        model = VendorPortalUser
+class VendorPortalProfileSerializer(serializers.ModelSerializer):
+
+    profile_submitted = serializers.SerializerMethodField()
+    application_status = serializers.SerializerMethodField()
+    admin_note = serializers.SerializerMethodField()
+
+    industries = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=VendorIndustry.objects.filter(is_active=True),
+        required=False,
+    )
+
+    respondent_types = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=VendorRespondentType.objects.filter(is_active=True),
+        required=False,
+    )
+
+    available_industries = serializers.SerializerMethodField()
+    available_respondent_types = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VendorApplication
         fields = [
-            "first_name",
-            "last_name",
-            "email",
             "company_name",
             "abrv_name",
+            "company_website",
+            "registration_number",
             "contact_number",
             "invoice_email",
             "tax_id",
@@ -106,17 +139,116 @@ class VendorPortalProfileSerializer(serializers.ModelSerializer):
             "zip_code",
             "country",
             "state",
-            "profile_submitted",
+
+            "complete_link",
+            "terminate_link",
+            "quota_full_link",
+            "security_terminate_link",
+
+            "industries",
+            "respondent_types",
+            "available_industries",
+            "available_respondent_types",
+
+            "status",
             "submitted_at",
+            "profile_submitted",
             "application_status",
             "admin_note",
         ]
+
         read_only_fields = [
-            "first_name",
-            "last_name",
-            "email",
-            "profile_submitted",
+            "status",
             "submitted_at",
+            "profile_submitted",
             "application_status",
             "admin_note",
+            "available_industries",
+            "available_respondent_types",
         ]
+
+    def get_profile_submitted(self, obj):
+        return obj.status in [
+            "submitted",
+            "under_review",
+            "changes_requested",
+            "approved",
+            "rejected",
+        ]
+
+    def get_application_status(self, obj):
+        return obj.status
+
+    def get_admin_note(self, obj):
+        latest_review = (
+            obj.reviews.exclude(note="")
+            .order_by("-created_at")
+            .first()
+        )
+        return latest_review.note if latest_review else ""
+
+    def get_available_industries(self, obj):
+        return list(
+            VendorIndustry.objects.filter(is_active=True)
+            .values("id", "name")
+        )
+
+    def get_available_respondent_types(self, obj):
+        return list(
+            VendorRespondentType.objects.filter(is_active=True)
+            .values("id", "name", "industry_id")
+        )
+
+class VendorPortalAssignedProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "name",
+            "study_type",
+            "country",
+            "language",
+            "project_manager",
+            "target",
+            "max_completes",
+            "loi",
+            "ir",
+            "reward_points",
+            "supported_devices",
+            "live_link",
+            "test_link",
+            "start_date",
+            "end_date",
+            "project_brief",
+            "status",
+        ]
+        read_only_fields = fields
+
+
+class VendorPortalProjectAssignmentSerializer(serializers.ModelSerializer):
+    project = VendorPortalAssignedProjectSerializer(read_only=True)
+
+    unread_messages_count = serializers.SerializerMethodField()
+
+    def get_unread_messages_count(self, obj):
+        return obj.messages.filter(
+            sender_type="admin",
+            is_read=False,
+    ).count()
+
+    class Meta:
+        model = ProjectVendor
+        fields = [
+            "id",
+            "project",
+            "target",
+            "vendor_cpc",
+            "notes",
+            "status",
+            "response_status",
+            "response_deadline",
+            "responded_at",
+            "created_at",
+            "unread_messages_count",
+        ]
+        read_only_fields = fields

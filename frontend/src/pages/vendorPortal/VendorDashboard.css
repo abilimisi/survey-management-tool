@@ -1,0 +1,492 @@
+/* =========================================
+   Vendor Portal Dashboard
+   ========================================= */
+
+/* Dashboard layout */
+.vendor-dashboard-page {
+  display: block;
+  min-height: 100vh;
+  padding: 0;
+  background: #f3f6fb;
+  font-family: Arial, sans-serif;
+}
+
+.vendor-dashboard-shell {
+  min-height: 100vh;
+  background: #f3f6fb;
+}
+
+/* Paste the remaining dashboard CSS here:
+   Start at .vendor-dashboard-topbar
+   and continue through the final responsive
+   @media (max-width: 480px) block.
+*/
+
+/* Administrator feedback */
+.vendor-admin-feedback {
+  padding: 17px 18px;
+  margin: 20px 0;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #ea580c;
+  border-radius: 10px;
+  background: #fffaf5;
+}
+
+.vendor-admin-feedback-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+  color: #9a3412;
+  font-size: 14px;
+}
+
+.vendor-admin-feedback p {
+  margin: 0;
+  color: #7c2d12;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* Approved vendor details */
+.vendor-approved-details {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  margin: 20px 0;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.vendor-approved-details strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #166534;
+  font-size: 13px;
+}
+
+.vendor-approved-details p {
+  margin: 0;
+  color: #166534;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   Assigned Projects
+   ========================================= */
+
+.vendor-projects-panel {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.vendor-projects-panel .vendor-panel-heading {
+  margin-bottom: 20px;
+}
+
+.vendor-projects-panel .vendor-panel-heading p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vendor-projects-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.vendor-project-card {
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #f8fafc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vendor-project-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+}
+
+.vendor-project-card h3 {
+  margin: 0 0 6px;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.vendor-project-card > div:first-child p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.vendor-project-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.vendor-project-details span {
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: capitalize;
+}
+
+@media (max-width: 600px) {
+  .vendor-projects-panel {
+    padding: 17px;
+  }
+
+  .vendor-project-card {
+    padding: 15px;
+  }
+
+  .vendor-project-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Vendor project response actions */
+.vendor-project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.vendor-project-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.vendor-project-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vendor-project-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vendor-project-accept {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.vendor-project-decline {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.vendor-project-clarify {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.vendor-project-response-message {
+  margin: 16px 0 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .vendor-project-actions {
+    flex-direction: column;
+  }
+
+  .vendor-project-actions button {
+    width: 100%;
+  }
+}
+
+/* Project message button */
+.vendor-project-messages {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 9px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.vendor-project-messages:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Message modal overlay */
+.vendor-messages-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.vendor-messages-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.vendor-messages-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.vendor-messages-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 19px;
+}
+
+.vendor-messages-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.vendor-messages-header > button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.vendor-messages-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 180px;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.vendor-messages-list > p {
+  color: #64748b;
+  text-align: center;
+  font-size: 14px;
+}
+
+.vendor-message-bubble {
+  max-width: 82%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.vendor-message-admin {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.vendor-message-own {
+  align-self: flex-end;
+  background: #e8f1ff;
+  border: 1px solid #c7dcff;
+}
+
+.vendor-message-bubble strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #334155;
+  font-size: 12px;
+}
+
+.vendor-message-bubble p {
+  margin: 0;
+  color: #1e293b;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.vendor-message-bubble small {
+  display: block;
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.vendor-messages-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.vendor-messages-form textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.vendor-messages-form button {
+  align-self: flex-end;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vendor-messages-form button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .vendor-messages-overlay {
+    padding: 10px;
+  }
+
+  .vendor-messages-modal {
+    max-height: 90vh;
+  }
+
+  .vendor-message-bubble {
+    max-width: 92%;
+  }
+}
+
+.vendor-project-messages {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  overflow: visible;
+}
+
+.vendor-unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.vendor-message-type-label {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vendor-message-type-label.admin-response {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+
+.vendor-message-type-label.declined {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.vendor-message-type-label.clarification {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.vendor-message-type-label.general {
+  background: #eeeeee;
+  color: #666666;
+}
+
+.vendor-project-response-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.vendor-project-response-status.pending {
+  background: #eeeeee;
+  color: #666666;
+}
+
+.vendor-project-response-status.accepted {
+  background: #d4edda;
+  color: #155724;
+}
+
+.vendor-project-response-status.declined {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.vendor-project-response-status.clarification_requested {
+  background: #fff3cd;
+  color: #856404;
+}

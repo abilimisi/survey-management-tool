@@ -81,3 +81,48 @@ export const markAllAdminNotificationsAsRead = async () => {
     }
   );
 };
+
+
+// Get notifications related to DIY vendors for the logged-in admin
+export const getVendorAdminNotifications = async () => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.get(
+    `${API_BASE}/vendor-portal/admin/notifications/`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
+
+// Mark a vendor notification as read
+export const markVendorAdminNotificationAsRead = async (notificationId) => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.post(
+    `${API_BASE}/vendor-portal/admin/notifications/${notificationId}/read/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};
+
+// Mark all vendor notifications as read
+export const markAllVendorAdminNotificationsAsRead = async () => {
+  const accessToken = localStorage.getItem("access_token");
+
+  return axios.post(
+    `${API_BASE}/vendor-portal/admin/notifications/read-all/`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+};

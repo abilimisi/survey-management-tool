@@ -1,15 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
-from core.views import CustomTokenObtainPairView
+from django.conf import settings
+from django.conf.urls.static import static
 
-from core.views import CustomTokenRefreshView
+from core.views import CustomTokenObtainPairView, CustomTokenRefreshView
 from rest_framework_simplejwt.views import TokenBlacklistView
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("core.urls")),
-    path("api/token/",CustomTokenObtainPairView.as_view(),name="token_obtain_pair"),
+    path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     path(
         "api/token/blacklist/",
@@ -17,3 +18,6 @@ urlpatterns = [
         name="token_blacklist",
     ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

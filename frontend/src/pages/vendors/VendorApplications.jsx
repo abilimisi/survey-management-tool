@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
@@ -18,15 +19,11 @@ function VendorApplications() {
 
     try {
       const response = await getPendingVendorApplications();
-      setApplications(
-        Array.isArray(response.data) ? response.data : []
-      );
+      setApplications(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       const data = error.response?.data;
       toast.error(
-        data?.detail ||
-          data?.error ||
-          "Unable to load vendor applications."
+        data?.detail || data?.error || "Unable to load vendor applications."
       );
     } finally {
       setLoading(false);
@@ -37,87 +34,115 @@ function VendorApplications() {
     loadApplications();
   }, [loadApplications]);
 
-
-    const handleDecision = async (application, action) => {
-    if (application.application_status !== "pending") {
-        toast.info("This application has already been reviewed.");
-        return;
-    }
-
-    const actionLabel = action === "approve" ? "approve" : "reject";
-    let adminNote = "";
-
-    if (action === "reject") {
-        adminNote = window.prompt(
-        `Enter the rejection reason for ${application.company_name}:`
-        );
-
-        // Cancel was clicked.
-        if (adminNote === null) return;
-
-        adminNote = adminNote.trim();
-
-        if (!adminNote) {
-        toast.error("Please enter a rejection reason.");
-        return;
-        }
-    } else {
-        const confirmed = window.confirm(
-        `Are you sure you want to approve ${application.company_name}?`
-        );
-
-        if (!confirmed) return;
-    }
-
-    setProcessingId(application.id);
-
-    try {
-        const response = await reviewVendorApplication(
-        application.id,
-        action,
-        adminNote
-        );
-
-        toast.success(
-        response.data.message ||
-            `Application ${actionLabel}d successfully.`
-        );
-
-        setSelectedApplication(null);
-        await loadApplications();
-    } catch (error) {
-        const data = error.response?.data;
-
-        toast.error(
-        data?.detail ||
-            data?.error ||
-            `Unable to ${actionLabel} this application.`
-        );
-    } finally {
-        setProcessingId(null);
-    }
-    };
-
+  const getStatus = (application) =>
+    (application.status || "draft").toLowerCase();
 
   const formatDate = (value) => {
     if (!value) return "—";
-
     const date = new Date(value);
+
     return Number.isNaN(date.getTime())
       ? "—"
       : date.toLocaleString();
   };
 
-  const getStatus = (application) =>
-    (application.application_status || "pending").toLowerCase();
+  const formatStatus = (status) => {
+    if (!status) return "Unknown";
+
+    return status
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+  };
+
+  const handleDecision = async (application, action) => {
+    if (!["submitted", "under_review"].includes(getStatus(application))) {
+      toast.info("Only submitted applications can be reviewed.");
+      return;
+    }
+
+    const actionMessages = {
+      approve: { success: "approved", failure: "approve" },
+      request_changes: {
+        success: "changes requested for",
+        failure: "request changes for",
+      },
+      reject: { success: "rejected", failure: "reject" },
+    };
+
+    const actionMessage = actionMessages[action];
+
+    if (!actionMessage) {
+      toast.error("Invalid application action.");
+      return;
+    }
+
+    let adminNote = "";
+
+    if (action === "request_changes" || action === "reject") {
+      const promptLabel =
+        action === "request_changes"
+          ? "Enter the changes required"
+          : "Enter the rejection reason";
+
+      adminNote = window.prompt(
+        `${promptLabel} for ${application.company_name}:`
+      );
+
+      if (adminNote === null) return;
+
+      adminNote = adminNote.trim();
+
+      if (!adminNote) {
+        toast.error("Please enter a note.");
+        return;
+      }
+    } else {
+      const confirmed = window.confirm(
+        `Are you sure you want to approve ${application.company_name}?`
+      );
+
+      if (!confirmed) return;
+    }
+
+    setProcessingId(application.id);
+
+    try {
+      const response = await reviewVendorApplication(
+        application.id,
+        action,
+        adminNote
+      );
+
+      toast.success(
+        response.data.message ||
+          `Application ${actionMessage.success} successfully.`
+      );
+
+      setSelectedApplication(null);
+      await loadApplications();
+    } catch (error) {
+      const data = error.response?.data;
+
+      toast.error(
+        data?.detail ||
+          data?.error ||
+          `Unable to ${actionMessage.failure} this application.`
+      );
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const counts = {
     all: applications.length,
-    pending: applications.filter(
-      (application) => getStatus(application) === "pending"
+    submitted: applications.filter((application) =>
+      ["submitted", "under_review"].includes(getStatus(application))
     ).length,
     approved: applications.filter(
       (application) => getStatus(application) === "approved"
+    ).length,
+    changesRequested: applications.filter(
+      (application) => getStatus(application) === "changes_requested"
     ).length,
     rejected: applications.filter(
       (application) => getStatus(application) === "rejected"
@@ -127,9 +152,33 @@ function VendorApplications() {
   const filteredApplications =
     statusFilter === "all"
       ? applications
-      : applications.filter(
-          (application) => getStatus(application) === statusFilter
-        );
+      : applications.filter((application) => {
+          const status = getStatus(application);
+
+          if (statusFilter === "submitted") {
+            return ["submitted", "under_review"].includes(status);
+          }
+
+          return status === statusFilter;
+        });
+
+  const reviewHistory = selectedApplication?.reviews || [];
+
+  const renderLink = (value) => {
+    if (!value) return <strong>—</strong>;
+
+    const href = /^https?:\/\//i.test(value)
+      ? value
+      : `https://${value}`;
+
+    return (
+      <strong>
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          {value}
+        </a>
+      </strong>
+    );
+  };
 
   return (
     <div className="vendor-applications-page">
@@ -154,7 +203,11 @@ function VendorApplications() {
       <div className="va-summary">
         <button
           type="button"
-          className={statusFilter === "all" ? "va-summary-card selected" : "va-summary-card"}
+          className={
+            statusFilter === "all"
+              ? "va-summary-card selected"
+              : "va-summary-card"
+          }
           onClick={() => setStatusFilter("all")}
         >
           <span>Total Applications</span>
@@ -163,16 +216,37 @@ function VendorApplications() {
 
         <button
           type="button"
-          className={statusFilter === "pending" ? "va-summary-card selected" : "va-summary-card"}
-          onClick={() => setStatusFilter("pending")}
+          className={
+            statusFilter === "submitted"
+              ? "va-summary-card selected"
+              : "va-summary-card"
+          }
+          onClick={() => setStatusFilter("submitted")}
         >
-          <span>Pending</span>
-          <strong>{counts.pending}</strong>
+          <span>Submitted / Under Review</span>
+          <strong>{counts.submitted}</strong>
         </button>
 
         <button
           type="button"
-          className={statusFilter === "approved" ? "va-summary-card selected" : "va-summary-card"}
+          className={
+            statusFilter === "changes_requested"
+              ? "va-summary-card selected"
+              : "va-summary-card"
+          }
+          onClick={() => setStatusFilter("changes_requested")}
+        >
+          <span>Changes Requested</span>
+          <strong>{counts.changesRequested}</strong>
+        </button>
+
+        <button
+          type="button"
+          className={
+            statusFilter === "approved"
+              ? "va-summary-card selected"
+              : "va-summary-card"
+          }
           onClick={() => setStatusFilter("approved")}
         >
           <span>Approved</span>
@@ -181,7 +255,11 @@ function VendorApplications() {
 
         <button
           type="button"
-          className={statusFilter === "rejected" ? "va-summary-card selected" : "va-summary-card"}
+          className={
+            statusFilter === "rejected"
+              ? "va-summary-card selected"
+              : "va-summary-card"
+          }
           onClick={() => setStatusFilter("rejected")}
         >
           <span>Rejected</span>
@@ -195,8 +273,8 @@ function VendorApplications() {
         <div className="va-state">
           <h3>
             {statusFilter === "all"
-              ? "No submitted applications"
-              : `No ${statusFilter} applications`}
+              ? "No vendor applications found"
+              : `No ${formatStatus(statusFilter)} applications`}
           </h3>
           <p>Applications matching this status will appear here.</p>
         </div>
@@ -217,11 +295,14 @@ function VendorApplications() {
             <tbody>
               {filteredApplications.map((application) => {
                 const status = getStatus(application);
+                const canReview = ["submitted", "under_review"].includes(
+                  status
+                );
 
                 return (
                   <tr key={application.id}>
                     <td>
-                      <strong>{application.company_name}</strong>
+                      <strong>{application.company_name || "—"}</strong>
                       <span className="va-secondary">
                         {application.email}
                       </span>
@@ -239,7 +320,7 @@ function VendorApplications() {
 
                     <td>
                       <span className={`va-status va-status-${status}`}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {formatStatus(status)}
                       </span>
                     </td>
 
@@ -253,7 +334,7 @@ function VendorApplications() {
                           View
                         </button>
 
-                        {status === "pending" && (
+                        {canReview && (
                           <>
                             <button
                               type="button"
@@ -277,6 +358,17 @@ function VendorApplications() {
                               }
                             >
                               Reject
+                            </button>
+
+                            <button
+                              type="button"
+                              className="va-view-button"
+                              disabled={processingId !== null}
+                              onClick={() =>
+                                handleDecision(application, "request_changes")
+                              }
+                            >
+                              Request Changes
                             </button>
                           </>
                         )}
@@ -304,6 +396,7 @@ function VendorApplications() {
           >
             <div className="va-modal-header">
               <h2 id="va-modal-title">Application Details</h2>
+
               <button
                 type="button"
                 className="va-close-button"
@@ -318,6 +411,8 @@ function VendorApplications() {
               {[
                 ["Company", selectedApplication.company_name],
                 ["Abbreviation", selectedApplication.abrv_name],
+                ["Company Website", selectedApplication.company_website],
+                ["Registration Number", selectedApplication.registration_number],
                 ["First name", selectedApplication.first_name],
                 ["Last name", selectedApplication.last_name],
                 ["Email", selectedApplication.email],
@@ -339,25 +434,107 @@ function VendorApplications() {
                 ["Submitted", formatDate(selectedApplication.submitted_at)],
                 [
                   "Application status",
-                  getStatus(selectedApplication).toUpperCase(),
+                  formatStatus(getStatus(selectedApplication)),
                 ],
                 [
-                "Admin rejection note",
-                selectedApplication.admin_note || "No rejection note",
+                  "Admin note",
+                  selectedApplication.admin_note || "No admin note",
                 ],
-                [
-                  "Linked vendor ID",
-                  selectedApplication.vendor ?? "—",
-                ],
+                ["Linked vendor ID", selectedApplication.vendor_id ?? "—"],
               ].map(([label, value]) => (
                 <div className="va-detail-item" key={label}>
                   <span>{label}</span>
-                  <strong>{value || "—"}</strong>
+
+                  {label === "Company Website" && value ? (
+                    renderLink(value)
+                  ) : (
+                    <strong>{value || "—"}</strong>
+                  )}
                 </div>
               ))}
             </div>
 
-            {getStatus(selectedApplication) === "pending" && (
+            <div className="va-capabilities-section">
+              <h3>Vendor Redirect Links</h3>
+
+              <div className="va-details-grid">
+                {[
+                  ["Complete Link", selectedApplication.complete_link],
+                  ["Disqualify Link", selectedApplication.terminate_link],
+                  ["Quota Full Link", selectedApplication.quota_full_link],
+                  [
+                    "Security Term Link",
+                    selectedApplication.security_terminate_link,
+                  ],
+                ].map(([label, value]) => (
+                  <div className="va-detail-item" key={label}>
+                    <span>{label}</span>
+                    {renderLink(value)}
+                  </div>
+                ))}
+              </div>
+
+              <h3>Industries</h3>
+              {selectedApplication.industries?.length ? (
+                <div className="va-capability-list">
+                  {selectedApplication.industries.map((industry) => (
+                    <span className="va-capability-chip" key={industry.id}>
+                      {industry.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p>No industries selected.</p>
+              )}
+
+              <h3>Respondent Types</h3>
+              {selectedApplication.respondent_types?.length ? (
+                <div className="va-capability-list">
+                  {selectedApplication.respondent_types.map((type) => {
+                    const industry = selectedApplication.industries?.find(
+                      (item) => item.id === type.industry_id
+                    );
+
+                    return (
+                      <span className="va-capability-chip" key={type.id}>
+                        {type.name}
+                        {industry ? ` · ${industry.name}` : ""}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p>No respondent types selected.</p>
+              )}
+            </div>
+
+            <div className="va-review-history">
+              <h3>Review History</h3>
+
+              {reviewHistory.length === 0 ? (
+                <p>No review history available.</p>
+              ) : (
+                <div className="va-review-list">
+                  {reviewHistory.map((review, index) => (
+                    <div
+                      className="va-review-item"
+                      key={`${review.action}-${review.created_at}-${index}`}
+                    >
+                      <div className="va-review-heading">
+                        <strong>{formatStatus(review.action)}</strong>
+                        <span>{formatDate(review.created_at)}</span>
+                      </div>
+
+                      <p>{review.note || "No note provided."}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {["submitted", "under_review"].includes(
+              getStatus(selectedApplication)
+            ) && (
               <div className="va-modal-actions">
                 <button
                   type="button"
@@ -369,6 +546,18 @@ function VendorApplications() {
                 >
                   Reject
                 </button>
+
+                <button
+                  type="button"
+                  className="va-view-button"
+                  disabled={processingId !== null}
+                  onClick={() =>
+                    handleDecision(selectedApplication, "request_changes")
+                  }
+                >
+                  Request Changes
+                </button>
+
                 <button
                   type="button"
                   className="va-approve-button"
@@ -377,7 +566,9 @@ function VendorApplications() {
                     handleDecision(selectedApplication, "approve")
                   }
                 >
-                  Approve Vendor
+                  {processingId === selectedApplication.id
+                    ? "Processing..."
+                    : "Approve Vendor"}
                 </button>
               </div>
             )}

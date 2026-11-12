@@ -1839,6 +1839,7 @@ class DIYAdminNotificationListView(APIView):
             admin_recipient=request.user,
         ).select_related(
             "study",
+            "study__company",
         ).order_by("-created_at")
 
         unread_count = notifications.filter(is_read=False).count()
@@ -1848,6 +1849,11 @@ class DIYAdminNotificationListView(APIView):
                 "id": notification.id,
                 "study_id": notification.study_id,
                 "study_name": notification.study.name,
+                "client_id": (
+                    notification.study.company_id
+                    if notification.study_id
+                    else None
+                ),
                 "event_type": notification.event_type,
                 "title": notification.title,
                 "message": notification.message,
@@ -1864,7 +1870,7 @@ class DIYAdminNotificationListView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-    
+        
 class DIYClientNotificationMarkReadView(APIView):
     authentication_classes = [ClientPortalJWTAuthentication]
     permission_classes = [IsAuthenticated]

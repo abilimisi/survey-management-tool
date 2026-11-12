@@ -7,407 +7,676 @@ import {
   saveVendorPortalProfile,
   submitVendorApplication,
 } from "../../api/vendorPortalApi";
-import "./VendorProfile.css";
-
 import {
+  AlertCircle,
   CheckCircle2,
   Clock3,
-  ArrowRight,
-  AlertCircle,
+  FileText,
+  Save,
+  Send,
+  Building2,
+  MapPin,
+  CreditCard,
+  Link as LinkIcon,
+  BriefcaseBusiness,
 } from "lucide-react";
+import "./VendorProfile.css";
 
 const initialForm = {
   company_name: "",
   abrv_name: "",
+  company_website: "",
+  registration_number: "",
   contact_number: "",
   invoice_email: "",
   tax_id: "",
   address: "",
-  invoicing_method: "",
-  payment_terms: "",
   city: "",
+  state: "",
   zip_code: "",
   country: "",
-  state: "",
+  invoicing_method: "",
+  payment_terms: "",
+  complete_link: "",
+  terminate_link: "",
+  quota_full_link: "",
+  security_terminate_link: "",
+  industries: [],
+  respondent_types: [],
 };
+
+const editableStatuses = ["draft", "changes_requested"];
 
 function VendorProfile() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState(initialForm);
-  const [submitted, setSubmitted] = useState(false);
-  const [applicationStatus, setApplicationStatus] = useState("pending");
+  const [availableIndustries, setAvailableIndustries] = useState([]);
+  const [availableRespondentTypes, setAvailableRespondentTypes] = useState(
+    []
+  );
+  const [applicationStatus, setApplicationStatus] = useState("draft");
   const [adminNote, setAdminNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const isReadOnly = !editableStatuses.includes(applicationStatus);
+  const isChangesRequested = applicationStatus === "changes_requested";
+  const isRejected = applicationStatus === "rejected";
+  const isApproved = applicationStatus === "approved";
+  const isUnderReview = ["submitted", "under_review"].includes(
+    applicationStatus
+  );
 
   useEffect(() => {
-    let cancelled = false;
+    const loadProfile = async () => {
+      const token = localStorage.getItem("vendor_portal_access_token");
 
-    async function loadProfile() {
-      if (!localStorage.getItem("vendor_portal_access_token")) {
-        navigate("/vendor/login", { replace: true });
+      if (!token) {
+        navigate("/vendor/login");
         return;
       }
 
       try {
         const response = await getVendorPortalProfile();
-        const data = response.data;
+        const data = response.data || response;
 
-        if (!cancelled) {
-          setForm((current) => ({
-            ...current,
-            ...Object.fromEntries(
-              Object.keys(initialForm).map((key) => [
-                key,
-                data[key] ?? "",
-              ])
-            ),
-          }));
+        setForm({
+          ...initialForm,
+          ...Object.fromEntries(
+            Object.keys(initialForm).map((key) => [
+              key,
+              data[key] ?? initialForm[key],
+            ])
+          ),
+          industries: (data.industries || []).map(Number),
+          respondent_types: (data.respondent_types || []).map(Number),
+        });
 
-          setSubmitted(Boolean(data.profile_submitted));
-          setApplicationStatus(data.application_status || "pending");
-          setAdminNote(data.admin_note || "");
-        }
+        setAvailableIndustries(data.available_industries || []);
+        setAvailableRespondentTypes(
+          data.available_respondent_types || []
+        );
+
+        setApplicationStatus(data.status || "draft");
+        setAdminNote(data.admin_note || "");
       } catch (error) {
-        if (!cancelled) {
-          const status = error.response?.status;
+        if ([401, 403].includes(error.response?.status)) {
+          localStorage.removeItem("vendor_portal_access_token");
+          navigate("/vendor/login");
+          return;
+        }
 
-          if (status === 401 || status === 403) {
-            toast.error("Your session has expired. Please log in again.");
-            localStorage.removeItem("vendor_portal_access_token");
-            navigate("/vendor/login", { replace: true });
-          } else {
-            toast.error("Unable to load your vendor profile.");
-          }
-        }
+        toast.error(
+          error.response?.data?.detail ||
+            "Unable to load your company profile."
+        );
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
-    }
+    };
 
     loadProfile();
-
-    return () => {
-      cancelled = true;
-    };
   }, [navigate]);
-
-  const isRejected = applicationStatus === "rejected";
-  const isApproved = applicationStatus === "approved";
-  const isReadOnly = submitted && !isRejected;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setForm((current) => ({
-      ...current,
+    setForm((previous) => ({
+      ...previous,
       [name]: value,
     }));
   };
 
-  const handleSave = async (event) => {
-    event.preventDefault();
+  const handleCheckboxChange = (name, id) => {
+    setForm((previous) => {
+      const currentValues = previous[name];
+      const numericId = Number(id);
 
-    if (isReadOnly) {
-      toast.info("Submitted profiles cannot be edited.");
-      return;
-    }
+      const updatedValues = currentValues.includes(numericId)
+        ? currentValues.filter((value) => value !== numericId)
+        : [...currentValues, numericId];
+
+      return {
+        ...previous,
+        [name]: updatedValues,
+      };
+    });
+  };
+
+  const handleSave = async () => {
+    if (isReadOnly || saving || submitting) return;
 
     setSaving(true);
 
     try {
       const response = await saveVendorPortalProfile(form);
+      const data = response.data || response;
 
-      if (response.data?.profile) {
-        setForm((current) => ({
-          ...current,
-          ...response.data.profile,
+      if (data && typeof data === "object") {
+        setForm((previous) => ({
+          ...previous,
+          ...data,
+          industries: (data.industries ?? previous.industries).map(Number),
+          respondent_types: (
+            data.respondent_types ?? previous.respondent_types
+          ).map(Number),
         }));
       }
 
-      toast.success("Profile saved successfully.");
+      toast.success("Company profile saved successfully.");
     } catch (error) {
-      const data = error.response?.data;
-
       toast.error(
-        data?.error ||
-          data?.detail ||
-          "Unable to save your profile."
+        error.response?.data?.detail ||
+          "Unable to save your company profile."
       );
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSubmit = async () => {
-    if (isReadOnly || saving) {
-      return;
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    const confirmationMessage = isRejected
-      ? "Resubmit your updated vendor profile for admin approval?"
-      : "Submit your vendor profile for admin approval? You will not be able to edit it unless the administrator rejects it.";
+    if (isReadOnly || saving || submitting) return;
 
-    if (!window.confirm(confirmationMessage)) {
-      return;
-    }
+    const confirmed = window.confirm(
+      "Are you sure you want to submit your company profile for review?"
+    );
 
-    setSaving(true);
+    if (!confirmed) return;
+
+    setSubmitting(true);
 
     try {
-      // Save the latest form values before submitting.
       await saveVendorPortalProfile(form);
-
       const response = await submitVendorApplication();
+      const data = response.data || response;
 
-      setSubmitted(true);
-      setApplicationStatus("pending");
-      setAdminNote("");
+      setApplicationStatus(data.status || "submitted");
+      setAdminNote(data.admin_note || "");
 
-      toast.success(
-        response.data?.message ||
-          "Application submitted successfully."
-      );
-
+      toast.success("Your company profile has been submitted for review.");
       navigate("/vendor/dashboard");
     } catch (error) {
-      const data = error.response?.data;
-      const missing = data?.missing_fields;
+      const errorData = error.response?.data;
+      const message =
+        errorData?.detail ||
+        errorData?.message ||
+        (errorData?.missing_fields
+          ? `Missing fields: ${errorData.missing_fields.join(", ")}`
+          : "Unable to submit your application. Please check your details.");
 
-      toast.error(
-        missing?.length
-          ? `Please complete: ${missing.join(", ")}`
-          : data?.error ||
-              data?.detail ||
-              "Unable to submit your application."
-      );
+      toast.error(message);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
+
+  const renderInput = ({
+    label,
+    name,
+    type = "text",
+    required = false,
+    placeholder = "",
+  }) => (
+    <div className="vp-field" key={name}>
+      <label htmlFor={name}>
+        {label}
+        {required && <span className="vp-required"> *</span>}
+      </label>
+
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={form[name]}
+        onChange={handleChange}
+        placeholder={placeholder}
+        required={required}
+        disabled={isReadOnly}
+      />
+    </div>
+  );
+
+  const renderSelect = ({ label, name, options }) => (
+    <div className="vp-field" key={name}>
+      <label htmlFor={name}>{label}</label>
+
+      <select
+        id={name}
+        name={name}
+        value={form[name]}
+        onChange={handleChange}
+        disabled={isReadOnly}
+      >
+        <option value="">Select {label.toLowerCase()}</option>
+
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const renderCheckboxGroup = ({ label, name, options, helperText }) => (
+    <div className="vp-field vp-field-full" key={name}>
+      <div className="vp-checkbox-heading">
+        <label>{label}</label>
+        <span>{form[name].length} selected</span>
+      </div>
+
+      {helperText && (
+        <small className="vp-field-help">{helperText}</small>
+      )}
+
+      {options.length === 0 ? (
+        <p className="vp-empty-options">
+          No options available at the moment.
+        </p>
+      ) : (
+        <div className="vp-checkbox-grid">
+          {options.map((option) => {
+            const selected = form[name].includes(Number(option.id));
+
+            return (
+              <label
+                key={option.id}
+                className={`vp-checkbox-card ${
+                  selected ? "selected" : ""
+                } ${isReadOnly ? "disabled" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() =>
+                    handleCheckboxChange(name, option.id)
+                  }
+                  disabled={isReadOnly}
+                />
+
+                <span className="vp-custom-checkbox">
+                  {selected && <CheckCircle2 size={15} />}
+                </span>
+
+                <span className="vp-checkbox-label">
+                  {option.name}
+                  {option.industry_name && (
+                    <small>{option.industry_name}</small>
+                  )}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="vendor-portal-page">
-        Loading profile...
+      <div className="vp-loading">
+        <div className="vp-spinner" />
+        <p>Loading company profile...</p>
       </div>
     );
   }
 
-  const fields = [
-    ["company_name", "Company name", true],
-    ["abrv_name", "Abbreviation", false],
-    ["contact_number", "Contact number", true],
-    ["invoice_email", "Invoice email", true],
-    ["tax_id", "Tax ID", false],
-    ["address", "Address", true],
-    ["city", "City", true],
-    ["state", "State", true],
-    ["zip_code", "ZIP / Postal code", true],
-    ["country", "Country", true],
-  ];
-
   return (
-    <div className="vendor-portal-page">
-      <div className="vendor-dashboard-card">
-        <h1>Vendor Company Profile</h1>
+    <div className="vp-page">
+      <div className="vp-container">
+        <div className="vp-header">
+          <div>
+            <span className="vp-eyebrow">VENDOR PORTAL</span>
+            <h1>Company Profile</h1>
+            <p>
+              Provide your company details and billing information for
+              verification.
+            </p>
+          </div>
 
-        <p className="vendor-portal-subtitle">
-          {isRejected
-            ? "Review the administrator's feedback, update your company details, and resubmit your application."
-            : submitted
-              ? "View the company details you submitted with your application."
-              : "Complete your company details before submitting your application."}
-        </p>
+          <button
+            type="button"
+            className="vp-secondary-button"
+            onClick={() => navigate("/vendor/dashboard")}
+          >
+            Back to Dashboard
+          </button>
+        </div>
 
-        {/* Rejection notice */}
-        {isRejected && (
-          <div className="vendor-rejection-notice">
-            <div className="vendor-rejection-heading">
+        <div className={`vp-status-banner vp-status-${applicationStatus}`}>
+          <div className="vp-status-icon">
+            {isApproved ? (
+              <CheckCircle2 size={22} />
+            ) : isUnderReview ? (
+              <Clock3 size={22} />
+            ) : isRejected ? (
               <AlertCircle size={22} />
-              <h2>Application requires changes</h2>
-            </div>
+            ) : (
+              <FileText size={22} />
+            )}
+          </div>
+
+          <div className="vp-status-content">
+            <strong>
+              {isApproved
+                ? "Application approved"
+                : isUnderReview
+                  ? "Application under review"
+                  : isChangesRequested
+                    ? "Changes requested"
+                    : isRejected
+                      ? "Application rejected"
+                      : "Profile not yet submitted"}
+            </strong>
 
             <p>
-              Your application was rejected by the administrator.
-              Please review the feedback, update your details, and
-              resubmit your application.
+              {isApproved
+                ? "Your vendor application has been approved."
+                : isUnderReview
+                  ? "Your application has been submitted. You can view your profile while the admin team reviews it."
+                  : isChangesRequested
+                    ? "Please review the admin feedback, update your details, and resubmit your application."
+                    : isRejected
+                      ? "Your application was rejected. Contact the admin team if you need clarification."
+                      : "Complete your company profile and submit it for admin review."}
             </p>
+          </div>
+        </div>
 
-            <div className="vendor-rejection-note">
-              <strong>Administrator's note</strong>
-              <p>
-                {adminNote || "No rejection note was provided."}
-              </p>
+        {(isChangesRequested || isRejected) && adminNote && (
+          <div className="vp-admin-note">
+            <div className="vp-admin-note-heading">
+              <AlertCircle size={18} />
+              <strong>Admin feedback</strong>
             </div>
+            <p>{adminNote}</p>
           </div>
         )}
 
-        {/* Submitted application status */}
-        {submitted && !isRejected && (
-          <div className="vendor-profile-submitted">
-            <div className="vendor-profile-success-icon">
-              {isApproved ? (
-                <CheckCircle2 size={34} />
-              ) : (
-                <Clock3 size={34} />
-              )}
-            </div>
-
-            <span className="vendor-profile-eyebrow">
-              {isApproved
-                ? "APPLICATION APPROVED"
-                : "APPLICATION SUBMITTED"}
-            </span>
-
-            <h2>
-              {isApproved
-                ? "Your company profile is approved"
-                : "Your company profile is under review"}
-            </h2>
-
-            <p>
-              {isApproved
-                ? "Your vendor application has been approved. Your submitted company details are available below."
-                : "Your application has been received. You can view your submitted company details below while the administrator reviews them."}
-            </p>
-
-            <div className="vendor-submission-status">
-              {isApproved ? (
-                <CheckCircle2 size={20} />
-              ) : (
-                <Clock3 size={20} />
-              )}
-
+        <form onSubmit={handleSubmit}>
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <Building2 size={20} />
+              </div>
               <div>
-                <strong>
-                  {isApproved
-                    ? "Approved"
-                    : "Pending admin review"}
-                </strong>
-
-                <span>
-                  {isApproved
-                    ? "Your application has been approved."
-                    : "Your submitted profile is read-only during review."}
-                </span>
+                <h2>Company Information</h2>
+                <p>Basic details about your business.</p>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Profile form: editable for drafts/rejections, read-only otherwise */}
-        <form onSubmit={handleSave}>
-          <div className="vendor-profile-grid">
-            {fields.map(([name, label, required]) => (
-              <div className="vendor-profile-field" key={name}>
-                <label htmlFor={name}>{label}</label>
+            <div className="vp-form-grid">
+              {renderInput({
+                label: "Company Name",
+                name: "company_name",
+                required: true,
+                placeholder: "Enter registered company name",
+              })}
 
-                {name === "address" ? (
-                  <textarea
-                    id={name}
-                    name={name}
-                    value={form[name]}
-                    onChange={handleChange}
-                    required={required}
-                    readOnly={isReadOnly}
-                    rows={3}
-                  />
-                ) : (
-                  <input
-                    id={name}
-                    name={name}
-                    value={form[name]}
-                    onChange={handleChange}
-                    required={required}
-                    readOnly={isReadOnly}
-                    type={
-                      name === "invoice_email" ? "email" : "text"
-                    }
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+              {renderInput({
+                label: "Abbreviation",
+                name: "abrv_name",
+                placeholder: "Short company name",
+              })}
 
-          <div className="vendor-profile-field">
-            <label htmlFor="invoicing_method">
-              Invoicing method
-            </label>
+              {renderInput({
+                label: "Company Website",
+                name: "company_website",
+                type: "url",
+                placeholder: "https://example.com",
+              })}
 
-            <select
-              id="invoicing_method"
-              name="invoicing_method"
-              value={form.invoicing_method}
-              onChange={handleChange}
-              required
-              disabled={isReadOnly}
-            >
-              <option value="">Select method</option>
-              <option value="monthly_basis">
-                Monthly Basis
-              </option>
-              <option value="project_basis">
-                Project Basis
-              </option>
-            </select>
-          </div>
-
-          <div className="vendor-profile-field">
-            <label htmlFor="payment_terms">Payment terms</label>
-
-            <select
-              id="payment_terms"
-              name="payment_terms"
-              value={form.payment_terms}
-              onChange={handleChange}
-              required
-              disabled={isReadOnly}
-            >
-              <option value="">Select payment terms</option>
-              <option value="15">15 Days</option>
-              <option value="30">30 Days</option>
-              <option value="45">45 Days</option>
-              <option value="60">60 Days</option>
-            </select>
-          </div>
-
-          {/* Draft and rejected applications can be edited */}
-          {!isReadOnly && (
-            <div className="vendor-profile-actions">
-              <button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Save Draft"}
-              </button>
-
-              <button
-                type="button"
-                disabled={saving}
-                onClick={handleSubmit}
-              >
-                {saving
-                  ? "Processing..."
-                  : isRejected
-                    ? "Resubmit for Approval"
-                    : "Submit for Approval"}
-              </button>
+              {renderInput({
+                label: "Registration Number",
+                name: "registration_number",
+                placeholder: "Company registration number",
+              })}
             </div>
-          )}
+          </section>
 
-          {/* Submitted applications can still be viewed */}
-          {isReadOnly && (
-            <div className="vendor-profile-submitted-actions">
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h2>Contact Information</h2>
+                <p>Contact details for business communication.</p>
+              </div>
+            </div>
+
+            <div className="vp-form-grid">
+              {renderInput({
+                label: "Contact Number",
+                name: "contact_number",
+                type: "tel",
+                required: true,
+                placeholder: "Enter contact number",
+              })}
+
+              {renderInput({
+                label: "Invoice Email",
+                name: "invoice_email",
+                type: "email",
+                placeholder: "billing@example.com",
+              })}
+            </div>
+          </section>
+
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <MapPin size={20} />
+              </div>
+              <div>
+                <h2>Business Address & Tax</h2>
+                <p>Registered business address and tax details.</p>
+              </div>
+            </div>
+
+            <div className="vp-form-grid">
+              <div className="vp-field vp-field-full">
+                <label htmlFor="address">
+                  Business Address<span className="vp-required"> *</span>
+                </label>
+
+                <textarea
+                  id="address"
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Enter your registered business address"
+                  required
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </div>
+
+              {renderInput({
+                label: "City",
+                name: "city",
+                required: true,
+                placeholder: "Enter city",
+              })}
+
+              {renderInput({
+                label: "State / Province",
+                name: "state",
+                placeholder: "Enter state or province",
+              })}
+
+              {renderInput({
+                label: "Postal / ZIP Code",
+                name: "zip_code",
+                required: true,
+                placeholder: "Enter postal code",
+              })}
+
+              {renderInput({
+                label: "Country",
+                name: "country",
+                required: true,
+                placeholder: "Enter country",
+              })}
+
+              {renderInput({
+                label: "Tax ID",
+                name: "tax_id",
+                placeholder: "Enter tax identification number",
+              })}
+            </div>
+          </section>
+
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <CreditCard size={20} />
+              </div>
+              <div>
+                <h2>Billing Preferences</h2>
+                <p>Let us know your preferred invoicing arrangements.</p>
+              </div>
+            </div>
+
+            <div className="vp-form-grid">
+              {renderSelect({
+                label: "Invoicing Method",
+                name: "invoicing_method",
+                options: [
+                  { value: "monthly_basis", label: "Monthly Basis" },
+                  { value: "project_basis", label: "Project Basis" },
+                ],
+              })}
+
+              {renderSelect({
+                label: "Payment Terms",
+                name: "payment_terms",
+                options: [
+                  { value: "15", label: "15 Days" },
+                  { value: "30", label: "30 Days" },
+                  { value: "45", label: "45 Days" },
+                  { value: "60", label: "60 Days" },
+                ],
+              })}
+            </div>
+          </section>
+
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <LinkIcon size={20} />
+              </div>
+              <div>
+                <h2>Respondent Redirect Links</h2>
+                <p>
+                  Provide the links used to redirect respondents after
+                  completing or exiting a survey.
+                </p>
+              </div>
+            </div>
+
+            <div className="vp-form-grid">
+              {renderInput({
+                label: "Complete Link",
+                name: "complete_link",
+                type: "url",
+                placeholder: "https://example.com/complete",
+              })}
+
+              {renderInput({
+                label: "Disqualify Link",
+                name: "terminate_link",
+                type: "url",
+                placeholder: "https://example.com/disqualify",
+              })}
+
+              {renderInput({
+                label: "Quota Full Link",
+                name: "quota_full_link",
+                type: "url",
+                placeholder: "https://example.com/quota-full",
+              })}
+
+              {renderInput({
+                label: "Security Term Link",
+                name: "security_terminate_link",
+                type: "url",
+                placeholder: "https://example.com/security-terminate",
+              })}
+            </div>
+          </section>
+
+          <section className="vp-section">
+            <div className="vp-section-heading">
+              <div className="vp-section-icon">
+                <BriefcaseBusiness size={20} />
+              </div>
+              <div>
+                <h2>Industries & Respondent Capabilities</h2>
+                <p>
+                  Select the industries you serve and the respondent types
+                  available through your company.
+                </p>
+              </div>
+            </div>
+
+            <div className="vp-form-grid">
+              {renderCheckboxGroup({
+                label: "Industries",
+                name: "industries",
+                options: availableIndustries,
+                helperText: "Select all industries your company can support.",
+              })}
+
+              {renderCheckboxGroup({
+                label: "Respondent Types",
+                name: "respondent_types",
+                options: availableRespondentTypes,
+                helperText: "Select all respondent types your company can provide.",
+              })}
+            </div>
+          </section>
+
+          <div className="vp-form-actions">
+            {isReadOnly ? (
               <button
                 type="button"
+                className="vp-primary-button"
                 onClick={() => navigate("/vendor/dashboard")}
               >
-                Go to Dashboard
-                <ArrowRight size={17} />
+                Back to Dashboard
               </button>
-            </div>
-          )}
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="vp-secondary-button"
+                  onClick={handleSave}
+                  disabled={saving || submitting}
+                >
+                  <Save size={17} />
+                  {saving ? "Saving..." : "Save Draft"}
+                </button>
+
+                <button
+                  type="submit"
+                  className="vp-primary-button"
+                  disabled={saving || submitting}
+                >
+                  <Send size={17} />
+                  {submitting
+                    ? "Submitting..."
+                    : isChangesRequested
+                      ? "Resubmit Application"
+                      : "Submit for Review"}
+                </button>
+              </>
+            )}
+          </div>
         </form>
       </div>
     </div>

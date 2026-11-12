@@ -217,6 +217,28 @@ class Client(models.Model):
         return self.name
 
 
+class VendorIndustry(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class VendorRespondentType(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    industry = models.ForeignKey(
+        VendorIndustry,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="respondent_types",
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
 class Vendor(models.Model):
 
     INVOICE_METHODS = [
@@ -344,6 +366,18 @@ class Vendor(models.Model):
         max_digits=10,
         decimal_places=2,
         default=0
+    )
+
+    industries = models.ManyToManyField(
+        VendorIndustry,
+        blank=True,
+        related_name="vendors",
+    )
+
+    respondent_types = models.ManyToManyField(
+        VendorRespondentType,
+        blank=True,
+        related_name="vendors",
     )
 
     status = models.BooleanField(default=True)
@@ -533,6 +567,13 @@ class ProjectVendor(models.Model):
         ("closed", "Closed"),
     ]
 
+    RESPONSE_STATUS_CHOICES = [
+        ("pending", "Pending Response"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+        ("clarification_requested", "Clarification Requested"),
+    ]
+
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_vendors")
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="vendor_projects")
@@ -564,9 +605,42 @@ class ProjectVendor(models.Model):
 
     supplier_parameter_template = models.CharField(max_length=500,default="pid={{PANELIST IDENTIFIER}}&ext={{PANEL MISC DATA}}&reconnectID={{RECONNECTID}}")
 
+    response_status = models.CharField(
+        max_length=30,
+        choices=RESPONSE_STATUS_CHOICES,
+        default="accepted",
+        db_index=True,
+    )
+
+    response_deadline = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    responded_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    decline_reason = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    vendor_notes = models.TextField(
+        blank=True,
+        null=True,
+    )
+
     def save(self, *args, **kwargs):
         if not self.s2s_token:
             self.s2s_token = secrets.token_hex(32)
+
+        if self._state.adding and self.vendor:
+            if self.vendor.is_diy:
+                self.response_status = "pending"
+            else:
+                self.response_status = "accepted"
 
         if self.vendor:
             if not self.complete_link:
@@ -590,6 +664,45 @@ class ProjectVendor(models.Model):
     def __str__(self):
         return f"{self.project.name} - {self.vendor.name}"
 
+class ProjectVendorMessage(models.Model):
+
+    MESSAGE_TYPES = [
+        ("clarification", "Clarification"),
+        ("response", "Admin Response"),
+        ("general", "General Message"),
+    ]
+
+    project_vendor = models.ForeignKey(
+        ProjectVendor,
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+
+    sender_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("admin", "Admin"),
+            ("vendor", "Vendor"),
+        ],
+    )
+
+    message_type = models.CharField(
+        max_length=30,
+        choices=MESSAGE_TYPES,
+        default="general",
+    )
+
+    message = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.project_vendor} - {self.sender_type} - {self.message_type}"
 
 class Participant(models.Model):
     
@@ -1724,7 +1837,173 @@ class VendorPortalUser(models.Model):
         return False
 
 
+class VendorApplication(models.Model):
 
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("submitted", "Submitted"),
+        ("under_review", "Under Review"),
+        ("changes_requested", "Changes Requested"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    user = models.OneToOneField(
+        "VendorPortalUser",
+        on_delete=models.CASCADE,
+        related_name="application",
+    )
+
+    # Created after admin approval
+    vendor = models.OneToOneField(
+        "Vendor",
+        on_delete=models.PROTECT,
+        related_name="application",
+        null=True,
+        blank=True,
+    )
+
+    # Company information
+    company_name = models.CharField(max_length=255)
+    abrv_name = models.CharField(max_length=100, blank=True)
+    company_website = models.URLField(max_length=500, blank=True)
+    registration_number = models.CharField(max_length=150, blank=True)
+
+    # Contact information
+    contact_number = models.CharField(max_length=30)
+    invoice_email = models.EmailField(blank=True)
+
+    # Tax and address information
+    tax_id = models.CharField(max_length=100, blank=True)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
+    zip_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+
+    # Billing information
+    invoicing_method = models.CharField(
+        max_length=50,
+        choices=[
+            ("monthly_basis", "Monthly Basis"),
+            ("project_basis", "Project Basis"),
+        ],
+        blank=True,
+    )
+
+    payment_terms = models.CharField(
+        max_length=50,
+        choices=[
+            ("15", "15 Days"),
+            ("30", "30 Days"),
+            ("45", "45 Days"),
+            ("60", "60 Days"),
+        ],
+        blank=True,
+    )
+
+    # Application workflow
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="draft",
+        db_index=True,
+    )
+
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Vendor redirect links
+    complete_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    terminate_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    quota_full_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    security_terminate_link = models.URLField(
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+
+    # Vendor capabilities
+    industries = models.ManyToManyField(
+        VendorIndustry,
+        blank=True,
+        related_name="applications",
+    )
+
+    respondent_types = models.ManyToManyField(
+        VendorRespondentType,
+        blank=True,
+        related_name="applications",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.company_name} - {self.status}"
+
+
+class VendorApplicationReview(models.Model):
+
+    ACTION_CHOICES = [
+        ("submitted", "Submitted"),
+        ("under_review", "Under Review"),
+        ("changes_requested", "Changes Requested"),
+        ("resubmitted", "Resubmitted"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    application = models.ForeignKey(
+        VendorApplication,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="vendor_application_reviews",
+    )
+
+    action = models.CharField(
+        max_length=30,
+        choices=ACTION_CHOICES,
+    )
+
+    note = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.application.company_name} - {self.action}"
+
+
+    
+#Client Portal Notification----------------------------------------------------------------
 class DIYNotification(models.Model):
 
     EVENT_TYPE_CHOICES = [
@@ -1794,6 +2073,91 @@ class DIYNotification(models.Model):
     def __str__(self):
         return f"{self.title} - {self.event_type}"
 
+#Vendor Portal Notification----------------------------------------------------------------
+class VendorPortalNotification(models.Model):
+    EVENT_TYPES = [
+        ("application_submitted", "Vendor Application Submitted"),
+        ("application_resubmitted", "Vendor Application Resubmitted"),
+        ("application_changes_requested", "Application Changes Requested"),
+        ("application_approved", "Vendor Application Approved"),
+        ("application_rejected", "Vendor Application Rejected"),
+        ("project_assigned", "New Project Assigned"),
+        ("assignment_updated", "Project Assignment Updated"),
+        ("project_accepted", "Project Accepted"),
+        ("project_declined", "Project Declined"),
+        ("clarification_requested", "Clarification Requested"),
+        ("admin_message", "New Message from Admin"),
+        ("vendor_message", "New Message from Vendor"),
+        ("general_update", "General Update"),
+    ]
+
+    vendor_recipient = models.ForeignKey(
+        "VendorPortalUser",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+
+    admin_recipient = models.ForeignKey(
+        "auth.User",
+        on_delete=models.CASCADE,
+        related_name="vendor_portal_notifications",
+        null=True,
+        blank=True,
+    )
+
+    application = models.ForeignKey(
+        "VendorApplication",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+
+    project_vendor = models.ForeignKey(
+        "ProjectVendor",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+
+    event_type = models.CharField(
+        max_length=50,
+        choices=EVENT_TYPES,
+        default="general_update",
+    )
+
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if bool(self.vendor_recipient_id) == bool(self.admin_recipient_id):
+            raise ValidationError(
+                "A notification must have exactly one recipient."
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        recipient = (
+            self.vendor_recipient.email
+            if self.vendor_recipient_id
+            else self.admin_recipient.username
+        )
+        return f"{recipient} - {self.title}"
+    
+# ---------------------------------------------------------------
 class RevokedAccessToken(models.Model):
     jti = models.CharField(
         max_length=255,

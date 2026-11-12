@@ -42,5 +42,36 @@ export const saveVendorPortalProfile = (data) =>
 export const submitVendorApplication = () =>
   vendorPortalApi.post("vendor-portal/submit/", {});
 
+export const getVendorProjects = () =>
+  vendorPortalApi.get("vendor-portal/projects/");
 
+export const respondToVendorProject = (assignmentId, data) =>
+  vendorPortalApi.post(
+    `vendor-portal/projects/${assignmentId}/response/`,
+    data
+  );
+
+export const getVendorProjectMessages = (assignmentId) =>
+  vendorPortalApi.get(
+    `vendor-portal/projects/${assignmentId}/messages/`
+  );
+
+export const sendVendorProjectMessage = (assignmentId, message) =>
+  vendorPortalApi.post(
+    `vendor-portal/projects/${assignmentId}/messages/`,
+    { message }
+  );
+
+// Vendor portal notifications
+export const getVendorNotifications = () =>
+  vendorPortalApi.get("vendor-portal/notifications/");
+
+export const markVendorNotificationRead = (notificationId) =>
+  vendorPortalApi.post(
+    `vendor-portal/notifications/${notificationId}/read/`
+  );
+
+export const markAllVendorNotificationsRead = () =>
+  vendorPortalApi.post("vendor-portal/notifications/read-all/");
+  
 export default vendorPortalApi;

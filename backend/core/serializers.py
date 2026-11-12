@@ -184,6 +184,7 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source="project.name", read_only=True)
     vendor_name = serializers.CharField(source="vendor.name", read_only=True)
     supplier_link = serializers.SerializerMethodField()
+    unread_messages_count = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectVendor
@@ -194,6 +195,12 @@ class ProjectVendorSerializer(serializers.ModelSerializer):
         template = obj.supplier_parameter_template or "pid={{PANELIST IDENTIFIER}}"
 
         return f"{base_url}/api/survey/start/?gid={obj.gid}&{template}"
+
+    def get_unread_messages_count(self, obj):
+        return obj.messages.filter(
+            sender_type="vendor",
+            is_read=False,
+        ).count()
 
 
 class RespondentSerializer(serializers.ModelSerializer):

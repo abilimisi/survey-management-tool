@@ -71,12 +71,13 @@ import DIYStudyDetails from "../pages/diy/DIYStudyDetails";
 import DIYStudyAssessment from "../pages/diy/DIYStudyAssessment";
 import DIYStudyQuotation from "../pages/diy/DIYStudyQuotation";
 
-
+import VendorLayout from "../components/vendorPortal/VendorLayout";
 import VendorRegister from "../pages/vendorPortal/VendorRegister";
 import VendorLogin from "../pages/vendorPortal/VendorLogin";
 import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
 import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
+
 import SessionHeartbeat from "../components/SessionHeartbeat";
 
 
@@ -454,15 +455,10 @@ function AppRoutes() {
         element={<VendorLogin />}
       />
 
-      <Route
-        path="/vendor/dashboard"
-        element={<VendorDashboard />}
-      />
-
-      <Route
-        path="/vendor/profile"
-        element={<VendorProfile />}
-      />
+      <Route path="/vendor" element={<VendorLayout />}>
+        <Route path="dashboard" element={<VendorDashboard />} />
+        <Route path="profile" element={<VendorProfile />} />
+      </Route>
 
       
       <Route

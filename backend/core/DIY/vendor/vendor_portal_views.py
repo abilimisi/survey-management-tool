@@ -15,6 +15,7 @@ from .vendor_portal_auth import (
 from .vendor_portal_serializers import (
     VendorPortalLoginSerializer,
     VendorPortalRegistrationSerializer,
+    VendorPortalProjectAssignmentSerializer,
 )
 
 from django.utils import timezone
@@ -22,11 +23,22 @@ from rest_framework.exceptions import ValidationError
 
 from .vendor_portal_serializers import VendorPortalProfileSerializer
 
-from ...models import Vendor, VendorPortalUser
+from ...models import (
+    Vendor,
+    VendorPortalUser,
+    VendorApplication,
+    VendorApplicationReview,
+    ProjectVendor,
+    ProjectVendorMessage,
+    VendorPortalNotification,
+)
+from .vendor_portal_notifications import notify_admins, notify_vendor
+
 
 
 def vendor_token_response(vendor_user):
     token = VendorPortalAccessToken.for_user(vendor_user)
+    application = vendor_user.application
 
     return {
         "access": str(token),
@@ -35,9 +47,10 @@ def vendor_token_response(vendor_user):
             "email": vendor_user.email,
             "first_name": vendor_user.first_name,
             "last_name": vendor_user.last_name,
-            "application_status": vendor_user.application_status,
+            "application_status": application.status,
         },
     }
+
 
 
 class VendorPortalRegisterView(APIView):
@@ -94,13 +107,22 @@ class VendorPortalLoginView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
 class VendorPortalMeView(APIView):
     authentication_classes = [VendorPortalJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         vendor_user = request.user
+        application = vendor_user.application
+
+        latest_review = (
+            application.reviews
+            .exclude(note="")
+            .order_by("-created_at")
+            .first()
+        )
+
+        admin_note = latest_review.note if latest_review else ""
 
         return Response(
             {
@@ -109,9 +131,19 @@ class VendorPortalMeView(APIView):
                     "email": vendor_user.email,
                     "first_name": vendor_user.first_name,
                     "last_name": vendor_user.last_name,
-                    "application_status": vendor_user.application_status,
+                    "application_status": application.status,
+                    "company_name": application.company_name,
+                    "profile_submitted": application.status in [
+                        "submitted",
+                        "under_review",
+                        "changes_requested",
+                        "approved",
+                        "rejected",
+                    ],
+                    "admin_note": admin_note,
                 },
-                "vendor_id": vendor_user.vendor_id,
+                "application_id": application.pk,
+                "vendor_id": application.vendor_id,
             },
             status=status.HTTP_200_OK,
         )
@@ -123,43 +155,45 @@ class VendorPortalProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = VendorPortalProfileSerializer(request.user)
-        return Response(serializer.data)
+        application = request.user.application
+        serializer = VendorPortalProfileSerializer(application)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request):
-        vendor_user = request.user
+        application = request.user.application
 
-        # Only rejected applications can be edited after submission.
-        if (
-            vendor_user.profile_submitted
-            and vendor_user.application_status != "rejected"
-        ):
+        # Applications can only be edited while in draft
+        # or when the admin has requested changes.
+        if application.status not in ["draft", "changes_requested"]:
             return Response(
                 {
                     "error": (
-                        "Your submitted profile is read-only. "
-                        "You can edit it only if the administrator "
-                        "has rejected your application."
+                        "Your application cannot currently be edited. "
+                        "You can edit it when it is in draft or "
+                        "changes requested status."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = VendorPortalProfileSerializer(
-            vendor_user,
+            application,
             data=request.data,
             partial=True,
         )
+
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(
             {
-                "message": "Vendor profile saved successfully.",
+                "message": "Vendor application saved successfully.",
                 "profile": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
+
 
 
 class VendorPortalSubmitView(APIView):
@@ -168,22 +202,15 @@ class VendorPortalSubmitView(APIView):
 
     def post(self, request):
         vendor_user = request.user
+        application = vendor_user.application
 
-        is_initial_submission = (
-            vendor_user.application_status == "pending"
-            and not vendor_user.profile_submitted
-        )
+        previous_status = application.status
 
-        is_resubmission = (
-            vendor_user.application_status == "rejected"
-            and vendor_user.profile_submitted
-        )
-
-        if not (is_initial_submission or is_resubmission):
+        if previous_status not in ["draft", "changes_requested"]:
             return Response(
                 {
                     "error": (
-                        "This application cannot be submitted again "
+                        "Your application cannot be submitted "
                         "in its current status."
                     )
                 },
@@ -193,58 +220,81 @@ class VendorPortalSubmitView(APIView):
         required_fields = {
             "company_name": "Company name",
             "contact_number": "Contact number",
-            "invoice_email": "Invoice email",
             "address": "Address",
-            "invoicing_method": "Invoicing method",
-            "payment_terms": "Payment terms",
             "city": "City",
             "zip_code": "ZIP/postal code",
             "country": "Country",
-            "state": "State",
         }
 
         missing = [
             label
             for field, label in required_fields.items()
-            if not (getattr(vendor_user, field, "") or "").strip()
+            if not (getattr(application, field, "") or "").strip()
         ]
 
         if missing:
             return Response(
                 {
-                    "error": "Complete all required profile fields.",
+                    "error": "Complete all required company profile fields.",
                     "missing_fields": missing,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        vendor_user.profile_submitted = True
-        vendor_user.application_status = "pending"
-        vendor_user.submitted_at = timezone.now()
-        vendor_user.admin_note = ""
+        is_resubmission = previous_status == "changes_requested"
 
-        vendor_user.save(
-            update_fields=[
-                "profile_submitted",
-                "application_status",
-                "submitted_at",
-                "admin_note",
-                "updated_at",
-            ]
-        )
+        with transaction.atomic():
+            application.status = "submitted"
+            application.submitted_at = timezone.now()
+            application.save(
+                update_fields=[
+                    "status",
+                    "submitted_at",
+                    "updated_at",
+                ]
+            )
+
+            VendorApplicationReview.objects.create(
+                application=application,
+                action=(
+                    "resubmitted" if is_resubmission else "submitted"
+                ),
+                note="Vendor resubmitted the application."
+                if is_resubmission
+                else "Vendor submitted the application.",
+            )
+
+            notify_admins(
+                event_type=(
+                    "application_resubmitted"
+                    if is_resubmission
+                    else "application_submitted"
+                ),
+                title=(
+                    "Vendor application resubmitted"
+                    if is_resubmission
+                    else "New vendor application submitted"
+                ),
+                message=(
+                    f"{application.company_name} "
+                    f"{'resubmitted' if is_resubmission else 'submitted'} "
+                    "their vendor application for review."
+                ),
+                application=application,
+            )
 
         return Response(
             {
                 "message": (
-                    "Vendor profile resubmitted for admin approval."
+                    "Vendor application resubmitted successfully."
                     if is_resubmission
-                    else "Vendor profile submitted for admin approval."
+                    else "Vendor application submitted successfully."
                 ),
-                "application_status": vendor_user.application_status,
-                "profile_submitted": vendor_user.profile_submitted,
+                "status": application.status,
             },
             status=status.HTTP_200_OK,
         )
+
 
 class VendorPortalAdminApplicationsView(APIView):
     permission_classes = [IsAdminUser]
@@ -263,36 +313,77 @@ class VendorPortalAdminApplicationsView(APIView):
             return denied
 
         applications = (
-            VendorPortalUser.objects
-            .filter(profile_submitted=True)
-            .select_related("vendor")
-            .order_by("-submitted_at")
+            VendorApplication.objects
+            .select_related("user", "vendor")
+            .prefetch_related(
+                "reviews",
+                "industries",
+                "respondent_types",
+            )
+            .order_by("-submitted_at", "-created_at")
         )
+
+        if application_id:
+            applications = applications.filter(pk=application_id)
 
         results = []
 
         for application in applications:
+            latest_review = application.reviews.order_by(
+                "-created_at"
+            ).first()
+
             results.append({
                 "id": application.pk,
-                "email": application.email,
-                "first_name": application.first_name,
-                "last_name": application.last_name,
+                "user_id": application.user_id,
+                "email": application.user.email,
+                "first_name": application.user.first_name,
+                "last_name": application.user.last_name,
                 "company_name": application.company_name,
                 "abrv_name": application.abrv_name,
+                "company_website": application.company_website,
+                "registration_number": application.registration_number,
                 "contact_number": application.contact_number,
                 "invoice_email": application.invoice_email,
                 "tax_id": application.tax_id,
                 "address": application.address,
-                "invoicing_method": application.invoicing_method,
-                "payment_terms": application.payment_terms,
                 "city": application.city,
                 "state": application.state,
                 "zip_code": application.zip_code,
                 "country": application.country,
+                "invoicing_method": application.invoicing_method,
+                "payment_terms": application.payment_terms,
+                "status": application.status,
                 "submitted_at": application.submitted_at,
-                "application_status": application.application_status,
-                "admin_note": application.admin_note,
+                "reviewed_at": application.reviewed_at,
+                "admin_note": latest_review.note if latest_review else "",
                 "vendor_id": application.vendor_id,
+                "reviews": [
+                    {
+                        "action": review.action,
+                        "note": review.note,
+                        "created_at": review.created_at,
+                    }
+                    for review in application.reviews.all()
+                ],
+                "complete_link": application.complete_link,
+                "terminate_link": application.terminate_link,
+                "quota_full_link": application.quota_full_link,
+                "security_terminate_link": application.security_terminate_link,
+
+                "industries": [
+                    {"id": industry.id, "name": industry.name}
+                    for industry in application.industries.all()
+                ],
+
+                "respondent_types": [
+                    {
+                        "id": respondent_type.id,
+                        "name": respondent_type.name,
+                        "industry_id": respondent_type.industry_id,
+                    }
+                    for respondent_type in application.respondent_types.all()
+                ],
             })
 
         return Response(results, status=status.HTTP_200_OK)
@@ -309,32 +400,30 @@ class VendorPortalAdminApplicationsView(APIView):
             )
 
         action = request.data.get("action")
+        note = str(request.data.get("admin_note") or "").strip()
 
-        if action not in ("approve", "reject"):
-            return Response(
-                {"error": "Action must be 'approve' or 'reject'."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        rejection_note = str(
-            request.data.get("admin_note") or ""
-        ).strip()
-
-        if action == "reject" and not rejection_note:
+        if action not in ("approve", "request_changes", "reject"):
             return Response(
                 {
                     "error": (
-                        "Please provide a rejection reason "
-                        "so the vendor knows what to correct."
+                        "Action must be approve, request_changes "
+                        "or reject."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if action in ("request_changes", "reject") and not note:
+            return Response(
+                {"error": "Please provide a reason or instructions."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         with transaction.atomic():
             application = (
-                VendorPortalUser.objects
+                VendorApplication.objects
                 .select_for_update()
+                .select_related("user")
                 .filter(pk=application_id)
                 .first()
             )
@@ -345,74 +434,616 @@ class VendorPortalAdminApplicationsView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            if (
-                application.application_status != "pending"
-                or not application.profile_submitted
-            ):
+            if application.status not in ("submitted", "under_review"):
                 return Response(
                     {
                         "error": (
-                            "This application is not awaiting approval."
+                            "Only submitted or under-review "
+                            "applications can be reviewed."
                         )
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            if application.vendor_id:
-                return Response(
-                    {
-                        "error": (
-                            "Application is already linked to a vendor."
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+            if action == "approve":
+                if application.vendor_id:
+                    return Response(
+                        {"error": "This application already has a vendor."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                vendor = Vendor.objects.create(
+                    name=application.company_name,
+                    abrv_name=application.abrv_name or None,
+                    contact_number=application.contact_number or None,
+                    email=application.user.email,
+                    invoice_email=application.invoice_email or None,
+                    tax_id=application.tax_id or None,
+                    address=application.address or None,
+                    invoicing_method=application.invoicing_method or None,
+                    payment_terms=application.payment_terms or None,
+                    city=application.city or None,
+                    zip_code=application.zip_code or None,
+                    country=application.country or None,
+                    state=application.state or None,
+
+                    # Vendor redirect links
+                    complete_link=application.complete_link or None,
+                    terminate_link=application.terminate_link or None,
+                    quota_full_link=application.quota_full_link or None,
+                    security_terminate_link=(
+                        application.security_terminate_link or None
+                    ),
+
+                    status=True,
+                    is_diy=True,
                 )
 
-            if action == "reject":
-                application.application_status = "rejected"
-                application.admin_note = rejection_note
+                # Copy the vendor's selected capabilities
+                vendor.industries.set(application.industries.all())
+                vendor.respondent_types.set(application.respondent_types.all())
 
-                application.save(update_fields=[
-                    "application_status",
-                    "admin_note",
-                    "updated_at",
-                ])
+                application.vendor = vendor
+                application.status = "approved"
+                application.reviewed_at = timezone.now()
+                application.save(
+                    update_fields=[
+                        "vendor",
+                        "status",
+                        "reviewed_at",
+                        "updated_at",
+                    ]
+                )
 
-                return Response({
-                    "message": "Vendor application rejected.",
-                    "admin_note": application.admin_note,
-                }, status=status.HTTP_200_OK)
+                # Link the approved vendor to the vendor portal account
+                application.user.vendor = vendor
+                application.user.application_status = "approved"
 
-            vendor = Vendor.objects.create(
-                name=application.company_name,
-                abrv_name=application.abrv_name or None,
-                contact_number=application.contact_number or None,
-                email=application.email,
-                invoice_email=application.invoice_email or None,
-                tax_id=application.tax_id or None,
-                address=application.address or None,
-                invoicing_method=application.invoicing_method or None,
-                payment_terms=application.payment_terms or None,
-                city=application.city or None,
-                zip_code=application.zip_code or None,
-                country=application.country or None,
-                state=application.state or None,
-                status=True,
-                is_diy=True,
+                application.user.save(
+                    update_fields=[
+                        "vendor",
+                        "application_status",
+                        "updated_at",
+                    ]
+                )
+
+                review_action = "approved"
+                review_note = note or "Vendor application approved."
+            elif action == "request_changes":
+                application.status = "changes_requested"
+                application.reviewed_at = timezone.now()
+                application.save(
+                    update_fields=["status", "reviewed_at", "updated_at"]
+                )
+
+                review_action = "changes_requested"
+                review_note = note
+
+            else:
+                application.status = "rejected"
+                application.reviewed_at = timezone.now()
+                application.save(
+                    update_fields=["status", "reviewed_at", "updated_at"]
+                )
+
+                application.user.application_status = "rejected"
+                application.user.save(
+                    update_fields=["application_status", "updated_at"]
+                )
+
+                review_action = "rejected"
+                review_note = note
+
+            VendorApplicationReview.objects.create(
+                application=application,
+                reviewed_by=request.user,
+                action=review_action,
+                note=review_note,
             )
 
-            application.vendor = vendor
-            application.application_status = "approved"
-            application.admin_note = ""
+            notify_vendor(
+                application=application,
+                vendor_user=application.user,
+                event_type={
+                    "approve": "application_approved",
+                    "request_changes": "application_changes_requested",
+                    "reject": "application_rejected",
+                }[action],
+                title={
+                    "approve": "Vendor application approved",
+                    "request_changes": "Changes requested on your application",
+                    "reject": "Vendor application rejected",
+                }[action],
+                message={
+                    "approve": "Your vendor application has been approved.",
+                    "request_changes": f"The admin requested changes to your application: {note}",
+                    "reject": f"Your vendor application has been rejected: {note}",
+                }[action],
+            )
 
-            application.save(update_fields=[
-                "vendor",
-                "application_status",
-                "admin_note",
-                "updated_at",
-            ])
+        return Response(
+            {
+                "message": (
+                    "Vendor application approved."
+                    if action == "approve"
+                    else "Changes requested from vendor."
+                    if action == "request_changes"
+                    else "Vendor application rejected."
+                ),
+                "status": application.status,
+                "vendor_id": application.vendor_id,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class VendorPortalProjectsView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        vendor_user = request.user
+
+        if (
+            not vendor_user.is_active
+            or vendor_user.application_status != "approved"
+            or not vendor_user.vendor_id
+            or not vendor_user.vendor.is_diy
+        ):
+            return Response(
+                {"error": "Your approved vendor account is required to view projects."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        assignments = (
+            ProjectVendor.objects
+            .filter(vendor_id=vendor_user.vendor_id)
+            .select_related("project", "vendor")
+            .order_by("-created_at")
+        )
+
+        serializer = VendorPortalProjectAssignmentSerializer(
+            assignments,
+            many=True,
+        )
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class VendorPortalProjectResponseView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, assignment_id):
+        vendor_user = request.user
+
+        # Only approved, active DIY vendor accounts can respond.
+        if (
+            not vendor_user.is_active
+            or vendor_user.application_status != "approved"
+            or not vendor_user.vendor_id
+            or not vendor_user.vendor.is_diy
+        ):
+            return Response(
+                {"error": "Your approved vendor account is required."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        action = request.data.get("action")
+        message_text = (request.data.get("message") or "").strip()
+
+        if action not in ["accept", "decline", "clarification"]:
+            raise ValidationError({
+                "action": "Choose accept, decline, or clarification."
+            })
+
+        if action in ["decline", "clarification"] and not message_text:
+            field = "reason" if action == "decline" else "message"
+            raise ValidationError({
+                field: "This field is required."
+            })
+
+        with transaction.atomic():
+            try:
+                assignment = (
+                    ProjectVendor.objects
+                    .select_for_update()
+                    .get(
+                        pk=assignment_id,
+                        vendor_id=vendor_user.vendor_id,
+                        vendor__is_diy=True,
+                    )
+                )
+            except ProjectVendor.DoesNotExist:
+                return Response(
+                    {"error": "Project assignment not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            if assignment.status != "active":
+                return Response(
+                    {"error": "This project assignment is not active."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if assignment.response_status not in [
+                "pending",
+                "clarification_requested",
+            ]:
+                return Response(
+                    {
+                        "error": (
+                            "You have already responded to this project "
+                            "assignment."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if action == "accept":
+                assignment.response_status = "accepted"
+                assignment.responded_at = timezone.now()
+                assignment.decline_reason = None
+
+            elif action == "decline":
+                assignment.response_status = "declined"
+                assignment.responded_at = timezone.now()
+                assignment.decline_reason = message_text
+
+                ProjectVendorMessage.objects.create(
+                    project_vendor=assignment,
+                    sender_type="vendor",
+                    message_type="response",
+                    message=message_text,
+                )
+
+            elif action == "clarification":
+                assignment.response_status = "clarification_requested"
+                assignment.responded_at = timezone.now()
+
+                ProjectVendorMessage.objects.create(
+                    project_vendor=assignment,
+                    sender_type="vendor",
+                    message_type="clarification",
+                    message=message_text,
+                )
+
+            assignment.save(
+                update_fields=[
+                    "response_status",
+                    "responded_at",
+                    "decline_reason",
+                ]
+            )
+
+            notification_details = {
+                "accept": {
+                    "event_type": "project_accepted",
+                    "title": "Vendor accepted a project",
+                    "message": (
+                        f"{vendor_user.vendor.name} accepted the project "
+                        f"'{assignment.project.name}'."
+                    ),
+                },
+                "decline": {
+                    "event_type": "project_declined",
+                    "title": "Vendor declined a project",
+                    "message": (
+                        f"{vendor_user.vendor.name} declined the project "
+                        f"'{assignment.project.name}'. "
+                        f"Reason: {message_text}"
+                    ),
+                },
+                "clarification": {
+                    "event_type": "clarification_requested",
+                    "title": "Vendor requested clarification",
+                    "message": (
+                        f"{vendor_user.vendor.name} requested clarification "
+                        f"for the project '{assignment.project.name}': "
+                        f"{message_text}"
+                    ),
+                },
+            }
+
+            notification = notification_details[action]
+
+            notify_admins(
+                event_type=notification["event_type"],
+                title=notification["title"],
+                message=notification["message"],
+                project_vendor=assignment,
+            )
+
+        serializer = VendorPortalProjectAssignmentSerializer(assignment)
+
+        return Response(
+            {
+                "message": "Your response has been submitted.",
+                "assignment": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class VendorPortalProjectMessagesView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_assignment(self, request, assignment_id):
+        vendor_user = request.user
+
+        if (
+            not vendor_user.is_active
+            or vendor_user.application_status != "approved"
+            or not vendor_user.vendor_id
+            or not vendor_user.vendor.is_diy
+        ):
+            return None
+
+        try:
+            return ProjectVendor.objects.get(
+                pk=assignment_id,
+                vendor_id=vendor_user.vendor_id,
+                vendor__is_diy=True,
+            )
+        except ProjectVendor.DoesNotExist:
+            return None
+
+    def get(self, request, assignment_id):
+        assignment = self.get_assignment(request, assignment_id)
+
+        if assignment is None:
+            return Response(
+                {"error": "Project assignment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        messages = assignment.messages.order_by("created_at")
+
+        # Mark unread admin messages as read.
+        messages.filter(
+            sender_type="admin",
+            is_read=False,
+        ).update(is_read=True)
+
+        return Response(
+            [
+                {
+                    "id": message.id,
+                    "sender_type": message.sender_type,
+                    "message_type": message.message_type,
+                    "message": message.message,
+                    "created_at": message.created_at,
+                    "is_read": message.is_read,
+                }
+                for message in messages
+            ],
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, assignment_id):
+        assignment = self.get_assignment(request, assignment_id)
+
+        if assignment is None:
+            return Response(
+                {"error": "Project assignment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        message_text = (request.data.get("message") or "").strip()
+
+        if not message_text:
+            return Response(
+                {"error": "Message cannot be empty."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        message = ProjectVendorMessage.objects.create(
+            project_vendor=assignment,
+            sender_type="vendor",
+            message_type="general",
+            message=message_text,
+        )
+
+        notify_admins(
+            event_type="vendor_message",
+            title="New message from vendor",
+            message=(
+                f"{request.user.vendor.name} sent a message about "
+                f"the project '{assignment.project.name}'."
+            ),
+            project_vendor=assignment,
+        )
+
+        return Response(
+            {
+                "id": message.id,
+                "sender_type": message.sender_type,
+                "message_type": message.message_type,
+                "message": message.message,
+                "created_at": message.created_at,
+                "is_read": message.is_read,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+class VendorPortalNotificationsView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifications = VendorPortalNotification.objects.filter(
+            vendor_recipient=request.user
+        ).select_related(
+            "application",
+            "project_vendor__project",
+        ).order_by("-created_at")
+
+        unread_count = notifications.filter(is_read=False).count()
+
+        results = [
+            {
+                "id": notification.id,
+                "event_type": notification.event_type,
+                "title": notification.title,
+                "message": notification.message,
+                "is_read": notification.is_read,
+                "created_at": notification.created_at,
+                "application_id": notification.application_id,
+                "project_vendor_id": notification.project_vendor_id,
+                "project_name": (
+                    notification.project_vendor.project.name
+                    if notification.project_vendor_id
+                    else None
+                ),
+            }
+            for notification in notifications
+        ]
 
         return Response({
-            "message": "Vendor application approved.",
-            "vendor_id": vendor.pk,
+            "unread_count": unread_count,
+            "notifications": results,
         }, status=status.HTTP_200_OK)
+
+
+class VendorPortalNotificationReadView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, notification_id):
+        updated = VendorPortalNotification.objects.filter(
+            pk=notification_id,
+            vendor_recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        if not updated and not VendorPortalNotification.objects.filter(
+            pk=notification_id,
+            vendor_recipient=request.user,
+        ).exists():
+            return Response(
+                {"error": "Notification not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            {"message": "Notification marked as read."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalMarkAllNotificationsReadView(APIView):
+    authentication_classes = [VendorPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        VendorPortalNotification.objects.filter(
+            vendor_recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        return Response(
+            {"message": "All notifications marked as read."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalAdminNotificationsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        notifications = VendorPortalNotification.objects.filter(
+            admin_recipient=request.user
+        ).select_related(
+            "application",
+            "application__user",
+            "application__vendor",
+            "project_vendor__project",
+            "project_vendor__vendor",
+        ).order_by("-created_at")
+
+        unread_count = notifications.filter(is_read=False).count()
+
+        results = [
+            {
+                "id": notification.id,
+                "event_type": notification.event_type,
+                "title": notification.title,
+                "message": notification.message,
+                "is_read": notification.is_read,
+                "created_at": notification.created_at,
+                "application_id": notification.application_id,
+                "application_company": (
+                    notification.application.company_name
+                    if notification.application_id
+                    else None
+                ),
+                "vendor_email": (
+                    notification.application.user.email
+                    if notification.application_id
+                    else None
+                ),
+                "vendor_id": (
+                    notification.application.vendor_id
+                    if notification.application_id
+                    else (
+                        notification.project_vendor.vendor_id
+                        if notification.project_vendor_id
+                        else None
+                    )
+                ),
+                "project_vendor_id": notification.project_vendor_id,
+                "project_name": (
+                    notification.project_vendor.project.name
+                    if notification.project_vendor_id
+                    else None
+                ),
+                "project_id": (
+                    notification.project_vendor.project_id
+                    if notification.project_vendor_id
+                    else None
+                ),
+            }
+            for notification in notifications
+        ]
+
+        return Response({
+            "unread_count": unread_count,
+            "notifications": results,
+        }, status=status.HTTP_200_OK)
+
+class VendorPortalAdminNotificationReadView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, notification_id):
+        updated = VendorPortalNotification.objects.filter(
+            pk=notification_id,
+            admin_recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        if not updated and not VendorPortalNotification.objects.filter(
+            pk=notification_id,
+            admin_recipient=request.user,
+        ).exists():
+            return Response(
+                {"error": "Notification not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            {"message": "Notification marked as read."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalAdminMarkAllNotificationsReadView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        VendorPortalNotification.objects.filter(
+            admin_recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+
+        return Response(
+            {"message": "All notifications marked as read."},
+            status=status.HTTP_200_OK,
+        )

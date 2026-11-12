@@ -29,3 +29,18 @@ export const updateProjectVendor = async (id, data) => {
   );
   return response.data;
 };
+
+export const getProjectVendorMessages = async (id) => {
+  const response = await axiosInstance.get(
+    `/project-vendors/${id}/messages/`
+  );
+  return response.data;
+};
+
+export const sendProjectVendorMessage = async (id, message) => {
+  const response = await axiosInstance.post(
+    `/project-vendors/${id}/messages/`,
+    { message }
+  );
+  return response.data;
+};

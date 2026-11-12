@@ -1,8 +1,9 @@
+from django.db.migrations import serializer
 from django.shortcuts import redirect, get_object_or_404, render
 from django.utils import timezone
 from django.http import HttpResponse, request
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework import status
 import uuid
@@ -16,6 +17,8 @@ from datetime import datetime, timezone as dt_timezone
 from datetime import date,datetime
 from django.utils import timezone as django_timezone
 
+
+from core.DIY.vendor.vendor_portal_notifications import notify_vendor
 import logging
 
 logger = logging.getLogger(__name__)
@@ -28,7 +31,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from .models import RevokedAccessToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany,ProjectVendorMessage
 
 from django.contrib.auth.models import User
 
@@ -356,6 +359,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ProjectVendorViewSet(viewsets.ModelViewSet):
     queryset = ProjectVendor.objects.all().order_by("-id")
     serializer_class = ProjectVendorSerializer
+
+    def perform_create(self, serializer):
+        assignment = serializer.save()
+
+        notify_vendor(
+            project_vendor=assignment,
+            event_type="project_assigned",
+            title="New project assigned",
+            message=(
+                f"You have been assigned to the project "
+                f"'{assignment.project.name}'. Please review the project "
+                "details and submit your response."
+            ),
+        )
     
     def destroy(self, request, *args, **kwargs):
 
@@ -366,6 +383,70 @@ class ProjectVendorViewSet(viewsets.ModelViewSet):
             )
 
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=["get", "post"], url_path="messages")
+    def messages(self, request, pk=None):
+        assignment = self.get_object()
+
+        if request.method == "GET":
+            messages = assignment.messages.order_by("created_at")
+
+            messages.filter(
+                sender_type="vendor",
+                is_read=False,
+            ).update(is_read=True)
+
+            return Response(
+                [
+                    {
+                        "id": message.id,
+                        "sender_type": message.sender_type,
+                        "message_type": message.message_type,
+                        "message": message.message,
+                        "created_at": message.created_at,
+                        "is_read": message.is_read,
+                    }
+                    for message in messages
+                ],
+                status=status.HTTP_200_OK,
+            )
+
+        message_text = (request.data.get("message") or "").strip()
+
+        if not message_text:
+            return Response(
+                {"error": "Message cannot be empty."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        message = ProjectVendorMessage.objects.create(
+            project_vendor=assignment,
+            sender_type="admin",
+            message_type="response",
+            message=message_text,
+        )
+
+        notify_vendor(
+            project_vendor=assignment,
+            event_type="admin_message",
+            title="New message from admin",
+            message=(
+                f"Your admin sent a message about the project "
+                f"'{assignment.project.name}'."
+            ),
+        )
+
+        return Response(
+            {
+                "id": message.id,
+                "sender_type": message.sender_type,
+                "message_type": message.message_type,
+                "message": message.message,
+                "created_at": message.created_at,
+                "is_read": message.is_read,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class RespondentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -761,7 +842,7 @@ def create_respondent_and_redirect(request, project_vendor):
             project_vendor=project_vendor,
             participant=participant,
 
-             vendor_panelist_id=get_first_query_value(
+            vendor_panelist_id=get_first_query_value(
             request,
             [
                 "pid",
@@ -1432,7 +1513,15 @@ def supplier_statistics(request, project_id):
                 f"?gid={pv.gid}"
                 f"&{pv.supplier_parameter_template}"
             ),
-        })
+            "unread_messages_count": pv.messages.filter(
+                sender_type="vendor",
+                is_read=False
+            ).count(),
+
+            "is_diy": pv.vendor.is_diy,
+            "response_status": pv.response_status,
+            "responded_at": pv.responded_at,
+                    })
 
     return Response(data)
 

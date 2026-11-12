@@ -36,6 +36,8 @@ export const reviewVendorApplication = (
     `vendor-portal/admin/applications/${applicationId}/decision/`,
     {
       action,
-      ...(action === "reject" ? { admin_note: adminNote } : {}),
+      ...(action === "request_changes" || action === "reject"
+        ? { admin_note: adminNote }
+        : {}),
     }
   );

@@ -1,5 +1,6 @@
+
 import { useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   UserCircle2,
   Menu,
@@ -8,22 +9,25 @@ import {
 } from "lucide-react";
 import "./TopBar.css";
 import logo from "../../assets/logo_ob.jpg";
-import { logoutUser } from "../../api/authApi";
 
 import {
+  logoutUser,
   getAdminNotifications,
   markAdminNotificationAsRead,
   markAllAdminNotificationsAsRead,
+  getVendorAdminNotifications,
+  markVendorAdminNotificationAsRead,
+  markAllVendorAdminNotificationsAsRead,
 } from "../../api/authApi";
 
-// toggleSidebar is passed from MainLayout
 function Topbar({ toggleSidebar }) {
   const navigate = useNavigate();
+
   const username = localStorage.getItem("username") || "Admin";
   const isSuperuser = localStorage.getItem("is_superuser") === "true";
   const rawRole = isSuperuser
-  ? "admin"
-  : (localStorage.getItem("role") || "user");
+    ? "admin"
+    : localStorage.getItem("role") || "user";
 
   const roleLabels = {
     admin: "Administrator",
@@ -40,51 +44,82 @@ function Topbar({ toggleSidebar }) {
     viewer: "Viewer",
   };
 
-  const userRole =
-    roleLabels[rawRole.toLowerCase()] || rawRole;
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);
-    const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(0);
-    const [notificationOpen, setNotificationOpen] = useState(false);
-    const notificationRef = useRef(null);
+  const userRole = roleLabels[rawRole.toLowerCase()] || rawRole;
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-    document.addEventListener("mousedown", handleClickOutside);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+  const loadNotifications = useCallback(async () => {
+    try {
+      const [clientResponse, vendorResponse] = await Promise.all([
+        getAdminNotifications(),
+        getVendorAdminNotifications(),
+      ]);
+
+      const clientNotifications = (
+        clientResponse.data.notifications || []
+      ).map((item) => ({
+        ...item,
+        source: "client",
+        recordId: item.study_id,
+        recordLabel: "Study ID",
+        notificationKey: `client-${item.id}`,
+      }));
+
+      const vendorNotifications = (
+        vendorResponse.data.notifications || []
+      ).map((item) => ({
+        ...item,
+        source: "vendor",
+        recordId: item.vendor_id,
+        notificationKey: `vendor-${item.id}`,
+      }));
+
+      const combined = [
+        ...clientNotifications,
+        ...vendorNotifications,
+      ].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      );
+
+      setNotifications(combined);
+
+      const clientUnread = clientResponse.data.unread_count || 0;
+      const vendorUnread = vendorResponse.data.unread_count || 0;
+
+      setUnreadCount(clientUnread + vendorUnread);
+    } catch (error) {
+      console.error("Unable to load notifications:", error);
+    }
   }, []);
 
-  const loadNotifications = async () => {
-    try {
-      const response = await getAdminNotifications();
+  useEffect(() => {
+    loadNotifications();
 
-      setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unread_count || 0);
-    } catch (error) {
-      console.error("Unable to load admin notifications:", error);
-    }
-  };
+    const interval = setInterval(loadNotifications, 12000);
 
-  const handleAdminNotificationClick = async (notification) => {
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
+
+  const handleNotificationClick = async (notification) => {
     try {
       if (!notification.is_read) {
-        await markAdminNotificationAsRead(notification.id);
+        if (notification.source === "vendor") {
+          await markVendorAdminNotificationAsRead(notification.id);
+        } else {
+          await markAdminNotificationAsRead(notification.id);
+        }
 
         setNotifications((previous) =>
           previous.map((item) =>
-            item.id === notification.id
+            item.notificationKey === notification.notificationKey
               ? { ...item, is_read: true }
               : item
           )
@@ -95,16 +130,36 @@ function Topbar({ toggleSidebar }) {
 
       setNotificationOpen(false);
 
-      // Navigate to the relevant DIY study
-      navigate(`/diy/studies/${notification.study_id}`);
+      // Preserve existing client notification navigation.
+      if (notification.source === "client") {
+        if (notification.study_id) {
+          navigate(`/diy/studies/${notification.study_id}`);
+        }
+        return;
+      }
+
+      // Vendor application notifications.
+      if (notification.application_id) {
+        navigate("/vendors/applications");
+        return;
+      }
+
+      // Vendor project notifications.
+      if (notification.project_id) {
+        navigate(`/projects/${notification.project_id}`);
+        return;
+      }
     } catch (error) {
-      console.error("Unable to mark admin notification as read:", error);
+      console.error("Unable to mark notification as read:", error);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllAdminNotificationsAsRead();
+      await Promise.all([
+        markAllAdminNotificationsAsRead(),
+        markAllVendorAdminNotificationsAsRead(),
+      ]);
 
       setNotifications((previous) =>
         previous.map((item) => ({ ...item, is_read: true }))
@@ -116,15 +171,12 @@ function Topbar({ toggleSidebar }) {
     }
   };
 
-  
   const handleLogout = async () => {
     const accessToken = localStorage.getItem("access_token");
     const refreshToken = localStorage.getItem("refresh_token");
 
     try {
       await logoutUser(accessToken, refreshToken);
-
-      console.log("Backend logout successful.");
 
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
@@ -133,7 +185,6 @@ function Topbar({ toggleSidebar }) {
       localStorage.removeItem("role");
 
       navigate("/login");
-
     } catch (error) {
       console.error("Backend logout failed:", error);
 
@@ -144,15 +195,14 @@ function Topbar({ toggleSidebar }) {
   };
 
   useEffect(() => {
-    loadNotifications();
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
 
-    const interval = setInterval(loadNotifications, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
       if (
         notificationRef.current &&
         !notificationRef.current.contains(event.target)
@@ -164,26 +214,22 @@ function Topbar({ toggleSidebar }) {
     const handleEscapeKey = (event) => {
       if (event.key === "Escape") {
         setNotificationOpen(false);
+        setDropdownOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscapeKey);
     };
   }, []);
 
-
   return (
     <header className="topbar">
-
-      {/* LEFT SIDE */}
       <div className="topbar-left">
-
-        {/* Hamburger — only visible on tablets/phones (< 1024px) */}
         <button
           className="hamburger-btn"
           onClick={toggleSidebar}
@@ -199,17 +245,19 @@ function Topbar({ toggleSidebar }) {
         />
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="topbar-right">
-
-        {/* ADMIN NOTIFICATIONS */}
-        <div className="admin-notification-wrapper" ref={notificationRef}>
+        <div
+          className="admin-notification-wrapper"
+          ref={notificationRef}
+        >
           <button
             type="button"
             className={`admin-notification-btn ${
               notificationOpen ? "active" : ""
             }`}
-            onClick={() => setNotificationOpen((previous) => !previous)}
+            onClick={() =>
+              setNotificationOpen((previous) => !previous)
+            }
             aria-label="Notifications"
             aria-expanded={notificationOpen}
           >
@@ -258,23 +306,45 @@ function Topbar({ toggleSidebar }) {
               {notifications.length === 0 ? (
                 <div className="admin-notification-empty">
                   <strong>No notifications yet</strong>
-                  <p>Client activity updates will appear here.</p>
+                  <p>Client and vendor activity updates will appear here.</p>
                 </div>
               ) : (
                 <div className="admin-notification-list">
                   {notifications.map((notification) => (
                     <button
                       type="button"
-                      key={notification.id}
+                      key={notification.notificationKey}
                       className={`admin-notification-item ${
                         notification.is_read ? "read" : "unread"
                       }`}
-                      onClick={() => handleAdminNotificationClick(notification)}
+                      onClick={() =>
+                        handleNotificationClick(notification)
+                      }
                     >
-                      <strong>{notification.title}</strong>
+                      <div className="admin-notification-heading">
+                        <strong className="admin-notification-title">
+                          {notification.title}
+                        </strong>
+
+                        <div className="notification-source-details">
+                          <span
+                            className={`notification-source-label ${notification.source}`}
+                          >
+                            {notification.source === "vendor" ? "Vendor" : "Client"}
+                          </span>
+
+                          <span className="notification-record-id">
+                            {notification.recordLabel || "ID"}: {notification.recordId ?? "N/A"}
+                          </span>
+                        </div>
+                      </div>
+
                       <span>{notification.message}</span>
+
                       <small>
-                        {new Date(notification.created_at).toLocaleString()}
+                        {new Date(
+                          notification.created_at
+                        ).toLocaleString()}
                       </small>
                     </button>
                   ))}
@@ -284,28 +354,34 @@ function Topbar({ toggleSidebar }) {
           )}
         </div>
 
-        {/* EXISTING PROFILE DROPDOWN */}
         <div className="profile-dropdown" ref={dropdownRef}>
           <button
             type="button"
             className="welcome-text"
-            onClick={() => setDropdownOpen((previous) => !previous)}
+            onClick={() =>
+              setDropdownOpen((previous) => !previous)
+            }
             aria-expanded={dropdownOpen}
             aria-haspopup="menu"
           >
             <UserCircle2 size={18} />
+
             <span>
               Welcome, <strong>{userRole} {username}</strong>
             </span>
+
             <ChevronDown
               size={16}
-              className={dropdownOpen ? "dropdown-arrow open" : "dropdown-arrow"}
+              className={
+                dropdownOpen
+                  ? "dropdown-arrow open"
+                  : "dropdown-arrow"
+              }
             />
           </button>
 
           {dropdownOpen && (
             <div className="profile-dropdown-menu" role="menu">
-              
               {isSuperuser && (
                 <button
                   type="button"
@@ -321,7 +397,6 @@ function Topbar({ toggleSidebar }) {
                 </button>
               )}
 
-
               <button
                 type="button"
                 className="dropdown-logout-btn"
@@ -333,10 +408,8 @@ function Topbar({ toggleSidebar }) {
               </button>
             </div>
           )}
-
         </div>
       </div>
-
     </header>
   );
 }

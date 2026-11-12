@@ -68,7 +68,7 @@ export default function ClientPortalNavbar({
   useEffect(() => {
     loadNotifications();
 
-    const interval = setInterval(loadNotifications, 30000);
+    const interval = setInterval(loadNotifications, 12000);
 
     return () => clearInterval(interval);
   }, []);

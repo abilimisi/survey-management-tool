@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Client, CompanyContact, Vendor, Project, ProjectVendor, Respondent, RedirectLog, ScreeningQuestion, ScreeningOption, RespondentAnswer,PanelCampaign,PanelCampaignRecipient
-
+from .models import VendorIndustry, VendorRespondentType
 from .models import UserProfile
 
 admin.site.register(UserProfile)
@@ -151,3 +151,16 @@ admin.site.register(RespondentAnswer)
 
 admin.site.register(PanelCampaign)
 admin.site.register(PanelCampaignRecipient)
+
+@admin.register(VendorIndustry)
+class VendorIndustryAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
+
+
+@admin.register(VendorRespondentType)
+class VendorRespondentTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "industry", "is_active")
+    list_filter = ("industry", "is_active")
+    search_fields = ("name",)
