@@ -1,6 +1,7 @@
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
@@ -8,8 +9,13 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from .models import RevokedAccessToken, ActiveLoginSession
 
 
-IDLE_TIMEOUT = timedelta(minutes=5)
-ABSOLUTE_SESSION_TIMEOUT = timedelta(hours=8)
+IDLE_TIMEOUT = timedelta(
+    minutes=getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 30)
+)
+
+ABSOLUTE_SESSION_TIMEOUT = timedelta(
+    hours=getattr(settings, "SESSION_ABSOLUTE_TIMEOUT_HOURS", 8)
+)
 
 
 class RevocableJWTAuthentication(JWTAuthentication):
@@ -47,14 +53,14 @@ class RevocableJWTAuthentication(JWTAuthentication):
 
         now = timezone.now()
 
-        # Check the absolute eight-hour session lifetime.
+        # Enforce the absolute session lifetime.
         if now >= active_session.created_at + ABSOLUTE_SESSION_TIMEOUT:
             active_session.delete()
             raise AuthenticationFailed(
                 "Your session has expired. Please log in again."
             )
 
-        # Check the five-minute inactivity timeout.
+        # Enforce the inactivity timeout.
         if now >= active_session.last_seen_at + IDLE_TIMEOUT:
             active_session.delete()
             raise AuthenticationFailed(

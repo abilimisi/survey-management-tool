@@ -217,3 +217,7 @@ AXES_COOLOFF_TIME = timedelta(minutes=15)
 AXES_RESET_ON_SUCCESS = True
 
 AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+
+# Session security policy
+SESSION_IDLE_TIMEOUT_MINUTES = 30
+SESSION_ABSOLUTE_TIMEOUT_HOURS = 8

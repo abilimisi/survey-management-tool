@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import "./TopBar.css";
 import logo from "../../assets/logo_ob.jpg";
+import { isAdmin } from "../../pages/utils/auth";
 
 import {
   logoutUser,
@@ -24,7 +25,7 @@ function Topbar({ toggleSidebar }) {
   const navigate = useNavigate();
 
   const username = localStorage.getItem("username") || "Admin";
-  const isSuperuser = localStorage.getItem("is_superuser") === "true";
+  const isSuperuser = isAdmin();
   const rawRole = isSuperuser
     ? "admin"
     : localStorage.getItem("role") || "user";

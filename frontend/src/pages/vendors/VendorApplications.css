@@ -15,7 +15,7 @@
   --va-danger: #b42318;
 
   min-height: 100%;
-  padding: 28px;
+  padding: 0px;
   color: var(--va-text);
   background: #f7f9fc;
 }

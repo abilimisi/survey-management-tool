@@ -34,17 +34,19 @@ function Login() {
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
       localStorage.setItem("username", formData.username);
-      localStorage.setItem(
-        "is_superuser",
-        String(data.is_superuser === true)
-      );
+      const admin =
+        data.is_superuser === true ||
+        String(data.is_superuser).toLowerCase() === "true";
+
+      localStorage.setItem("is_superuser", String(admin));
+
       localStorage.setItem(
         "role",
-        data.is_superuser ? "Admin" : (data.role || "User")
+        admin ? "Admin" : (data.role || "User")
       );
 
 
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       const backendMessage = error.response?.data?.detail;
 

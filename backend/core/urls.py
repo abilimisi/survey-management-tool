@@ -57,6 +57,11 @@ from .views import (
     
 )
 
+from .diy_admin_views import (
+    RegisteredClientListView,
+    RegisteredVendorListView,
+)
+
 from core.analytics_views import *
 
 from .ai_analytics_views import ai_analytics
@@ -255,6 +260,17 @@ path(
 
 urlpatterns += [
     path("diy/", include(diy_urlpatterns)),
+
+    path(
+        "admin/diy/clients/",
+        RegisteredClientListView.as_view(),
+        name="admin-diy-registered-clients",
+    ),
+    path(
+        "admin/diy/vendors/",
+        RegisteredVendorListView.as_view(),
+        name="admin-diy-registered-vendors",
+    ),
 ]
 
 urlpatterns += [

@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
+import { isAdmin } from "../pages/utils/auth";
+
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 
@@ -80,6 +82,8 @@ import VendorApplications from "../pages/vendors/VendorApplications";
 
 import SessionHeartbeat from "../components/SessionHeartbeat";
 
+import RegisteredClients from "../pages/admin/RegisteredClients";
+import RegisteredVendors from "../pages/admin/RegisteredVendors";
 
 function ProtectedLayout({ children }) {
   return (
@@ -260,7 +264,7 @@ function AppRoutes() {
       <Route
         path="/users"
         element={
-          localStorage.getItem("is_superuser") === "true" ? (
+          isAdmin() ? (
             <ProtectedLayout>
               <UsersList />
             </ProtectedLayout>
@@ -464,13 +468,31 @@ function AppRoutes() {
       <Route
         path="/vendors/applications"
         element={
-          localStorage.getItem("is_superuser") === "true" ? (
+          isAdmin() ? (
             <ProtectedLayout>
               <VendorApplications />
             </ProtectedLayout>
           ) : (
             <Navigate to="/dashboard" replace />
           )
+        }
+      />
+
+      <Route
+        path="/clients/registered"
+        element={
+          <ProtectedLayout>
+            <RegisteredClients />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/vendors/registered"
+        element={
+          <ProtectedLayout>
+            <RegisteredVendors />
+          </ProtectedLayout>
         }
       />
 
