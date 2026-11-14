@@ -16,11 +16,669 @@
   background: #f3f6fb;
 }
 
-/* Paste the remaining dashboard CSS here:
-   Start at .vendor-dashboard-topbar
-   and continue through the final responsive
-   @media (max-width: 480px) block.
-*/
+/* =========================================
+   DASHBOARD WELCOME SECTION
+   ========================================= */
+
+.vendor-dashboard-main {
+  min-width: 0;
+  padding: 10px 10px 32px;
+  box-sizing: border-box;
+}
+.vendor-dashboard-main.vendor-profile-main {
+  padding: 0;
+  margin-right: 0;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.vendor-dashboard-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.vendor-dashboard-welcome h1 {
+  margin: 12px 0 8px;
+  color: #172b4d;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vendor-dashboard-welcome p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.vendor-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.vendor-welcome-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 17px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================================
+   APPLICATION PROGRESS TRACKER
+   ========================================= */
+
+.vendor-application-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  width: 100%;
+  padding: 18px 12px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #e1e8f2;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.vendor-progress-track-step {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.vendor-progress-track-top {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.vendor-progress-track-node {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #dbe4f0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  box-sizing: border-box;
+}
+
+.vendor-progress-track-line {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 23px);
+  width: calc(100% - 46px);
+  height: 2px;
+  background: #e2e8f0;
+  transform: translateY(-50%);
+}
+
+.vendor-progress-track-step strong {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.vendor-progress-track-step small {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Completed stages */
+
+.vendor-track-complete .vendor-progress-track-node {
+  border-color: #93b4ff;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.vendor-track-complete .vendor-progress-track-line {
+  background: #2563eb;
+}
+
+.vendor-track-complete strong {
+  color: #172b4d;
+}
+
+/* Current stage */
+
+.vendor-track-current .vendor-progress-track-node {
+  border-color: #93b4ff;
+  background: #eff6ff;
+  color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.vendor-track-current strong {
+  color: #172b4d;
+}
+
+.vendor-track-current small {
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #eaf1ff;
+  color: #2563eb;
+  font-weight: 650;
+}
+
+/* Approved */
+
+.vendor-track-approved .vendor-progress-track-node {
+  border-color: #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.10);
+}
+
+.vendor-track-approved strong,
+.vendor-track-approved small {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.vendor-track-approved .vendor-progress-track-line {
+  background: #16a34a;
+}
+
+/* Changes requested */
+
+.vendor-track-attention .vendor-progress-track-node {
+  border-color: #f59e0b;
+  background: #fff7ed;
+  color: #d97706;
+}
+
+.vendor-track-attention strong,
+.vendor-track-attention small {
+  color: #b45309;
+}
+
+/* Rejected */
+
+.vendor-track-rejected .vendor-progress-track-node {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.vendor-track-rejected strong,
+.vendor-track-rejected small {
+  color: #b91c1c;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .vendor-application-progress {
+    padding: 15px 5px;
+  }
+
+  .vendor-progress-track-node {
+    width: 34px;
+    height: 34px;
+  }
+
+  .vendor-progress-track-node svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .vendor-progress-track-line {
+    left: calc(50% + 19px);
+    width: calc(100% - 38px);
+  }
+
+  .vendor-progress-track-step strong {
+    font-size: 10px;
+  }
+
+  .vendor-progress-track-step small {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 420px) {
+  .vendor-progress-track-node {
+    width: 30px;
+    height: 30px;
+  }
+
+  .vendor-progress-track-node svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .vendor-progress-track-line {
+    left: calc(50% + 17px);
+    width: calc(100% - 34px);
+  }
+
+  .vendor-progress-track-step strong {
+    font-size: 9px;
+  }
+
+  .vendor-progress-track-step small {
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================
+   APPLICATION AND ACCOUNT PANELS
+   ========================================= */
+
+.vendor-dashboard-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+  margin-bottom: 28px;
+}
+.vendor-dashboard-panel {
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #e5eaf1;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
+}
+
+.vendor-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 21px;
+}
+
+.vendor-panel-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.vendor-panel-heading h2,
+.vendor-quick-panel h2 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.vendor-status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  background: #e9f8ef;
+  color: #15803d;
+}
+
+.vendor-status-icon.pending {
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.vendor-status-icon.rejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Application status banner */
+
+.vendor-application-banner {
+  padding: 16px 18px;
+  margin-bottom: 25px;
+  border: 1px solid #bbf7d0;
+  border-radius: 11px;
+  background: #f0fdf4;
+}
+
+.vendor-application-banner strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #166534;
+  font-size: 14px;
+}
+
+.vendor-application-banner p {
+  margin: 0;
+  color: #4b6b58;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vendor-application-banner.pending {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.vendor-application-banner.pending strong,
+.vendor-application-banner.pending p {
+  color: #92400e;
+}
+
+.vendor-application-banner.rejected {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.vendor-application-banner.rejected strong,
+.vendor-application-banner.rejected p {
+  color: #991b1b;
+}
+
+/* Application timeline */
+
+.vendor-progress-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.vendor-progress-step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 94px;
+}
+
+.vendor-progress-step:not(:last-child)::after {
+  position: absolute;
+  top: 39px;
+  left: 17px;
+  width: 2px;
+  height: calc(100% - 39px);
+  background: #e2e8f0;
+  content: "";
+}
+
+.vendor-progress-step.complete:not(:last-child)::after {
+  background: #bbf7d0;
+}
+
+.vendor-progress-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.vendor-progress-step.complete .vendor-progress-marker {
+  background: #e2f7e9;
+  color: #15803d;
+}
+
+.vendor-progress-step.current .vendor-progress-marker {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.vendor-progress-step.rejected .vendor-progress-marker {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.vendor-progress-step > div {
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.vendor-progress-step > div strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #263b59;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.vendor-progress-step > div p {
+  margin: 0;
+  color: #718096;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   ACCOUNT INFORMATION
+   ========================================= */
+
+.vendor-quick-panel h2 {
+  margin-bottom: 20px;
+}
+
+.vendor-account-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 0;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.vendor-account-row:last-of-type {
+  border-bottom: none;
+}
+
+.vendor-account-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f0f5fc;
+  color: #5274a7;
+}
+
+.vendor-account-row > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.vendor-account-row small {
+  color: #8492a6;
+  font-size: 11px;
+}
+
+.vendor-account-row strong {
+  color: #243b5a;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.vendor-inline-status {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #e2f7e9;
+  color: #15803d !important;
+  font-size: 11px !important;
+}
+
+.vendor-inline-status.pending {
+  background: #fef3c7;
+  color: #92400e !important;
+}
+
+.vendor-inline-status.rejected {
+  background: #fee2e2;
+  color: #b91c1c !important;
+}
+
+.vendor-help-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  margin-top: 17px;
+  border-radius: 10px;
+  background: #f1f5fb;
+  color: #5274a7;
+}
+
+.vendor-help-note svg {
+  flex-shrink: 0;
+}
+
+.vendor-help-note p {
+  margin: 0;
+  color: #647b9a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+/* Profile actions */
+
+.vendor-primary-action,
+.vendor-secondary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 15px;
+  margin-top: 20px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.vendor-primary-action {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.vendor-primary-action:hover {
+  background: #1d4ed8;
+}
+
+.vendor-secondary-action {
+  border-color: #dbe7fb;
+  background: #eaf1ff;
+  color: #2563eb;
+}
+
+.vendor-secondary-action:hover {
+  background: #dce8ff;
+}
+
+/* =========================================
+   RESPONSIVE DASHBOARD
+   ========================================= */
+
+@media (max-width: 1200px) {
+  .vendor-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .vendor-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .vendor-dashboard-main {
+    padding: 23px 20px;
+  }
+
+  .vendor-dashboard-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .vendor-dashboard-main {
+    padding: 18px 14px;
+  }
+
+  .vendor-dashboard-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .vendor-dashboard-welcome h1 {
+    font-size: 25px;
+  }
+
+  .vendor-overview-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .vendor-overview-card {
+    min-height: 0;
+    padding: 19px;
+  }
+
+  .vendor-dashboard-content-grid {
+    gap: 16px;
+  }
+
+  .vendor-dashboard-panel {
+    padding: 19px;
+  }
+
+  .vendor-panel-heading h2,
+  .vendor-quick-panel h2 {
+    font-size: 18px;
+  }
+}
+
 
 /* Administrator feedback */
 .vendor-admin-feedback {
@@ -489,4 +1147,49 @@
 .vendor-project-response-status.clarification_requested {
   background: #fff3cd;
   color: #856404;
+}
+.vendor-dashboard-status-only {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+  min-height: 40px;
+}
+
+.vendor-dashboard-status-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  width: 100%;
+}
+
+.vendor-dashboard-profile-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid #2563eb;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.vendor-dashboard-profile-action:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 600px) {
+  .vendor-dashboard-status-actions {
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+  }
 }

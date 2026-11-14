@@ -77,6 +77,7 @@ import VendorLogin from "../pages/vendorPortal/VendorLogin";
 import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
 import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
+import CompanyProfileView from "../pages/vendorPortal/CompanyProfileView";
 
 import SessionHeartbeat from "../components/SessionHeartbeat";
 
@@ -458,6 +459,7 @@ function AppRoutes() {
       <Route path="/vendor" element={<VendorLayout />}>
         <Route path="dashboard" element={<VendorDashboard />} />
         <Route path="profile" element={<VendorProfile />} />
+        <Route path="company-profile" element={<CompanyProfileView />} />
       </Route>
 
       

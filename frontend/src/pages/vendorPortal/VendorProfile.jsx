@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   getVendorPortalProfile,
@@ -19,8 +19,12 @@ import {
   CreditCard,
   Link as LinkIcon,
   BriefcaseBusiness,
+  Megaphone,
+  Trophy,
+  Sparkles,
 } from "lucide-react";
 import "./VendorProfile.css";
+import VendorSidebar from "./VendorSidebar";
 
 const initialForm = {
   company_name: "",
@@ -49,6 +53,7 @@ const editableStatuses = ["draft", "changes_requested"];
 
 function VendorProfile() {
   const navigate = useNavigate();
+  const { sidebarCollapsed, toggleSidebar } = useOutletContext();
 
   const [form, setForm] = useState(initialForm);
   const [availableIndustries, setAvailableIndustries] = useState([]);
@@ -65,9 +70,7 @@ function VendorProfile() {
   const isChangesRequested = applicationStatus === "changes_requested";
   const isRejected = applicationStatus === "rejected";
   const isApproved = applicationStatus === "approved";
-  const isUnderReview = ["submitted", "under_review"].includes(
-    applicationStatus
-  );
+  const isUnderReview = applicationStatus === "under_review";
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -318,42 +321,59 @@ function VendorProfile() {
 
   if (loading) {
     return (
-      <div className="vp-loading">
-        <div className="vp-spinner" />
-        <p>Loading company profile...</p>
+      <div className="vendor-dashboard-layout vendor-profile-layout">
+        <VendorSidebar
+          sidebarCollapsed={sidebarCollapsed}
+          toggleSidebar={toggleSidebar}
+          isApproved={false}
+          unreadMessagesCount={0}
+        />
+        <main className="vendor-dashboard-main vendor-profile-main">
+          <div className="vp-page">
+            <div className="vp-loading">
+              <div className="vp-spinner" />
+              <p>Loading company profile...</p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="vp-page">
+    <div className="vendor-dashboard-layout vendor-profile-layout">
+      <VendorSidebar
+        sidebarCollapsed={sidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+        isApproved={isApproved}
+        unreadMessagesCount={0}
+      />
+      <main className="vendor-dashboard-main vendor-profile-main">
+        <div className="vp-page">
       <div className="vp-container">
         <div className="vp-header">
           <div>
-            <span className="vp-eyebrow">VENDOR PORTAL</span>
             <h1>Company Profile</h1>
-            <p>
-              Provide your company details and billing information for
-              verification.
-            </p>
           </div>
 
           <button
             type="button"
-            className="vp-secondary-button"
+            className="vp-back-dashboard"
             onClick={() => navigate("/vendor/dashboard")}
           >
+            <span className="vp-back-arrow">←</span>
             Back to Dashboard
           </button>
         </div>
 
+              
         <div className={`vp-status-banner vp-status-${applicationStatus}`}>
           <div className="vp-status-icon">
             {isApproved ? (
-              <CheckCircle2 size={22} />
+              <Megaphone size={23} />
             ) : isUnderReview ? (
               <Clock3 size={22} />
-            ) : isRejected ? (
+            ) : isRejected || isChangesRequested ? (
               <AlertCircle size={22} />
             ) : (
               <FileText size={22} />
@@ -363,29 +383,40 @@ function VendorProfile() {
           <div className="vp-status-content">
             <strong>
               {isApproved
-                ? "Application approved"
+                ? "Great! Your vendor application has been approved."
                 : isUnderReview
-                  ? "Application under review"
+                  ? "Your application is under review."
                   : isChangesRequested
-                    ? "Changes requested"
+                    ? "Changes are requested on your application."
                     : isRejected
-                      ? "Application rejected"
-                      : "Profile not yet submitted"}
+                      ? "Your vendor application was rejected."
+                      : "Your company profile is not yet submitted."}
             </strong>
 
             <p>
               {isApproved
-                ? "Your vendor application has been approved."
+                ? "You can now participate in projects and grow with PanelSphere."
                 : isUnderReview
-                  ? "Your application has been submitted. You can view your profile while the admin team reviews it."
+                  ? "Your application has been submitted and is being reviewed by our admin team."
                   : isChangesRequested
-                    ? "Please review the admin feedback, update your details, and resubmit your application."
+                    ? "Please review the administrator's feedback and update your company details."
                     : isRejected
-                      ? "Your application was rejected. Contact the admin team if you need clarification."
-                      : "Complete your company profile and submit it for admin review."}
+                      ? "Please contact the administrator if you need clarification."
+                      : "Complete your company details and submit your profile for approval."}
             </p>
           </div>
+
+          {isApproved && (
+            <div className="vp-status-decoration" aria-hidden="true">
+              <Sparkles className="vp-status-sparkle" size={25} />
+              <div className="vp-status-trophy">
+                <Trophy size={55} strokeWidth={1.8} />
+              </div>
+              <Sparkles className="vp-status-sparkle vp-status-sparkle-small" size={19} />
+            </div>
+          )}
         </div>
+
 
         {(isChangesRequested || isRejected) && adminNote && (
           <div className="vp-admin-note">
@@ -643,13 +674,14 @@ function VendorProfile() {
 
           <div className="vp-form-actions">
             {isReadOnly ? (
-              <button
-                type="button"
-                className="vp-primary-button"
-                onClick={() => navigate("/vendor/dashboard")}
-              >
-                Back to Dashboard
-              </button>
+                  <button
+                    type="button"
+                    className="vp-back-dashboard"
+                    onClick={() => navigate("/vendor/dashboard")}
+                  >
+                    <span className="vp-back-arrow">←</span>
+                    Back to Dashboard
+                  </button>
             ) : (
               <>
                 <button
@@ -678,7 +710,9 @@ function VendorProfile() {
             )}
           </div>
         </form>
-      </div>
+        </div>
+        </div>
+      </main>
     </div>
   );
 }

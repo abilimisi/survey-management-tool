@@ -39,7 +39,7 @@ function ProjectDetails() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [messageSending, setMessageSending] = useState(false);
 
-  const backendBaseUrl = "https://backwater-muster-repayment.ngrok-free.dev";
+  const backendBaseUrl = "https://carpenter-trodden-upstate.ngrok-free.dev";
 
   const initialFormData = {
     project: id,

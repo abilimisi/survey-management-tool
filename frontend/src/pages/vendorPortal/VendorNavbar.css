@@ -1,164 +1,172 @@
 
+/* =========================================
+   VENDOR TOPBAR
+   Matching Client Portal navbar dimensions
+   ========================================= */
+
 .vendor-dashboard-topbar {
+  width: calc(100% - var(--vendor-sidebar-width, 220px));
+  height: 68px;
+  min-height: 68px;
+  margin-left: var(--vendor-sidebar-width, 220px);
+  padding: 0;
+
+  position: relative;
+  z-index: 101;
+
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+
+  transition: width 0.25s ease, margin-left 0.25s ease;
+}
+
+/* Inner navbar container - same as Client Portal */
+
+.vendor-navbar-inner {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 22px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 17px 5%;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+
+  box-sizing: border-box;
 }
 
-.vendor-brand {
-  display: inline-flex;
+/* =========================================
+   COMPANY LOGO
+   ========================================= */
+
+.vendor-topbar-logo {
+  display: flex;
   align-items: center;
-  gap: 11px;
-  color: #0f172a;
+  min-width: 0;
+  flex-shrink: 0;
   text-decoration: none;
 }
 
-.vendor-brand-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 43px;
-  height: 43px;
-  border-radius: 11px;
-  background: #e8f1ff;
-  color: #2563eb;
-}
-
-.vendor-brand strong,
-.vendor-brand small {
+.vendor-topbar-logo img {
   display: block;
+  width: 145px;
+  max-height: 48px;
+  object-fit: contain;
+  object-position: left center;
 }
 
-.vendor-brand strong {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.vendor-brand small {
-  margin-top: 3px;
-  color: #64748b;
-  font-size: 11px;
-}
+/* =========================================
+   RIGHT-SIDE ACTIONS
+   ========================================= */
 
 .vendor-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
 }
 
-.vendor-account-email {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.vendor-notification-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid #e2e8f0;
-  border-radius: 9px;
-  background: #ffffff;
-  color: #475569;
-  cursor: pointer;
-}
-
-.vendor-notification-button:hover {
-  background: #f1f5f9;
-}
-
-.vendor-topbar-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.vendor-topbar-logout:hover {
-  background: #f8fafc;
-}
-
-@media (max-width: 600px) {
-  .vendor-dashboard-topbar {
-    padding: 13px 16px;
-    gap: 10px;
-  }
-
-  .vendor-topbar-actions {
-    gap: 9px;
-  }
-
-  .vendor-account-email {
-    display: none;
-  }
-
-  .vendor-topbar-logout {
-    padding: 9px;
-    font-size: 12px;
-  }
-}
-
+/* =========================================
+   NOTIFICATION BUTTON
+   ========================================= */
 
 .vendor-notification-wrapper {
   position: relative;
 }
 
-.vendor-notification-count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
+.vendor-notification-button {
+  position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #334155;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.vendor-notification-button:hover,
+.vendor-notification-button.active {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.vendor-notification-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.vendor-notification-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border: 2px solid #ffffff;
   border-radius: 20px;
+
   background: #dc2626;
   color: #ffffff;
+
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
 }
+
+/* =========================================
+   NOTIFICATION DROPDOWN
+   ========================================= */
 
 .vendor-notification-dropdown {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  z-index: 1000;
-  width: 360px;
-  max-width: calc(100vw - 30px);
+  z-index: 1100;
+
+  width: 370px;
+  max-width: calc(100vw - 24px);
+  max-height: 460px;
+
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
+
   background: #ffffff;
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.14);
 }
 
 .vendor-notification-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 16px;
-  border-bottom: 1px solid #e2e8f0;
+
+  padding: 16px 18px;
+  border-bottom: 1px solid #edf0f5;
 }
 
 .vendor-notification-header strong,
@@ -167,14 +175,15 @@
 }
 
 .vendor-notification-header strong {
-  color: #0f172a;
-  font-size: 14px;
+  color: #172033;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .vendor-notification-header small {
-  margin-top: 3px;
-  color: #64748b;
-  font-size: 11px;
+  margin-top: 5px;
+  color: #8490a3;
+  font-size: 12px;
 }
 
 .vendor-notification-header-actions {
@@ -187,13 +196,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 30px;
   height: 30px;
+
   border: 0;
   border-radius: 6px;
+
   background: transparent;
   color: #64748b;
+
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .vendor-notification-header-actions button:hover {
@@ -204,19 +218,27 @@
 .vendor-notification-list {
   max-height: 390px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .vendor-notification-item {
+  width: 100%;
+
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  width: 100%;
-  padding: 14px 16px;
+  gap: 12px;
+
+  padding: 14px 17px;
+
   border: 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #edf0f5;
+
   background: #ffffff;
   text-align: left;
+
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .vendor-notification-item:hover {
@@ -229,9 +251,11 @@
 
 .vendor-notification-item-dot {
   flex-shrink: 0;
+
   width: 8px;
   height: 8px;
-  margin-top: 5px;
+  margin-top: 6px;
+
   border-radius: 50%;
   background: transparent;
 }
@@ -241,20 +265,21 @@
 }
 
 .vendor-notification-item-content {
+  min-width: 0;
+
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+  gap: 6px;
 }
 
 .vendor-notification-item-content strong {
   color: #1e293b;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .vendor-notification-item-content span {
-  color: #475569;
+  color: #64748b;
   font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;
@@ -266,17 +291,295 @@
 }
 
 .vendor-notification-empty {
-  padding: 25px 16px;
+  padding: 32px 18px;
+  margin: 0;
+
   color: #64748b;
   font-size: 13px;
   text-align: center;
 }
 
+/* =========================================
+   VENDOR ACCOUNT DROPDOWN
+   ========================================= */
+
+.vendor-account-wrapper {
+  position: relative;
+}
+
+.vendor-account-button {
+  min-height: 44px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0 14px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #f8fafc;
+  color: #172033;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.vendor-account-button:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.vendor-account-button strong {
+  color: #172033;
+  font-weight: 700;
+}
+
+.vendor-account-button svg {
+  flex-shrink: 0;
+}
+
+.vendor-account-welcome {
+  white-space: nowrap;
+}
+
+.vendor-account-chevron {
+  transition: transform 0.2s ease;
+}
+
+.vendor-account-chevron.open {
+  transform: rotate(180deg);
+}
+
+.vendor-account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1200;
+
+  width: 200px;
+  padding: 8px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.vendor-account-dropdown a,
+.vendor-account-dropdown button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 10px 12px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  box-sizing: border-box;
+}
+
+.vendor-account-dropdown a:hover,
+.vendor-account-dropdown button:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 900px) {
+  .vendor-dashboard-topbar {
+    width: calc(100% - var(--vendor-sidebar-width, 205px));
+    margin-left: var(--vendor-sidebar-width, 205px);
+    height: 68px;
+    min-height: 68px;
+  }
+
+  .vendor-navbar-inner {
+    padding: 0 18px;
+  }
+
+  .vendor-topbar-logo img {
+    width: 130px;
+    max-height: 44px;
+  }
+
+  .vendor-topbar-actions {
+    gap: 9px;
+  }
+
+  .vendor-notification-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .vendor-account-button {
+    min-height: 40px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
 @media (max-width: 600px) {
+  .vendor-dashboard-topbar {
+    width: 100%;
+    margin-left: 0;
+    height: 64px;
+    min-height: 64px;
+  }
+
+  .vendor-navbar-inner {
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .vendor-topbar-logo img {
+    width: 112px;
+    max-height: 42px;
+  }
+
+  .vendor-topbar-actions {
+    gap: 7px;
+  }
+
+  .vendor-notification-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .vendor-account-button {
+    min-height: 38px;
+    gap: 5px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .vendor-account-welcome {
+    max-width: 105px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .vendor-notification-dropdown {
     position: fixed;
-    top: 70px;
+    top: 68px;
     right: 12px;
     width: 360px;
+    max-width: calc(100vw - 24px);
   }
+}
+
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 420px) {
+  .vendor-navbar-inner {
+    padding: 0 9px;
+  }
+
+  .vendor-topbar-logo img {
+    width: 96px;
+    max-height: 42px;
+  }
+
+  .vendor-account-button {
+    gap: 4px;
+    padding: 0 6px;
+  }
+
+  .vendor-account-welcome {
+    max-width: 82px;
+  }
+}
+
+/* =========================================
+   FINAL VENDOR NAVBAR ALIGNMENT FIX
+   ========================================= */
+
+.vendor-layout-root .vendor-dashboard-topbar {
+  height: 63px !important;
+  min-height: 63px !important;
+  max-height: 63px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+.vendor-layout-root .vendor-dashboard-topbar .vendor-navbar-inner {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0 22px !important;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.vendor-layout-root .vendor-topbar-logo {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.vendor-layout-root .vendor-topbar-logo img {
+  display: block;
+  width: 145px !important;
+  height: auto !important;
+  max-height: 48px !important;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.vendor-layout-root .vendor-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.vendor-layout-root .vendor-notification-button {
+  width: 40px;
+  height: 40px;
+}
+
+.vendor-layout-root .vendor-account-button {
+  min-height: 44px;
 }

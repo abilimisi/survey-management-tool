@@ -345,15 +345,16 @@
 
 }
 /* View All Studies button - Orange */
+/* View All Studies button - Green */
 .client-studies-header-actions .client-primary-button {
-  background: #f59e0b;
+  background: #08733c;
   color: #ffffff;
-  border-color: #f59e0b;
+  border-color: #08733c;
 }
 
 .client-studies-header-actions .client-primary-button:hover:not(:disabled) {
-  background: #d97706;
-  border-color: #d97706;
+  background: #065c30;
+  border-color: #065c30;
 }
 
 
@@ -1586,11 +1587,11 @@
 
   padding: 7px 12px;
 
-  border: 1px solid #08733c;
+  border: 1px solid #f59e0b;
 
   border-radius: 8px;
 
-  background: #08733c;
+  background: #f59e0b;
 
   color: #fff;
 
@@ -1611,13 +1612,9 @@
 }
 
 
-
 .client-dashboard-create:hover:not(:disabled) {
-
-  background: #065c30;
-
-  border-color: #065c30;
-
+  background: #d97706;
+  border-color: #d97706;
 }
 
 
