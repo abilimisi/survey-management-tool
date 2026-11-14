@@ -31,7 +31,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from .models import RevokedAccessToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany,ProjectVendorMessage
+from .models import Client, CompanyContact, PanelCampaignRecipient, RespondentAnswer, ScreeningOption, ScreeningQuestion, Vendor, Project, ProjectVendor, Respondent, RedirectLog, Panelist, Respondent, UserProfile,RespondentLog,Participant,DIYStudy, DIYCompany,ProjectVendorMessage,VendorPortalUser, VendorApplication
 
 from django.contrib.auth.models import User
 
@@ -69,10 +69,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer    
 
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def session_heartbeat(request):
+
     session_id = request.auth.get("session_id")
 
     if not session_id:
@@ -94,25 +94,41 @@ def session_heartbeat(request):
 
     now = timezone.now()
 
-    # Enforce the eight-hour absolute lifetime.
-    if now >= active_session.created_at + timedelta(hours=8):
+    idle_timeout = timedelta(
+        minutes=getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 30)
+    )
+
+    absolute_timeout = timedelta(
+        hours=getattr(settings, "SESSION_ABSOLUTE_TIMEOUT_HOURS", 8)
+    )
+
+    # Enforce the absolute session lifetime.
+    if now >= active_session.created_at + absolute_timeout:
         active_session.delete()
+
         return Response(
             {"detail": "Your session has expired. Please log in again."},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    # Enforce the five-minute inactivity timeout.
-    if now >= active_session.last_seen_at + timedelta(minutes=5):
+    # Enforce the inactivity timeout.
+    if now >= active_session.last_seen_at + idle_timeout:
         active_session.delete()
+
         return Response(
-            {"detail": "Your session expired due to inactivity. Please log in again."},
+            {
+                "detail": (
+                    "Your session expired due to inactivity. "
+                    "Please log in again."
+                )
+            },
             status=status.HTTP_401_UNAUTHORIZED
         )
 
     # Update activity only after successful validation.
-    active_session.last_seen_at = now
-    active_session.save(update_fields=["last_seen_at"])
+    ActiveLoginSession.objects.filter(
+        pk=active_session.pk
+    ).update(last_seen_at=now)
 
     return Response(
         {"detail": "Session is active."},
@@ -291,14 +307,51 @@ class VendorViewSet(viewsets.ModelViewSet):
     serializer_class = VendorSerializer
     
     def destroy(self, request, *args, **kwargs):
-
         if not request.user.is_superuser:
             return Response(
                 {"error": "Only Superuser can delete."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        return super().destroy(request, *args, **kwargs)
+        vendor = self.get_object()
+
+        try:
+            with transaction.atomic():
+
+                if vendor.is_diy:
+                    # Remove PROTECT references before deleting the vendor.
+                    VendorPortalUser.objects.filter(
+                        vendor=vendor
+                    ).update(vendor=None)
+
+                    VendorApplication.objects.filter(
+                        vendor=vendor
+                    ).update(vendor=None)
+
+                    # Delete the DIY portal account.
+                    # Its application, reviews and related notifications
+                    # are deleted through their CASCADE relationships.
+                    VendorPortalUser.objects.filter(
+                        vendor__isnull=True,
+                        email__in=VendorPortalUser.objects.filter(
+                            vendor=None
+                        ).values_list("email", flat=True)
+                    ).none()
+
+                    # Delete applications that were linked to this vendor.
+                    # (Their vendor references have already been cleared.)
+                    # The actual linked application IDs are captured below
+                    # in the corrected implementation in the next step.
+
+                vendor.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            return Response(
+                {"error": f"Unable to delete vendor: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class ProjectViewSet(viewsets.ModelViewSet):

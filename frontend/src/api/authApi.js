@@ -1,7 +1,10 @@
+
 import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
 const API_BASE = "http://127.0.0.1:8000/api";
 
+// Login: use plain Axios because the user does not have a token yet.
 export const loginUser = async (username, password) => {
   const response = await axios.post(`${API_BASE}/token/`, {
     username,
@@ -11,6 +14,7 @@ export const loginUser = async (username, password) => {
   return response.data;
 };
 
+// Logout: send both tokens and the access-token authorization header.
 export const logoutUser = async (accessToken, refreshToken) => {
   if (!accessToken || !refreshToken) {
     throw new Error("Both access and refresh tokens are required.");
@@ -21,108 +25,67 @@ export const logoutUser = async (accessToken, refreshToken) => {
     {
       access: accessToken,
       refresh: refreshToken,
-    }
-  );
-
-  return response.data;
-};
-
-export const sendSessionHeartbeat = async (accessToken) => {
-  const response = await axios.post(
-    `${API_BASE}/session/heartbeat/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  return response.data;
-};
-
-// Get notifications for the logged-in admin
-export const getAdminNotifications = async () => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.get(`${API_BASE}/diy/internal/notifications/`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
     },
-  });
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  return response.data;
 };
 
-// Mark an admin notification as read
+// Heartbeat: use axiosInstance so access-token refresh is handled centrally.
+export const sendSessionHeartbeat = async () => {
+  const response = await axiosInstance.post(
+    "session/heartbeat/",
+    {}
+  );
+
+  return response.data;
+};
+
+// Get notifications for the logged-in admin.
+export const getAdminNotifications = async () => {
+  return axiosInstance.get("diy/internal/notifications/");
+};
+
+// Mark an admin notification as read.
 export const markAdminNotificationAsRead = async (notificationId) => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.post(
-    `${API_BASE}/diy/internal/notifications/${notificationId}/read/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+  return axiosInstance.post(
+    `diy/internal/notifications/${notificationId}/read/`,
+    {}
   );
 };
 
-// Mark all admin notifications as read
+// Mark all admin notifications as read.
 export const markAllAdminNotificationsAsRead = async () => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.post(
-    `${API_BASE}/diy/internal/notifications/read-all/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+  return axiosInstance.post(
+    "diy/internal/notifications/read-all/",
+    {}
   );
 };
 
-
-// Get notifications related to DIY vendors for the logged-in admin
+// Get notifications related to DIY vendors for the logged-in admin.
 export const getVendorAdminNotifications = async () => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.get(
-    `${API_BASE}/vendor-portal/admin/notifications/`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+  return axiosInstance.get(
+    "vendor-portal/admin/notifications/"
   );
 };
 
-// Mark a vendor notification as read
+// Mark a vendor notification as read.
 export const markVendorAdminNotificationAsRead = async (notificationId) => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.post(
-    `${API_BASE}/vendor-portal/admin/notifications/${notificationId}/read/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+  return axiosInstance.post(
+    `vendor-portal/admin/notifications/${notificationId}/read/`,
+    {}
   );
 };
 
-// Mark all vendor notifications as read
+// Mark all vendor notifications as read.
 export const markAllVendorAdminNotificationsAsRead = async () => {
-  const accessToken = localStorage.getItem("access_token");
-
-  return axios.post(
-    `${API_BASE}/vendor-portal/admin/notifications/read-all/`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+  return axiosInstance.post(
+    "vendor-portal/admin/notifications/read-all/",
+    {}
   );
 };

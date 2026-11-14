@@ -18,24 +18,11 @@ from .models import ActiveLoginSession
 from datetime import timedelta
 from django.utils import timezone
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
-    def validate(self, attrs):
-        with transaction.atomic():
-            data = super().validate(attrs)
-
-            data["is_superuser"] = self.user.is_superuser
-
-            if self.user.is_superuser:
-                data["role"] = "Admin"
-            else:
-                profile = getattr(self.user, "userprofile", None)
-                data["role"] = (
-                    profile.role if profile and profile.role else "User"
-                )
-
-            return data
-        
     @classmethod
     def get_token(cls, user):
         with transaction.atomic():
@@ -43,17 +30,25 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
             now = timezone.now()
 
+            idle_timeout = timedelta(
+                minutes=getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 30)
+            )
+
+            absolute_timeout = timedelta(
+                hours=getattr(settings, "SESSION_ABSOLUTE_TIMEOUT_HOURS", 8)
+            )
+
             active_session = ActiveLoginSession.objects.filter(
                 user=locked_user
             ).first()
 
             if active_session:
                 absolute_expired = (
-                    now >= active_session.created_at + timedelta(hours=8)
+                    now >= active_session.created_at + absolute_timeout
                 )
 
                 idle_expired = (
-                    now >= active_session.last_seen_at + timedelta(minutes=5)
+                    now >= active_session.last_seen_at + idle_timeout
                 )
 
                 if absolute_expired or idle_expired:
@@ -75,11 +70,28 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
 
             return token
-   
+
+    def validate(self, attrs):
+        with transaction.atomic():
+            data = super().validate(attrs)
+
+            data["is_superuser"] = self.user.is_superuser
+
+            if self.user.is_superuser:
+                data["role"] = "Admin"
+            else:
+                profile = getattr(self.user, "userprofile", None)
+                data["role"] = (
+                    profile.role if profile and profile.role else "User"
+                )
+
+            return data
+
+
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
     def validate(self, attrs):
-        try:
+        with transaction.atomic():
             refresh = RefreshToken(attrs["refresh"])
 
             session_id = refresh.get("session_id")
@@ -87,7 +99,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             if not session_id:
                 raise AuthenticationFailed("Invalid login session.")
 
-            active_session = ActiveLoginSession.objects.filter(
+            active_session = ActiveLoginSession.objects.select_for_update().filter(
                 user_id=refresh["user_id"],
                 session_id=session_id
             ).first()
@@ -99,12 +111,20 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
             now = timezone.now()
 
+            idle_timeout = timedelta(
+                minutes=getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 30)
+            )
+
+            absolute_timeout = timedelta(
+                hours=getattr(settings, "SESSION_ABSOLUTE_TIMEOUT_HOURS", 8)
+            )
+
             absolute_expired = (
-                now >= active_session.created_at + timedelta(hours=8)
+                now >= active_session.created_at + absolute_timeout
             )
 
             idle_expired = (
-                now >= active_session.last_seen_at + timedelta(minutes=5)
+                now >= active_session.last_seen_at + idle_timeout
             )
 
             if absolute_expired or idle_expired:
@@ -116,8 +136,6 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
             return super().validate(attrs)
 
-        except AuthenticationFailed:
-            raise
         
 class ClientSerializer(serializers.ModelSerializer):
 
