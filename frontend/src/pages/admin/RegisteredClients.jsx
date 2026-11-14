@@ -280,7 +280,7 @@ export default function RegisteredClients() {
                           {client.is_active ? "Active" : "Inactive"}
                         </span>
 
-                        <span
+                        {/* <span
                           className={`verification-label ${
                             client.is_email_verified
                               ? "verification-verified"
@@ -290,7 +290,7 @@ export default function RegisteredClients() {
                           {client.is_email_verified
                             ? "Email verified"
                             : "Email not verified"}
-                        </span>
+                        </span> */}
                       </div>
                     </td>
                   </tr>

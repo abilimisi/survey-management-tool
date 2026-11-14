@@ -6,7 +6,6 @@ import "./DIYAllStudies.css";
 
 const STATUS_OPTIONS = [
   "all",
-  "draft",
   "submitted",
   "under_review",
   "changes_requested",
@@ -49,9 +48,13 @@ export default function DIYAllStudies() {
         );
 
         if (active) {
-          setStudies(
-            Array.isArray(response.data) ? response.data : []
-          );
+          const submittedStudies = Array.isArray(response.data)
+            ? response.data.filter(
+                (study) => study.status?.toLowerCase() !== "draft"
+              )
+            : [];
+
+          setStudies(submittedStudies);
         }
       } catch (err) {
         if (active) {

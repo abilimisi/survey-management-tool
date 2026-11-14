@@ -3,15 +3,15 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sendSessionHeartbeat } from "../api/authApi";
 
-const HEARTBEAT_INTERVAL = 5 * 60 * 1000;
-const RECENT_ACTIVITY_WINDOW = 10 * 60 * 1000;
+const HEARTBEAT_INTERVAL = 30 * 1000; // 30 seconds
+const RECENT_ACTIVITY_WINDOW = 60 * 1000; // 1 minute
 
 function SessionHeartbeat() {
   const navigate = useNavigate();
 
   useEffect(() => {
     let lastActivityAt = Date.now();
-    let lastHeartbeatAt = Date.now();
+    let lastHeartbeatAt = 0;
     let heartbeatInProgress = false;
     let isUnmounted = false;
 
@@ -28,15 +28,7 @@ function SessionHeartbeat() {
 
       if (document.visibilityState !== "visible") return;
 
-      const now = Date.now();
-
-      // Only send a heartbeat if there was recent user activity.
-      if (now - lastActivityAt > RECENT_ACTIVITY_WINDOW) return;
-
-      // Do not send heartbeats more frequently than the configured interval.
-      if (now - lastHeartbeatAt < HEARTBEAT_INTERVAL) return;
-
-      // const accessToken = localStorage.getItem("access_token");
+      const accessToken = localStorage.getItem("access_token");
 
       if (!accessToken) {
         clearAuth();
@@ -44,20 +36,27 @@ function SessionHeartbeat() {
         return;
       }
 
+      const now = Date.now();
+
+      // Only maintain the session while the user has been recently active.
+      if (now - lastActivityAt > RECENT_ACTIVITY_WINDOW) return;
+
+      // Avoid sending heartbeats too frequently.
+      if (now - lastHeartbeatAt < HEARTBEAT_INTERVAL) return;
+
       heartbeatInProgress = true;
 
       try {
         await sendSessionHeartbeat();
 
-        // Update only after the backend confirms the heartbeat.
-        lastHeartbeatAt = Date.now();
+        if (!isUnmounted) {
+          lastHeartbeatAt = Date.now();
+        }
       } catch (error) {
         if (error.response?.status === 401) {
           clearAuth();
           navigate("/login", { replace: true });
         }
-
-        // Do not log the user out for temporary network/server errors.
       } finally {
         heartbeatInProgress = false;
       }
@@ -65,9 +64,6 @@ function SessionHeartbeat() {
 
     const recordActivity = () => {
       lastActivityAt = Date.now();
-
-      // If the user returns after being idle, check the session promptly
-      // instead of waiting for the next five-minute timer.
       sendHeartbeat();
     };
 
@@ -85,7 +81,7 @@ function SessionHeartbeat() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Visibility alone is not treated as user activity.
+        // Returning to the tab does not itself count as user activity.
         sendHeartbeat();
       }
     };
@@ -94,6 +90,9 @@ function SessionHeartbeat() {
       "visibilitychange",
       handleVisibilityChange
     );
+
+    // Start the first heartbeat after the component mounts.
+    sendHeartbeat();
 
     const heartbeatTimer = setInterval(() => {
       sendHeartbeat();
