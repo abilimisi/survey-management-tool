@@ -6,8 +6,6 @@ import {
   UserCheck,
   Mail,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
   CalendarDays,
   AlertCircle,
 } from "lucide-react";
@@ -57,9 +55,20 @@ export default function RegisteredClients() {
 
       setData(result);
     } catch (err) {
+      console.error("Registered Clients API Error:", {
+        message: err.message,
+        status: err.response?.status,
+        response: err.response?.data,
+        url: err.config?.url,
+        params: err.config?.params,
+      });
+
       setError(
         err.response?.data?.detail ||
-          "Unable to load registered clients. Please try again."
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Unable to load registered clients. Please try again."
       );
     } finally {
       setLoading(false);
@@ -93,7 +102,6 @@ export default function RegisteredClients() {
     <div className="registered-directory">
       <div className="directory-heading">
         <div>
-          <div className="directory-eyebrow">DIY MANAGEMENT / CLIENTS</div>
           <h1>Registered Clients</h1>
           <p>
             View and manage companies that have created a DIY client account.
@@ -188,8 +196,8 @@ export default function RegisteredClients() {
           </div>
         )}
 
-        <div className="directory-table-wrap">
-          <table className="directory-table">
+        <div className="registered-table-wrapper">
+          <table className="registered-custom-table">
             <thead>
               <tr>
                 <th>CLIENT</th>
@@ -299,36 +307,58 @@ export default function RegisteredClients() {
             </tbody>
           </table>
         </div>
+      </div>  
 
-        <div className="directory-pagination">
-          <span>
-            Showing {clients.length ? (page - 1) * 10 + 1 : 0}–
-            {(page - 1) * 10 + clients.length} of {data.count || 0} clients
-          </span>
+      {/* PAGINATION SECTION */}
+      <div className="pagination-container">
 
-          <div className="pagination-actions">
-            <button
-              disabled={!data.previous || loading}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              <ChevronLeft size={17} />
-              Previous
-            </button>
-
-            <span className="pagination-page">
-              {page} / {totalPages}
-            </span>
-
-            <button
-              disabled={!data.next || loading}
-              onClick={() => setPage((current) => current + 1)}
-            >
-              Next
-              <ChevronRight size={17} />
-            </button>
-          </div>
+        <div className="pagination-info">
+          Showing{" "}
+          {clients.length === 0 ? 0 : (page - 1) * 10 + 1}
+          {" "}to{" "}
+          {Math.min((page - 1) * 10 + clients.length, data.count || 0)}
+          {" "}of{" "}
+          {data.count || 0}
+          {" "}entries
         </div>
+
+        <div className="pagination-controls">
+
+          <button
+            disabled={!data.previous || loading}
+            onClick={() =>
+              setPage((current) => Math.max(1, current - 1))
+            }
+          >
+            Previous
+          </button>
+
+          {Array.from(
+            { length: totalPages },
+            (_, index) => (
+              <button
+                key={index}
+                className={page === index + 1 ? "active-page" : ""}
+                disabled={loading}
+                aria-current={page === index + 1 ? "page" : undefined}
+                onClick={() => setPage(index + 1)}
+              >
+                {index + 1}
+              </button>
+            )
+          )}
+
+          <button
+            disabled={!data.next || loading}
+            onClick={() =>
+              setPage((current) => Math.min(totalPages, current + 1))
+            }
+          >
+            Next
+          </button>
+
+        </div>
+       </div>
       </div>
-    </div>
   );
 }

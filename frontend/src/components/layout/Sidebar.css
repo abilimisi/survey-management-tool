@@ -1,10 +1,3 @@
-/* ==========================================
-   SIDEBAR
-   
-   ≥ 1024px  DESKTOP  : Fixed, always visible, collapses to icon mode
-   < 1024px  OVERLAY  : Slides over content, hamburger in topbar controls it
-========================================== */
-
 .sidebar {
   width: 200px;
   background: #111827;
@@ -21,7 +14,6 @@
   transition: width 0.25s ease, transform 0.25s ease;
 }
 
-/* Desktop collapsed: icon-only, stays on screen */
 .sidebar.collapsed {
   width: 68px;
   transform: translateX(0);
@@ -40,8 +32,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* margin-bottom: 20px; */
-  /* min-height: 36px; */
 }
 
 .sidebar-logo {
@@ -391,4 +381,13 @@
 
 .sidebar.collapsed .sidebar-section-label {
   display: none;
+}
+
+/* Company Contacts - Larger Sidebar Icon */
+.sidebar .sidebar-link svg.company-contact-icon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  flex-shrink: 0;
 }

@@ -219,6 +219,7 @@ class RegisteredClientListView(generics.ListAPIView):
 
         queryset = (
             ClientPortalUser.objects
+            .prefetch_related("diy_company_memberships__company")
             .all()
             .order_by("-created_at")
         )
@@ -229,14 +230,11 @@ class RegisteredClientListView(generics.ListAPIView):
         ).strip()
 
         if search:
-
             queryset = queryset.filter(
                 Q(first_name__icontains=search)
                 | Q(last_name__icontains=search)
                 | Q(email__icontains=search)
-                | Q(
-                    diycompanymembership__company__name__icontains=search
-                )
+                | Q(diy_company_memberships__company__name__icontains=search)
             ).distinct()
 
         # Filter by account status.
@@ -249,7 +247,6 @@ class RegisteredClientListView(generics.ListAPIView):
             queryset = queryset.filter(is_active=False)
 
         return queryset
-
 
 # ============================================================
 # REGISTERED VENDOR LIST API

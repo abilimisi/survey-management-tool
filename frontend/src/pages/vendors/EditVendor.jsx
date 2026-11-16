@@ -140,8 +140,20 @@ const handleSubmit = async (e) => {
   return (
     <div>
       <div className="page-header">
-        <h1>Edit Vendor</h1>
-        <p>Update vendor company details and redirect links</p>
+        <div className="page-header-content">
+          <h1>Edit Vendor</h1>
+          <p>Update vendor company details and redirect links</p>
+        </div>
+
+        <div className="project-source-info">
+          <span
+            className={`source-badge ${
+              formData.is_diy ? "source-badge--diy_portal" : "source-badge--internal"
+            }`}
+          >
+            {formData.is_diy ? "DIY Portal" : "Internal"}
+          </span>
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}

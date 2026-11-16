@@ -14,13 +14,15 @@
 
 .diy-review-header h1 {
   margin: 0 0 8px;
-  font-size: 26px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .diy-review-header p,
 .diy-review-empty p {
   color: #687386;
   margin: 0;
+  font-size: small;
 }
 
 .diy-review-refresh,
@@ -58,45 +60,89 @@
   font-size: 14px;
 }
 
-.diy-review-summary strong {
-  font-size: 28px;
-}
+/* =====================================
+   DIY REVIEW TABLE
+===================================== */
 
 .diy-review-table-wrapper {
+  width: 100%;
   overflow-x: auto;
   background: #fff;
-  border: 1px solid #e3e7ee;
-  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .diy-review-table {
   width: 100%;
   border-collapse: collapse;
+  border-spacing: 0;
   text-align: left;
-}
-
-.diy-review-table th,
-.diy-review-table td {
-  padding: 14px;
-  border-bottom: 1px solid #edf0f4;
+  font-family: inherit;
+  font-size: 13px;
   white-space: nowrap;
 }
 
-.diy-review-table th {
-  background: #f8fafc;
-  color: #526075;
+/* Header background */
+.diy-review-table thead {
+  background: #e5e7eb;
+}
+
+/* Table headings */
+.diy-review-table thead th {
+  padding: 7px 14px;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  border-bottom: 1px solid #d1d5db;
+  white-space: nowrap;
+}
+
+/* Table body */
+.diy-review-table tbody td {
+  padding: 7px 14px;
+  border-bottom: 1px solid #edf0f5;
+  color: #293650;
   font-size: 13px;
+  font-weight: 400;
+  line-height: 1.25;
+  vertical-align: middle;
 }
 
-.diy-review-table td strong,
-.diy-review-table td small {
+/* Study name */
+.diy-review-table tbody td strong {
   display: block;
+  color: #293650;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.diy-review-table td small {
-  margin-top: 5px;
-  color: #7b8494;
+/* Study ID */
+.diy-review-table tbody td small {
+  display: block;
+  margin-top: 3px;
+  color: #8992a5;
+  font-size: 11px;
 }
+
+/* Row hover */
+.diy-review-table tbody tr {
+  background: #fff;
+  transition: background 0.15s ease;
+}
+
+.diy-review-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.diy-review-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 
 .diy-review-status {
   display: inline-block;
@@ -107,10 +153,23 @@
   font-size: 12px;
   text-transform: capitalize;
 }
-
 .diy-review-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.diy-review-actions button {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+.diy-review-actions .diy-review-view-details {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 5px;
 }
 
 .diy-review-actions button,

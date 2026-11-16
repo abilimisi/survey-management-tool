@@ -67,8 +67,10 @@ function AddClient() {
   return (
     <div>
       <div className="page-header">
-        <h1>Add Client</h1>
-        <p>Create new client company</p>
+        <div className="page-header-content">
+          <h1>Add Client</h1>
+          <p>Create new client company</p>
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}

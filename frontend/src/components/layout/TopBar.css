@@ -6,7 +6,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: nowrap;
+  gap: 12px;
+  min-width: 0;
   padding: 12px 20px;
   height: 72px;
   background: rgba(255, 255, 255, 0.95);
@@ -74,14 +76,16 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 /* ==========================
    WELCOME USER
 ========================== */
-
 .welcome-text {
   display: flex;
   align-items: center;
@@ -93,10 +97,19 @@
   font-size: 13px;
   color: #0f172a;
   white-space: nowrap;
+  max-width: 280px;
+  min-width: 0;
 }
 
-.welcome-text strong {
-  font-weight: 600;
+.welcome-text > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.welcome-text > svg {
+  flex-shrink: 0;
 }
 
 /* ==========================
@@ -139,25 +152,62 @@
     height: 60px;
     border-radius: 10px;
     margin-bottom: 14px;
+    gap: 6px;
+  }
+
+  .topbar-left {
+    gap: 7px;
+    min-width: 0;
   }
 
   .topbar-logo {
     height: 36px;
+    max-width: 110px;
   }
 
-  /* Hide welcome text on very small phones, keep logout */
-  .welcome-text {
-    display: none;
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .profile-dropdown .welcome-text {
+    max-width: 125px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .admin-notification-btn {
+    width: 36px;
+    height: 36px;
   }
 }
 
 @media (max-width: 360px) {
-  .logout-btn {
-    padding: 6px 12px;
-    font-size: 12px;
+  .topbar {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .topbar-logo {
+    height: 30px;
+    max-width: 85px;
+  }
+
+  .topbar-right {
+    gap: 5px;
+  }
+
+  .profile-dropdown .welcome-text {
+    max-width: 85px;
+    padding: 6px;
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .admin-notification-btn {
+    width: 32px;
+    height: 32px;
   }
 }
-
 
 .profile-dropdown {
   position: relative;

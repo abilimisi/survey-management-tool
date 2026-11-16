@@ -43,6 +43,7 @@
 .table-scroll {
   width: 100%;
   overflow-x: auto;
+  overflow-y: visible;
   background: #ffffff;
   border: 1px solid #dbe1ea;
   border-radius: 8px;
@@ -50,8 +51,8 @@
 }
 
 .campaign-table {
-  width: 100%;
-  min-width: 780px;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -83,7 +84,7 @@
 }
 
 .campaign-table td {
-  padding: 11px 14px;
+  padding: 8px 14px;
   border-bottom: 1px solid #dbe1ea;
   color: #1f2937;
   vertical-align: middle;
@@ -142,8 +143,21 @@
 
 .table-actions_01 {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
   gap: 6px;
+  width: max-content;
+  min-width: max-content;
+  white-space: nowrap;
+}
+.table-actions_01 > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.campaign-table td:last-child {
+  white-space: nowrap;
 }
 .delete-btn {
   display: inline-flex;
@@ -397,3 +411,4 @@
     }
 
 }
+

@@ -118,20 +118,22 @@ function EditClient() {
 };
   return (
     <div>
-      <div className="page-header">
+     <div className="page-header">
+      <div className="page-header-content">
         <h1>Edit Client</h1>
         <p>Update client company details</p>
-
-        <div className="project-source-info">
-          <span
-            className={`source-badge source-badge--${clientSource}`}
-          >
-            {clientSource === "diy_portal"
-              ? "DIY Portal"
-              : "Internal"}
-          </span>
-        </div>
       </div>
+
+      <div className="project-source-info">
+        <span
+          className={`source-badge source-badge--${clientSource}`}
+        >
+          {clientSource === "diy_portal"
+            ? "DIY Portal"
+            : "Internal"}
+        </span>
+      </div>
+    </div>
 
       {error && <div className="error-box">{error}</div>}
 

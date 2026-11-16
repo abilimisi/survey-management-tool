@@ -123,7 +123,6 @@ export default function RegisteredVendors() {
     <div className="registered-directory">
       <div className="directory-heading">
         <div>
-          <div className="directory-eyebrow">DIY MANAGEMENT / VENDORS</div>
           <h1>Registered Vendors</h1>
           <p>
             View DIY vendor accounts, profile details and application progress.
@@ -350,7 +349,7 @@ export default function RegisteredVendors() {
           </table>
         </div>
 
-        <div className="directory-pagination">
+        {/* <div className="directory-pagination">
           <span>
             Showing {vendors.length ? (page - 1) * 10 + 1 : 0}–
             {(page - 1) * 10 + vendors.length} of {data.count || 0} vendors
@@ -377,6 +376,61 @@ export default function RegisteredVendors() {
               <ChevronRight size={17} />
             </button>
           </div>
+        </div> */}
+      </div>
+
+      
+      {/* PAGINATION SECTION */}
+      <div className="pagination-container">
+
+        <div className="pagination-info">
+          Showing{" "}
+          {vendors.length === 0 ? 0 : (page - 1) * 10 + 1}
+          {" "}to{" "}
+          {Math.min(
+            (page - 1) * 10 + vendors.length,
+            data.count || 0
+          )}
+          {" "}of{" "}
+          {data.count || 0}
+          {" "}entries
+        </div>
+
+        <div className="pagination-controls">
+
+          <button
+            disabled={!data.previous || loading}
+            onClick={() =>
+              setPage((current) => Math.max(1, current - 1))
+            }
+          >
+            Previous
+          </button>
+
+          {Array.from(
+            { length: totalPages },
+            (_, index) => (
+              <button
+                key={index}
+                className={page === index + 1 ? "active-page" : ""}
+                disabled={loading}
+                aria-current={page === index + 1 ? "page" : undefined}
+                onClick={() => setPage(index + 1)}
+              >
+                {index + 1}
+              </button>
+            )
+          )}
+
+          <button
+            disabled={!data.next || loading}
+            onClick={() =>
+              setPage((current) => Math.min(totalPages, current + 1))
+            }
+          >
+            Next
+          </button>
+
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   Store,
   BookOpen,
   ClipboardCheck,
+   ContactRound,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -86,10 +87,10 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
       color: "icon-yellow",
     },
 
-    {
+   {
       name: "Company Contacts",
       path: "/company-contacts",
-      icon: Building2,
+      icon: ContactRound,
       color: "icon-teal",
     },
 
@@ -342,9 +343,12 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
               }
               onClick={onNavigate}
             >
-              <Icon
-                size={20}
-                className={item.color}
+             <Icon
+                size={item.name === "Company Contacts" ? 26 : 20}
+                strokeWidth={2}
+                className={`${item.color} ${
+                  item.name === "Company Contacts" ? "company-contact-icon" : ""
+                }`}
               />
 
               <span>{item.name}</span>

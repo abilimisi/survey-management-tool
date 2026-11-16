@@ -193,8 +193,10 @@ function EditProject() {
   return (
     <div>
       <div className="page-header">
-        <h1>Edit Project</h1>
-        <p>Update project with survey links, metrics and timeline</p>
+        <div className="page-header-content">
+          <h1>Edit Project</h1>
+          <p>Update project with survey links, metrics and timeline</p>
+        </div>
 
         <div className="project-source-info">
           <span

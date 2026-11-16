@@ -29,7 +29,7 @@
 .diy-all-studies__header h1 {
   margin: 0 0 8px;
   color: #172033;
-  font-size: 30px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -99,22 +99,22 @@
   width: 100%;
   overflow-x: auto;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 3px 12px rgb(15 23 42 / 4%);
+  box-shadow: none;
 }
-
 .diy-all-studies__table {
   width: 100%;
   min-width: 1050px;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   text-align: left;
-  font-size: 14px;
+  font-family: inherit;
+  font-size: 13px;
 }
 
 .diy-all-studies__table thead {
-  background: #f8fafc;
+   background: #e5e7eb;
 }
 
 .diy-all-studies__table th {
@@ -135,17 +135,27 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-
 .diy-all-studies__table tbody tr {
-  transition: background-color 0.15s ease;
+  background: #fff;
+  transition: background 0.15s ease;
 }
 
 .diy-all-studies__table tbody tr:hover {
-  background: #f8fbff;
+  background: #f8fafc;
 }
 
 .diy-all-studies__table tbody tr:last-child td {
   border-bottom: none;
+}
+.diy-all-studies__table tbody td a {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.diy-all-studies__table tbody td a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 .diy-all-studies__table td a {
@@ -160,9 +170,31 @@
 }
 
 .diy-all-studies__table td[colspan] {
-  padding: 36px 16px;
+  padding: 24px 16px;
   color: #64748b;
   text-align: center;
+}
+.diy-all-studies__table thead th {
+  padding: 8px 16px;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid #d1d5db;
+}
+.diy-all-studies__table tbody td {
+  padding: 8px 16px;
+  border-bottom: 1px solid #edf0f5;
+  color: #293650;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 /* Status badges */
@@ -212,7 +244,8 @@
   font-size: 14px;
 }
 
-.diy-all-studies > p[role="alert"] {
+.diy-
+all-studies > p[role="alert"] {
   padding: 12px 14px;
   border: 1px solid #fecaca;
   border-radius: 8px;
@@ -228,7 +261,8 @@
   }
 
   .diy-all-studies__header h1 {
-    font-size: 24px;
+    font-size: 20px;
+    font-weight: 700;
   }
 
   .diy-all-studies__filters {

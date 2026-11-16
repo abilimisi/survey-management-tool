@@ -73,8 +73,10 @@ function AddVendor() {
   return (
     <div>
       <div className="page-header">
-        <h1>Add Vendor</h1>
-        <p>Create supplier/vendor company with redirect links</p>
+        <div className="page-header-content">
+          <h1>Add Vendor</h1>
+          <p>Create supplier/vendor company with redirect links</p>
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}
