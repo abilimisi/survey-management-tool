@@ -5,6 +5,7 @@ import { Outlet } from "react-router-dom";
 import ClientPortalRoute from "../../pages/clientPortal/ClientPortalRoute";
 import ClientPortalNavbar from "./ClientPortalNavbar";
 import ClientPortalSidebar from "./ClientPortalSidebar";
+import Footer from "../layout/Footer";
 
 import "./ClientPortalLayout.css";
 
@@ -50,6 +51,7 @@ export default function ClientPortalLayout() {
           <main className="client-portal-main">
             <Outlet />
           </main>
+           <Footer />
         </div>
       </div>
     </ClientPortalRoute>

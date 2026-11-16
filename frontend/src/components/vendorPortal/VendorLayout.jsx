@@ -1,7 +1,9 @@
 
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+
 import VendorNavbar from "../../pages/vendorPortal/VendorNavbar";
+import Footer from "../layout/Footer";
 
 function VendorLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -18,12 +20,16 @@ function VendorLayout() {
     >
       <VendorNavbar />
 
-      <Outlet
-        context={{
-          sidebarCollapsed,
-          toggleSidebar,
-        }}
-      />
+      <div className="vendor-layout-outlet">
+        <Outlet
+          context={{
+            sidebarCollapsed,
+            toggleSidebar,
+          }}
+        />
+      </div>
+
+      <Footer />
     </div>
   );
 }

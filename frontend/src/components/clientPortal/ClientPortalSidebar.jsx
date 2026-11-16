@@ -29,11 +29,11 @@ const navigationItems = [
     icon: Layers,
     end: true,
   },
-  {
-    label: "Quotations",
-    path: "/client-portal/dashboard#quotations",
-    icon: FileText,
-  },
+  // {
+  //   label: "Quotations",
+  //   path: "/client-portal/dashboard#quotations",
+  //   icon: FileText,
+  // },
   {
     label: "Notifications",
     action: "notifications",

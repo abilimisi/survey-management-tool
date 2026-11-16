@@ -108,7 +108,13 @@ const handleSubmit = async (e) => {
 
     console.log("Sending Data:", formData);
 
-    const response = await createProject(formData);
+    const payload = {
+      ...formData,
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null,
+    };
+
+const response = await createProject(payload);
 
     console.log("Project Created Successfully");
     console.log(response);

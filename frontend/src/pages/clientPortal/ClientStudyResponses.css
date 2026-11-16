@@ -1,0 +1,283 @@
+
+.client-responses-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.client-responses-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.client-responses-header h1 {
+  margin: 5px 0 7px;
+  color: #17243a;
+  font-size: 26px;
+  font-weight: 750;
+}
+
+.client-responses-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.client-responses-eyebrow {
+  color: #08733c !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.client-responses-back {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.client-responses-study-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  border: 1px solid #e1e7ef;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.client-responses-study-card h2 {
+  margin: 5px 0 0;
+  color: #17243a;
+  font-size: 18px;
+}
+
+.client-responses-label {
+  display: block;
+  color: #8190a5;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.client-responses-project {
+  text-align: right;
+}
+
+.client-responses-project strong {
+  display: block;
+  margin-top: 5px;
+  color: #08733c;
+  font-size: 15px;
+}
+
+.client-responses-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.client-responses-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e1e7ef;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.client-responses-stat span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.client-responses-stat strong {
+  font-size: 27px;
+  font-weight: 750;
+}
+
+.client-responses-stat strong.blue {
+  color: #2563eb;
+}
+
+.client-responses-stat strong.green {
+  color: #08733c;
+}
+
+.client-responses-stat strong.amber {
+  color: #b7791f;
+}
+
+.client-responses-stat strong.red {
+  color: #dc2626;
+}
+
+.client-responses-section {
+  margin-top: 0 !important;
+}
+
+.client-responses-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.client-responses-search {
+  flex: 1;
+  min-width: 180px;
+}
+
+.client-responses-search input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  outline: none;
+  color: #172033;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.client-responses-search input:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.client-responses-toolbar .client-primary-button {
+  min-height: 42px;
+}
+
+.client-responses-table {
+  min-width: 760px;
+}
+
+.client-response-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.client-response-status.status-complete {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.client-response-status.status-started {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.client-response-status.status-terminate,
+.client-response-status.status-security_terminate {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.client-response-status.status-quota_full {
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.client-responses-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.client-responses-pagination > div {
+  display: flex;
+  gap: 8px;
+}
+
+.client-responses-message {
+  margin-bottom: 16px;
+  padding: 13px 15px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.client-responses-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.client-responses-error p {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 700px) {
+  .client-responses-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .client-responses-back {
+    align-self: flex-start;
+  }
+
+  .client-responses-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .client-responses-study-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .client-responses-project {
+    text-align: left;
+  }
+
+  .client-responses-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .client-responses-search {
+    min-width: 0;
+  }
+
+  .client-responses-toolbar .client-primary-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .client-responses-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .client-responses-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .client-responses-pagination > div button {
+    flex: 1;
+  }
+}

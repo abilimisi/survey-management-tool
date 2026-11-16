@@ -108,4 +108,13 @@ export const markAllClientNotificationsAsRead = async () => {
   );
 };
 
+export const getClientStudyResponses = (
+  studyId,
+  params = {}
+) =>
+  clientPortalApi.get(
+    `diy/studies/${studyId}/responses/`,
+    { params }
+  );
+  
 export default clientPortalApi;

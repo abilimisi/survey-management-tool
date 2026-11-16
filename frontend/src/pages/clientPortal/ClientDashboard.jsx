@@ -1119,6 +1119,15 @@ function ClientDashboardContent() {
                             <Eye size={16} strokeWidth={2} />
                           </Link>
 
+                          {(study.project || study.project_id) && (
+                            <Link
+                              to={`/client-portal/studies/${study.id}/responses`}
+                              className="client-table-button client-view-button"
+                            >
+                              View Responses
+                            </Link>
+                          )}
+
                           {/* Edit Study and Submit for Review */}
                           {["draft", "changes_requested"].includes(study.status) && (
                             <>

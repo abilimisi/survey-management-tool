@@ -608,3 +608,231 @@
     padding: 9px 12px;
   }
 }
+
+
+/* =========================================
+   RESPONSIVE EDIT COMPANY PROFILE MODAL
+========================================= */
+
+.company-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.company-edit-modal {
+  display: flex;
+  flex-direction: column;
+
+  width: min(900px, 100%);
+  max-width: 100%;
+
+  height: auto;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.company-edit-modal > form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+  min-height: 0;
+  overflow: hidden;
+}
+
+.company-edit-header {
+  flex: 0 0 auto;
+  padding: 20px 26px;
+}
+
+.company-edit-body {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  padding: 23px 26px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.company-edit-footer {
+  flex: 0 0 auto;
+  padding: 16px 26px;
+
+  background: #fff;
+}
+
+/* Prevent fields from overflowing their grid columns */
+.company-edit-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.company-edit-form-grid label {
+  min-width: 0;
+}
+
+.company-edit-form-grid input,
+.company-edit-form-grid textarea {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   TABLETS
+========================================= */
+
+@media (max-width: 768px) {
+  .company-edit-overlay {
+    padding: 12px;
+  }
+
+  .company-edit-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 12px;
+  }
+
+  .company-edit-header {
+    padding: 17px 20px;
+  }
+
+  .company-edit-body {
+    padding: 20px;
+  }
+
+  .company-edit-footer {
+    padding: 14px 20px;
+  }
+
+  .company-edit-header h2 {
+    font-size: 19px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .company-edit-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .company-edit-modal {
+    width: 100%;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+
+    border-radius: 10px;
+  }
+
+  .company-edit-header {
+    gap: 10px;
+    padding: 15px 16px;
+  }
+
+  .company-edit-header h2 {
+    font-size: 17px;
+  }
+
+  .company-edit-header p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .company-edit-header button {
+    flex: 0 0 34px;
+  }
+
+  .company-edit-body {
+    padding: 17px 16px;
+  }
+
+  .company-edit-body h3 {
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  .company-edit-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .company-edit-form-grid .full-width {
+    grid-column: auto;
+  }
+
+  .company-edit-form-grid input,
+  .company-edit-form-grid textarea {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .company-edit-divider {
+    margin: 18px 0;
+  }
+
+  .company-edit-footer {
+    gap: 10px;
+    padding: 13px 16px;
+  }
+
+  .company-cancel-button,
+  .company-save-button {
+    flex: 1;
+    min-width: 0;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
+/* =========================================
+   SHORT SCREENS / LANDSCAPE PHONES
+========================================= */
+
+@media (max-height: 600px) {
+  .company-edit-overlay {
+    align-items: flex-start;
+  }
+
+  .company-edit-modal {
+    margin: auto 0;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .company-edit-header {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .company-edit-body {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .company-edit-footer {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
