@@ -18,6 +18,7 @@ from ..models import (
     DIYSampleRequirement,
     DIYStudyQuotation,
     DIYNotification,
+    Respondent,
 )
 from .client_portal_auth import ClientPortalJWTAuthentication
 from .diy_serializers import DIYStudySerializer,DIYStudyQuotationSerializer
@@ -26,10 +27,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.permissions import IsAdminUser
 
-from core.DIY.diy_helpers import (
-    find_matching_clients,
-    find_matching_projects,
-)
+from rest_framework.pagination import PageNumberPagination
 
 from decimal import Decimal, InvalidOperation
 from django.core.exceptions import ValidationError
@@ -1948,6 +1946,143 @@ class DIYAdminNotificationMarkAllReadView(APIView):
             {
                 "message": "All notifications marked as read.",
                 "updated_count": updated_count,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ClientRespondentSerializer(serializers.ModelSerializer):
+    """
+    Only expose fields approved for client-portal viewing.
+    Do not reuse the internal RespondentSerializer here.
+    """
+
+    class Meta:
+        model = Respondent
+        fields = [
+            "id",
+            "respondent_id",
+            "status",
+            "started_at",
+            "completed_at",
+            "detected_country",
+        ]
+        read_only_fields = fields
+
+
+class ClientResponsePagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
+class DIYClientStudyResponsesView(APIView):
+    """
+    Return respondent activity for a project linked to a
+    DIY study owned by one of the client's active companies.
+    """
+
+    authentication_classes = [ClientPortalJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, study_id):
+
+        # 1. Find companies the authenticated client can access.
+        company_ids = DIYCompanyMembership.objects.filter(
+            user=request.user,
+            is_active=True,
+            company__is_active=True,
+        ).values_list("company_id", flat=True)
+
+        # 2. Only allow access to studies belonging to those companies.
+        study = (
+            DIYStudy.objects
+            .filter(
+                id=study_id,
+                company_id__in=company_ids,
+            )
+            .select_related("company", "project")
+            .first()
+        )
+
+        if study is None:
+            return Response(
+                {"error": "Study not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # 3. Responses are available only after project conversion.
+        if not study.project_id:
+            return Response(
+                {
+                    "error": (
+                        "Responses are not available because "
+                        "this study has not been converted into a project."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 4. Restrict respondents to this study's linked project.
+        respondents = Respondent.objects.filter(
+            project_id=study.project_id
+        ).order_by("-started_at", "-id")
+
+        # 5. Overall project response counts, before applying filters.
+        summary = {
+            "total": respondents.count(),
+            "complete": respondents.filter(status="complete").count(),
+            "started": respondents.filter(status="started").count(),
+            "terminate": respondents.filter(status="terminate").count(),
+            "quota_full": respondents.filter(status="quota_full").count(),
+            "security_terminate": respondents.filter(
+                status="security_terminate"
+            ).count(),
+        }
+
+        # 6. Optional status filter.
+        selected_status = request.query_params.get("status")
+
+        valid_statuses = {
+            choice[0] for choice in Respondent.STATUS_CHOICES
+        }
+
+        if selected_status and selected_status != "all":
+            if selected_status not in valid_statuses:
+                return Response(
+                    {"error": "Invalid respondent status."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            respondents = respondents.filter(status=selected_status)
+
+        # 7. Optional respondent ID search.
+        search = request.query_params.get("search", "").strip()
+
+        if search:
+            respondents = respondents.filter(
+                respondent_id__icontains=search
+            )
+
+        # 8. Paginate results.
+        paginator = ClientResponsePagination()
+        page = paginator.paginate_queryset(respondents, request)
+
+        serializer = ClientRespondentSerializer(page, many=True)
+
+        return Response(
+            {
+                "study": {
+                    "id": study.id,
+                    "name": study.name,
+                    "project_id": study.project_id,
+                    "project_reference": study.project.external_reference,
+                },
+                "summary": summary,
+                "count": paginator.page.paginator.count,
+                "next": paginator.get_next_link(),
+                "previous": paginator.get_previous_link(),
+                "results": serializer.data,
             },
             status=status.HTTP_200_OK,
         )

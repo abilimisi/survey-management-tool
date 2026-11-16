@@ -543,6 +543,7 @@ function EditProject() {
           </div>
         </div>
 
+
         <div className="section-title">Timeline</div>
 
         <div className="project-section">
@@ -552,8 +553,7 @@ function EditProject() {
               <input
                 type="date"
                 name="start_date"
-                required
-                value={formData.start_date}
+                value={formData.start_date || ""}
                 onChange={handleChange}
               />
             </div>
@@ -563,14 +563,14 @@ function EditProject() {
               <input
                 type="date"
                 name="end_date"
-                required
                 min={formData.start_date || undefined}
-                value={formData.end_date}
+                value={formData.end_date || ""}
                 onChange={handleChange}
               />
             </div>
           </div>
         </div>
+
 
         <div className="section-title">Memorandum</div>
 

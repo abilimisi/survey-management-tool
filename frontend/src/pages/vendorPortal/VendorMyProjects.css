@@ -1,0 +1,759 @@
+
+/* =========================================
+   VENDOR MY PROJECTS
+   Page-specific styling only.
+   Sidebar layout is controlled by the
+   shared Vendor Dashboard / Sidebar styles.
+   ========================================= */
+
+.vendor-my-projects-page {
+  min-height: 100vh;
+  width: 100%;
+  min-width: 0;
+  background: #f3f6fb;
+  box-sizing: border-box;
+}
+
+/*
+  Do not add margin-left, fixed widths, sidebar
+  positioning, or custom flex rules here.
+  The dashboard and My Projects share the same
+  outer layout.
+*/
+
+.vendor-my-projects-main {
+  min-width: 0;
+  box-sizing: border-box;
+  background: #f3f6fb;
+  padding: 22px 24px 35px;
+}
+
+/* =========================================
+   PAGE HEADER
+   ========================================= */
+
+.vendor-my-projects-topline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  min-width: 0;
+}
+
+.vendor-my-projects-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.vendor-my-projects-topline h1 {
+  margin: 0;
+  color: #172b4d;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 780;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+}
+
+.vendor-my-projects-topline p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Refresh button */
+
+.vendor-my-projects-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #d7e1ee;
+  border-radius: 9px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.vendor-my-projects-refresh:hover:not(:disabled) {
+  border-color: #93b4ef;
+  color: #1d4ed8;
+}
+
+.vendor-my-projects-refresh:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.vendor-my-projects-refresh .is-spinning {
+  animation: vendor-project-spin 0.9s linear infinite;
+}
+
+@keyframes vendor-project-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   SUMMARY CARDS
+   ========================================= */
+
+.vendor-my-projects-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+  min-width: 0;
+}
+
+.vendor-my-projects-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
+  box-sizing: border-box;
+}
+
+.vendor-my-projects-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+}
+
+.vendor-my-projects-stat-icon.total {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.vendor-my-projects-stat-icon.pending {
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.vendor-my-projects-stat-icon.accepted {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.vendor-my-projects-stat-icon.messages {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.vendor-my-projects-stat > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vendor-my-projects-stat small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.vendor-my-projects-stat strong {
+  color: #172b4d;
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================
+   ASSIGNED PROJECTS PANEL
+   ========================================= */
+
+.vendor-my-projects-panel {
+  width: 100%;
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035);
+  box-sizing: border-box;
+}
+
+.vendor-my-projects-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.vendor-my-projects-panel-heading h2 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.vendor-my-projects-panel-heading p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* =========================================
+   SEARCH AND FILTERS
+   ========================================= */
+
+.vendor-my-projects-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+
+.vendor-my-projects-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #dce4ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #94a3b8;
+  box-sizing: border-box;
+}
+
+.vendor-my-projects-search:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
+}
+
+.vendor-my-projects-search svg {
+  flex-shrink: 0;
+}
+
+.vendor-my-projects-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 14px;
+}
+
+.vendor-my-projects-search input::placeholder {
+  color: #94a3b8;
+}
+
+.vendor-my-projects-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-width: 0;
+}
+
+.vendor-my-projects-filters button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.vendor-my-projects-filters button:hover {
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.vendor-my-projects-filters button.active {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.vendor-my-projects-filters button span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 20px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 10px;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   PROJECT CARDS
+   ========================================= */
+
+.vendor-my-projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.vendor-my-project-card {
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vendor-my-project-card:hover {
+  border-color: #c7d9f4;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.045);
+}
+
+.vendor-my-project-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  min-width: 0;
+}
+
+.vendor-my-project-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.vendor-my-project-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.vendor-my-project-title > div {
+  min-width: 0;
+}
+
+.vendor-my-project-title h3 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 16px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.vendor-my-project-title p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.vendor-my-project-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid transparent;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.vendor-my-project-status.pending {
+  border-color: #fde68a;
+  background: #fff7e6;
+  color: #b45309;
+}
+
+.vendor-my-project-status.accepted {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.vendor-my-project-status.declined {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.vendor-my-project-status.clarification_requested {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+/* Project metadata */
+
+.vendor-my-project-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin: 19px 0;
+  padding: 16px 0;
+  border-top: 1px solid #edf1f6;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.vendor-my-project-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.vendor-my-project-meta span {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vendor-my-project-meta strong {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* Clarification notice */
+
+.vendor-my-project-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.vendor-my-project-notice svg {
+  flex: 0 0 auto;
+}
+
+/* =========================================
+   PROJECT ACTIONS
+   ========================================= */
+
+.vendor-my-project-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-width: 0;
+}
+
+.vendor-my-project-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.vendor-my-project-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.vendor-my-project-message-button {
+  border-color: #dbeafe !important;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.vendor-my-project-message-button:hover {
+  background: #dbeafe;
+}
+
+.vendor-my-project-unread {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 20px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 10px;
+  box-sizing: border-box;
+}
+
+.vendor-my-project-accept {
+  background: #15803d;
+  color: #fff;
+}
+
+.vendor-my-project-accept:hover:not(:disabled) {
+  background: #166534;
+}
+
+.vendor-my-project-decline {
+  border-color: #fecaca !important;
+  background: #fff;
+  color: #dc2626;
+}
+
+.vendor-my-project-decline:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.vendor-my-project-clarify {
+  border-color: #fed7aa !important;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.vendor-my-project-clarify:hover:not(:disabled) {
+  background: #ffedd5;
+}
+
+.vendor-my-project-recorded {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* =========================================
+   EMPTY AND LOADING STATES
+   ========================================= */
+
+.vendor-my-projects-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 55px 20px;
+  text-align: center;
+}
+
+.vendor-my-projects-empty.compact {
+  padding: 40px 20px;
+}
+
+.vendor-my-projects-empty > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 15px;
+  border-radius: 16px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.vendor-my-projects-empty h3 {
+  margin: 0;
+  color: #172b4d;
+  font-size: 16px;
+}
+
+.vendor-my-projects-empty p {
+  max-width: 430px;
+  margin: 8px 0 17px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.vendor-my-projects-empty a,
+.vendor-my-projects-empty button {
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vendor-my-projects-empty a:hover,
+.vendor-my-projects-empty button:hover {
+  text-decoration: underline;
+}
+
+.vendor-my-projects-loading {
+  display: flex;
+  min-height: 60vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #64748b;
+}
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.vendor-my-projects-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 35px;
+  padding: 15px 5px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.vendor-my-projects-footer span,
+.vendor-my-projects-footer a {
+  color: #8795a8;
+  font-size: 12px;
+}
+
+.vendor-my-projects-footer a {
+  color: #64748b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vendor-my-projects-footer a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1100px) {
+  .vendor-my-projects-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .vendor-my-projects-main {
+    padding: 20px 18px 30px;
+  }
+
+  .vendor-my-projects-panel {
+    padding: 21px;
+  }
+}
+
+@media (max-width: 700px) {
+  .vendor-my-projects-main {
+    padding: 18px 14px 28px;
+  }
+
+  .vendor-my-projects-topline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .vendor-my-projects-refresh {
+    align-self: flex-start;
+  }
+
+  .vendor-my-projects-panel {
+    padding: 17px;
+  }
+
+  .vendor-my-project-card {
+    padding: 16px;
+  }
+
+  .vendor-my-project-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .vendor-my-projects-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .vendor-my-projects-stat {
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .vendor-my-projects-stat-icon {
+    flex-basis: 35px;
+    width: 35px;
+    height: 35px;
+  }
+
+  .vendor-my-projects-stat strong {
+    font-size: 21px;
+  }
+
+  .vendor-my-project-card-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .vendor-my-project-actions {
+    align-items: stretch;
+  }
+
+  .vendor-my-project-actions button {
+    flex: 1 1 auto;
+  }
+
+  .vendor-my-projects-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

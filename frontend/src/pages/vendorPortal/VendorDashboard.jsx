@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -316,6 +315,16 @@ function VendorDashboard() {
     0
   );
 
+  const awaitingResponseCount = projects.filter(
+    (item) =>
+      item.response_status === "pending" ||
+      item.response_status === "clarification_requested"
+  ).length;
+
+  const acceptedProjectsCount = projects.filter(
+    (item) => item.response_status === "accepted"
+  ).length;
+
   const currentStatus = statusDetails[status] || statusDetails.draft;
   const StatusIcon = currentStatus.icon;
 
@@ -398,6 +407,46 @@ function VendorDashboard() {
             className="vendor-dashboard-main"
             id="vendor-dashboard-top"
           >
+            {/* Welcome section */}
+            <section className="vendor-dashboard-welcome-card">
+              <div className="vendor-dashboard-welcome-content">
+                <span className="vendor-dashboard-kicker">
+                  VENDOR WORKSPACE
+                </span>
+
+                <h1>
+                  Welcome back{user.first_name ? `, ${user.first_name}` : ""}!
+                </h1>
+
+                <p>
+                  Track your application, manage your projects and stay
+                  connected with the Opinion Bunch team.
+                </p>
+              </div>
+
+              <div className="vendor-dashboard-welcome-actions">
+                <div
+                  className={`vendor-welcome-status ${currentStatus.className}`}
+                >
+                  <StatusIcon size={18} />
+                  <span>{currentStatus.label}</span>
+                </div>
+
+                <Link
+                  to="/vendor/profile"
+                  className="vendor-dashboard-profile-action"
+                >
+                  {status === "changes_requested"
+                    ? "Update Requested Changes"
+                    : status === "draft"
+                      ? "Complete Vendor Profile"
+                      : "View Company Profile"}
+
+                  <ArrowRight size={17} />
+                </Link>
+              </div>
+            </section>
+
             {/* Application Progress Tracker */}
             <section
               className="vendor-application-progress"
@@ -428,32 +477,84 @@ function VendorDashboard() {
               })}
             </section>
 
-            {/* Application status and profile button */}
-            <section className="vendor-dashboard-welcome vendor-dashboard-status-only">
-              <div className="vendor-dashboard-status-actions">
-                <div
-                  className={`vendor-welcome-status ${currentStatus.className}`}
-                >
-                  <StatusIcon size={19} />
-                  <span>{currentStatus.label}</span>
+            {/* Next step for vendors who are not yet approved */}
+            {!isApproved && (
+              <section className="vendor-dashboard-next-step">
+                <div className="vendor-next-step-icon">
+                  <StatusIcon size={22} />
+                </div>
+
+                <div className="vendor-next-step-content">
+                  <span>YOUR NEXT STEP</span>
+                  <h2>{currentStatus.nextStep}</h2>
+                  <p>{currentStatus.nextStepDescription}</p>
                 </div>
 
                 <Link
                   to="/vendor/profile"
-                  className="vendor-dashboard-profile-action"
+                  className="vendor-next-step-link"
                 >
-                  {status === "changes_requested"
-                    ? "Update Requested Changes"
-                    : status === "draft"
-                      ? "Complete Vendor Profile"
-                      : "View Company Profile"}
-
-                  <ArrowRight size={17} />
+                  {status === "draft" || status === "changes_requested"
+                    ? "Continue"
+                    : "View application"}
+                  <ArrowRight size={16} />
                 </Link>
-              </div>
-            </section>
+              </section>
+            )}
 
-            {/* Assigned Projects */}
+            {/* Project summary cards for approved vendors */}
+            {isApproved && (
+              <section
+                className="vendor-dashboard-stats"
+                aria-label="Project summary"
+              >
+                <article className="vendor-stat-card">
+                  <div className="vendor-stat-icon projects">
+                    <ClipboardCheck size={21} />
+                  </div>
+                  <div>
+                    <span>Assigned Projects</span>
+                    <strong>{projects.length}</strong>
+                    <small>Total assigned to you</small>
+                  </div>
+                </article>
+
+                <article className="vendor-stat-card">
+                  <div className="vendor-stat-icon awaiting">
+                    <Clock3 size={21} />
+                  </div>
+                  <div>
+                    <span>Awaiting Response</span>
+                    <strong>{awaitingResponseCount}</strong>
+                    <small>Projects needing your attention</small>
+                  </div>
+                </article>
+
+                <article className="vendor-stat-card">
+                  <div className="vendor-stat-icon accepted">
+                    <CheckCircle2 size={21} />
+                  </div>
+                  <div>
+                    <span>Accepted Projects</span>
+                    <strong>{acceptedProjectsCount}</strong>
+                    <small>Projects you have accepted</small>
+                  </div>
+                </article>
+
+                <article className="vendor-stat-card">
+                  <div className="vendor-stat-icon messages">
+                    <MessageSquare size={21} />
+                  </div>
+                  <div>
+                    <span>Unread Messages</span>
+                    <strong>{unreadMessagesCount}</strong>
+                    <small>Messages waiting for you</small>
+                  </div>
+                </article>
+              </section>
+            )}
+
+                        {/* Assigned Projects */}
             {isApproved && (
               <section className="vendor-dashboard-panel vendor-projects-panel">
                 <div className="vendor-panel-heading">
@@ -480,10 +581,10 @@ function VendorDashboard() {
                         key={assignment.id}
                       >
                         <div>
-                          <h3>{assignment.project.name}</h3>
+                          <h3>{assignment.project?.name || "Project"}</h3>
                           <p>
-                            {assignment.project.study_type || "Study"} ·{" "}
-                            {assignment.project.country ||
+                            {assignment.project?.study_type || "Study"} ·{" "}
+                            {assignment.project?.country ||
                               "Country not specified"}
                           </p>
                         </div>
@@ -711,10 +812,10 @@ function VendorDashboard() {
               </div>
             )}
 
-            <footer className="vendor-dashboard-footer">
+            {/* <footer className="vendor-dashboard-footer">
               <span>PanelSphere Vendor Portal</span>
               <Link to="/vendor/profile">Company Profile</Link>
-            </footer>
+            </footer> */}
           </main>
         </div>
       </div>

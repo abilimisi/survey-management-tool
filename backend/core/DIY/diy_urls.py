@@ -23,6 +23,7 @@ from .diy_views import (
     DIYAdminNotificationListView,
     DIYClientNotificationMarkReadView,
     DIYAdminNotificationMarkReadView,
+    DIYClientStudyResponsesView,
 
 )
 
@@ -157,6 +158,12 @@ urlpatterns = [
         "internal/notifications/read-all/",
         DIYAdminNotificationMarkAllReadView.as_view(),
     ),  
+
+    path(
+        "studies/<int:study_id>/responses/",
+        DIYClientStudyResponsesView.as_view(),
+        name="diy-client-study-responses",
+    ),
 
     
 ]

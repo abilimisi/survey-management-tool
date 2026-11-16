@@ -24,6 +24,12 @@ function VendorSidebar({
     navigate("/vendor/login", { replace: true });
   };
 
+  const handleNotificationsClick = () => {
+    window.dispatchEvent(
+      new CustomEvent("vendor-open-notifications")
+    );
+  };
+
   return (
     <aside
       className={`vendor-dashboard-sidebar ${
@@ -66,24 +72,27 @@ function VendorSidebar({
         </Link>
 
         {isApproved && (
-          <a
-            href="#assigned-projects"
+          <Link
+            to="/vendor/projects"
             data-tooltip="My Projects"
             title={sidebarCollapsed ? "My Projects" : undefined}
           >
             <ClipboardCheck size={18} />
             {!sidebarCollapsed && <span>My Projects</span>}
-          </a>
+          </Link>
         )}
 
-        <a
-          href="#vendor-notifications"
+        <button
+          type="button"
+          className="vendor-sidebar-notifications"
+          onClick={handleNotificationsClick}
           data-tooltip="Notifications"
           title={sidebarCollapsed ? "Notifications" : undefined}
+          aria-label="Open notifications"
         >
           <Bell size={18} />
           {!sidebarCollapsed && <span>Notifications</span>}
-        </a>
+        </button>
 
         <Link
           to="/vendor/company-profile"

@@ -43,6 +43,19 @@ function VendorNavbar() {
     }
   };
 
+  // Open notifications and refresh their data
+  const openNotifications = async () => {
+    setShowNotifications(true);
+    setShowAccountMenu(false);
+    setLoadingNotifications(true);
+
+    try {
+      await fetchNotifications();
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
   // Poll notifications every 12 seconds
   useEffect(() => {
     fetchNotifications();
@@ -50,6 +63,25 @@ function VendorNavbar() {
     const interval = setInterval(fetchNotifications, 12000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Listen for notification clicks from the sidebar
+  useEffect(() => {
+    const handleSidebarNotificationClick = () => {
+      openNotifications();
+    };
+
+    window.addEventListener(
+      "vendor-open-notifications",
+      handleSidebarNotificationClick
+    );
+
+    return () => {
+      window.removeEventListener(
+        "vendor-open-notifications",
+        handleSidebarNotificationClick
+      );
+    };
   }, []);
 
   // Fetch vendor profile information
@@ -129,17 +161,13 @@ function VendorNavbar() {
   };
 
   // Toggle notification dropdown
-  const toggleNotifications = async () => {
-    const nextState = !showNotifications;
-
-    setShowNotifications(nextState);
-    setShowAccountMenu(false);
-
-    if (nextState) {
-      setLoadingNotifications(true);
-      await fetchNotifications();
-      setLoadingNotifications(false);
+  const toggleNotifications = () => {
+    if (showNotifications) {
+      setShowNotifications(false);
+      return;
     }
+
+    openNotifications();
   };
 
   // Toggle account dropdown
@@ -283,7 +311,7 @@ function VendorNavbar() {
             {showAccountMenu && (
               <div className="vendor-account-dropdown">
                 <Link
-                  to="/vendor/profile"
+                  to="/vendor/company-profile"
                   onClick={() => setShowAccountMenu(false)}
                 >
                   <UserCircle size={16} />

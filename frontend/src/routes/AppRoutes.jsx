@@ -66,6 +66,7 @@ import ClientStudyDetails from "../pages/clientPortal/ClientStudyDetails";
 import ClientPortalLayout from "../components/clientPortal/ClientPortalLayout";
 import ClientAllStudies from "../pages/clientPortal/ClientAllStudies";
 import ClientCompanyProfile from "../pages/clientPortal/ClientCompanyProfile";
+import ClientStudyResponses from "../pages/clientPortal/ClientStudyResponses";
 
 import DIYStudyReview from "../pages/diy/DIYStudyReview";
 import DIYAllStudies from "../pages/diy/DIYAllStudies";
@@ -80,6 +81,7 @@ import VendorDashboard from "../pages/vendorPortal/VendorDashboard";
 import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
 import CompanyProfileView from "../pages/vendorPortal/CompanyProfileView";
+import VendorMyProjects from "../pages/vendorPortal/VendorMyProjects";
 
 import SessionHeartbeat from "../components/SessionHeartbeat";
 
@@ -398,6 +400,10 @@ function AppRoutes() {
           element={<ClientStudyDetails />}
         />
         <Route
+          path="/client-portal/studies/:studyId/responses"
+          element={<ClientStudyResponses />}
+        />
+        <Route
           path="/client-portal/create-study"
           element={<ClientCreateStudy />}
         />
@@ -462,6 +468,7 @@ function AppRoutes() {
 
       <Route path="/vendor" element={<VendorLayout />}>
         <Route path="dashboard" element={<VendorDashboard />} />
+        <Route path="projects" element={<VendorMyProjects />} />
         <Route path="profile" element={<VendorProfile />} />
         <Route path="company-profile" element={<CompanyProfileView />} />
       </Route>

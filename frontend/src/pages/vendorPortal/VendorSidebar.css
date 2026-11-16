@@ -340,3 +340,129 @@
     margin-left: 0;
   }
 }
+
+
+/* ========================================================== */
+
+
+.vendor-sidebar-notifications {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.vendor-sidebar-notifications svg {
+  flex-shrink: 0;
+}
+
+.vendor-sidebar-notifications:hover,
+.vendor-sidebar-notifications:focus-visible {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  outline: none;
+}
+
+.vendor-dashboard-sidebar.collapsed .vendor-sidebar-notifications {
+  justify-content: center;
+  width: 48px;
+  padding: 0;
+  gap: 0;
+}
+
+@media (max-width: 600px) {
+  .vendor-dashboard-sidebar.collapsed .vendor-sidebar-notifications {
+    justify-content: flex-start;
+    width: auto;
+    min-height: 39px;
+    padding: 0 9px;
+    gap: 10px;
+  }
+}
+
+
+/* =========================================
+   VENDOR FOOTER ALIGNMENT
+   ========================================= */
+
+.vendor-layout-root {
+  --vendor-sidebar-width: 200px;
+  min-height: 100vh;
+}
+
+.vendor-layout-root.vendor-sidebar-is-collapsed {
+  --vendor-sidebar-width: 76px;
+}
+
+/* Footer should start after the sidebar */
+.vendor-layout-root > footer {
+  width: calc(100% - var(--vendor-sidebar-width));
+  margin-left: var(--vendor-sidebar-width);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* Collapsed sidebar */
+.vendor-layout-root.vendor-sidebar-is-collapsed > footer {
+  width: calc(100% - 76px);
+  margin-left: 76px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .vendor-layout-root > footer,
+  .vendor-layout-root.vendor-sidebar-is-collapsed > footer {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+
+
+/* =========================================
+   VENDOR LAYOUT STRUCTURE
+   ========================================= */
+
+.vendor-layout-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.vendor-layout-outlet {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Shared footer alignment */
+.vendor-layout-root > footer {
+  width: calc(100% - var(--vendor-sidebar-width, 200px));
+  margin-left: var(--vendor-sidebar-width, 200px);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .vendor-layout-root > footer {
+    width: 100%;
+    margin-left: 0;
+  }
+}

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { registerClient } from "../../api/clientPortalApi";
-import "./ClientLogin.css";
+import "./ClientAuth.css";
 
 export default function ClientRegister() {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export default function ClientRegister() {
     company_name: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
@@ -48,7 +49,9 @@ export default function ClientRegister() {
         data?.error ||
         Object.entries(data || {})
           .map(([field, messages]) =>
-            `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`
+            `${field}: ${
+              Array.isArray(messages) ? messages.join(", ") : messages
+            }`
           )
           .join(" | ") ||
         error.message ||
@@ -61,73 +64,175 @@ export default function ClientRegister() {
   };
 
   return (
-    <div className="client-login-page">
-      <div className="client-login-card">
-        <h1>Create your account</h1>
-        <p>Register your company to start creating research studies.</p>
+    <div className="client-auth-page client-auth-register-page">
+      <section className="client-auth-brand">
+        <div className="client-auth-brand-content">
+          <div className="client-auth-logo">
+            <span className="client-auth-logo-symbol">OB</span>
+            <span>
+              <strong>OPINION BUNCH</strong>
+              <small>RESEARCH REDEFINED</small>
+            </span>
+          </div>
 
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="first_name">First name</label>
-          <input
-            id="first_name"
-            name="first_name"
-            value={form.first_name}
-            onChange={handleChange}
-            autoComplete="given-name"
-            required
-          />
+          <div className="client-auth-brand-message">
+            <span className="client-auth-eyebrow">
+              GET STARTED
+            </span>
 
-          <label htmlFor="last_name">Last name</label>
-          <input
-            id="last_name"
-            name="last_name"
-            value={form.last_name}
-            onChange={handleChange}
-            autoComplete="family-name"
-          />
+            <h1>
+              Turn your
+              <br />
+              questions into
+              <br />
+              insights.
+            </h1>
 
-          <label htmlFor="register-email">Email address</label>
-          <input
-            id="register-email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            autoComplete="email"
-            required
-          />
+            <p>
+              Create your company workspace and start building
+              meaningful research studies with Opinion Bunch.
+            </p>
+          </div>
 
-          <label htmlFor="register-password">Password</label>
-          <input
-            id="register-password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            autoComplete="new-password"
-            minLength={8}
-            required
-          />
+          <div className="client-auth-decoration">
+            <div className="client-auth-orbit orbit-one" />
+            <div className="client-auth-orbit orbit-two" />
+            <div className="client-auth-orbit orbit-three" />
+            <div className="client-auth-orbit-center">OB</div>
+          </div>
 
-          <label htmlFor="company_name">Company name</label>
-          <input
-            id="company_name"
-            name="company_name"
-            value={form.company_name}
-            onChange={handleChange}
-            autoComplete="organization"
-            required
-          />
+          <div className="client-auth-brand-footer">
+            Your research journey starts here.
+          </div>
+        </div>
+      </section>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Creating account..." : "Create account"}
-          </button>
-        </form>
+      <main className="client-auth-main">
+        <div className="client-auth-mobile-logo">
+          <span className="client-auth-logo-symbol">OB</span>
+          <span>
+            <strong>OPINION BUNCH</strong>
+            <small>RESEARCH REDEFINED</small>
+          </span>
+        </div>
 
-        <p className="client-login-register">
-          Already registered? <Link to="/client-portal/login">Sign in</Link>
-        </p>
-      </div>
+        <div className="client-auth-form-wrapper client-auth-register-form">
+          <div className="client-auth-heading">
+            <span className="client-auth-eyebrow">
+              CREATE YOUR WORKSPACE
+            </span>
+            <h2>Create your account</h2>
+            <p>
+              Register your company to start creating research studies.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="client-auth-form">
+            <div className="client-auth-name-grid">
+              <div className="client-auth-field">
+                <label htmlFor="first_name">First name</label>
+                <input
+                  id="first_name"
+                  name="first_name"
+                  value={form.first_name}
+                  onChange={handleChange}
+                  placeholder="First name"
+                  autoComplete="given-name"
+                  required
+                />
+              </div>
+
+              <div className="client-auth-field">
+                <label htmlFor="last_name">Last name</label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  value={form.last_name}
+                  onChange={handleChange}
+                  placeholder="Last name"
+                  autoComplete="family-name"
+                />
+              </div>
+            </div>
+
+            <div className="client-auth-field">
+              <label htmlFor="register-email">Work email address</label>
+              <input
+                id="register-email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@company.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            <div className="client-auth-field">
+              <label htmlFor="register-password">Create password</label>
+
+              <div className="client-auth-password">
+                <input
+                  id="register-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                />
+
+                <button
+                  type="button"
+                  className="client-auth-password-toggle"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <small className="client-auth-hint">
+                Use at least 8 characters.
+              </small>
+            </div>
+
+            <div className="client-auth-field">
+              <label htmlFor="company_name">Company name</label>
+              <input
+                id="company_name"
+                name="company_name"
+                value={form.company_name}
+                onChange={handleChange}
+                placeholder="Your company name"
+                autoComplete="organization"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="client-auth-submit"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create your account"}
+              {!loading && <span aria-hidden="true">→</span>}
+            </button>
+          </form>
+
+          <div className="client-auth-switch">
+            Already have an account?
+            <Link to="/client-portal/login">Sign in</Link>
+          </div>
+
+          <div className="client-auth-bottom">
+            <span>OPINION BUNCH</span>
+            <span>Research redefined</span>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
