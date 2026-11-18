@@ -808,11 +808,6 @@ function VendorDashboard() {
                 </section>
               </div>
             )}
-
-            {/* <footer className="vendor-dashboard-footer">
-              <span>PanelSphere Vendor Portal</span>
-              <Link to="/vendor/profile">Company Profile</Link>
-            </footer> */}
           </main>
         </div>
       </div>

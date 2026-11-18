@@ -635,37 +635,6 @@
 }
 
 /* =========================================
-   FOOTER
-   ========================================= */
-
-.vendor-my-projects-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 35px;
-  padding: 15px 5px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.vendor-my-projects-footer span,
-.vendor-my-projects-footer a {
-  color: #8795a8;
-  font-size: 12px;
-}
-
-.vendor-my-projects-footer a {
-  color: #64748b;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.vendor-my-projects-footer a:hover {
-  color: #1d4ed8;
-  text-decoration: underline;
-}
-
-/* =========================================
    RESPONSIVE
    ========================================= */
 
@@ -745,10 +714,5 @@
 
   .vendor-my-project-actions button {
     flex: 1 1 auto;
-  }
-
-  .vendor-my-projects-footer {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

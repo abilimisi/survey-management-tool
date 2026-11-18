@@ -95,7 +95,6 @@ function ClientStudyResponses() {
     <div className="client-dashboard-page client-responses-page">
       <div className="client-responses-header">
         <div>
-          <p className="client-responses-eyebrow">CLIENT PORTAL</p>
           <h1>Study Responses</h1>
           <p>
             View respondent activity and response progress for this study.
