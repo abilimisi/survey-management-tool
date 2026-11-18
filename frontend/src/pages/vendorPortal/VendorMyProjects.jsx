@@ -430,10 +430,6 @@ function VendorMyProjects() {
             {/* Page heading */}
             <div className="vendor-my-projects-topline">
               <div>
-                <span className="vendor-my-projects-kicker">
-                  VENDOR WORKSPACE
-                </span>
-
                 <h1>My Projects</h1>
 
                 <p>

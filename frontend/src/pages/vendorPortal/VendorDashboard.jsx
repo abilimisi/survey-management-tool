@@ -410,10 +410,7 @@ function VendorDashboard() {
             {/* Welcome section */}
             <section className="vendor-dashboard-welcome-card">
               <div className="vendor-dashboard-welcome-content">
-                <span className="vendor-dashboard-kicker">
-                  VENDOR WORKSPACE
-                </span>
-
+               
                 <h1>
                   Welcome back{user.first_name ? `, ${user.first_name}` : ""}!
                 </h1>

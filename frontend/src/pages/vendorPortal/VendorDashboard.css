@@ -68,7 +68,7 @@
 .vendor-welcome-status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   padding: 11px 17px;
   border: 1px solid #bbf7d0;
   border-radius: 10px;
@@ -880,29 +880,38 @@
   }
 }
 
-/* Project message button */
-.vendor-project-messages {
+/* Dashboard Messages button - match My Projects */
+.vendor-dashboard-page .vendor-project-messages {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 9px 15px;
-  border: 1px solid #cbd5e1;
+  gap: 7px;
+
+  min-height: 36px;
+  padding: 8px 12px;
+  margin-top: 13px;
+
+  border: 1px solid #dbeafe;
   border-radius: 8px;
-  background: #fff;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 600;
+  background: #eff6ff;
+  color: #1d4ed8;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
+
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
-.vendor-project-messages:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
+.vendor-dashboard-page .vendor-project-messages:hover {
+  background: #dbeafe;
+  border-color: #bfdbfe;
 }
-
 /* Message modal overlay */
 .vendor-messages-overlay {
   position: fixed;
@@ -1066,15 +1075,6 @@
   }
 }
 
-.vendor-project-messages {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  overflow: visible;
-}
-
 .vendor-unread-badge {
   display: inline-flex;
   align-items: center;
@@ -1082,13 +1082,15 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 10px;
+  border-radius: 20px;
   background: #dc2626;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
   box-sizing: border-box;
+
+
 }
 
 .vendor-message-type-label {
@@ -1279,20 +1281,11 @@
   min-width: 0;
 }
 
-.vendor-dashboard-kicker {
-  display: block;
-  margin-bottom: 9px;
-  color: #2563eb;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.6px;
-}
-
 .vendor-dashboard-welcome-content h1 {
   margin: 0;
   color: #172b4d;
-  font-size: clamp(23px, 2.5vw, 30px);
-  font-weight: 750;
+  font-size:20px;
+  font-weight: 700;
   letter-spacing: -.7px;
 }
 
@@ -1314,19 +1307,30 @@
 }
 
 /* Status badges */
-
 .vendor-welcome-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 41px;
-  padding: 9px 14px;
-  border: 1px solid transparent;
+  gap: 7px;
+
+  min-height: 36px;
+  padding: 7px 11px;
+
+  border: 1px solid #bbf7d0;
   border-radius: 9px;
+  background: #f0fdf4;
+  color: #15803d;
+
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.vendor-welcome-status svg {
+  width: 16px;
+  height: 16px;
 }
 
 .vendor-welcome-status.pending {
@@ -1339,6 +1343,7 @@
   border-color: #bbf7d0;
   background: #f0fdf4;
   color: #15803d;
+  size:1px;
 }
 
 .vendor-welcome-status.rejected {
@@ -1353,17 +1358,29 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 11px 17px;
+  gap: 7px;
+
+  min-height: 40px;
+  padding: 8px 13px;
+
   border: 1px solid #1d4ed8;
   border-radius: 9px;
   background: #1d4ed8;
-  color: #fff;
+  color: #ffffff;
+
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.2;
   text-decoration: none;
-  transition: background .2s ease, transform .2s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.vendor-dashboard-profile-action svg {
+  width: 15px;
+  height: 15px;
 }
 
 .vendor-dashboard-profile-action:hover {
@@ -1692,12 +1709,13 @@
   width: calc(100% - var(--vendor-sidebar-width, 200px));
   min-width: 0;
   margin-left: var(--vendor-sidebar-width, 200px);
-  padding: 22px 24px 35px;
+  padding: 22px 10px 22px;
   box-sizing: border-box;
   background: #f3f6fb;
   transition:
-    width 0.25s ease,
-    margin-left 0.25s ease;
+  width 0.25s ease,
+ 
+  margin-left 0.25s ease;
 }
 
 /* Sidebar collapsed */

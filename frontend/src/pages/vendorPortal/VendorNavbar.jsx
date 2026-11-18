@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
@@ -22,6 +22,8 @@ import "./VendorNavbar.css";
 
 function VendorNavbar() {
   const navigate = useNavigate();
+  const accountMenuRef = useRef(null);
+  const notificationWrapperRef = useRef(null);
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -64,6 +66,34 @@ function VendorNavbar() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    const handleOutsideClick = (event) => {
+      if (
+        notificationWrapperRef.current &&
+        !notificationWrapperRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [showNotifications]);
 
   // Listen for notification clicks from the sidebar
   useEffect(() => {
@@ -176,6 +206,24 @@ function VendorNavbar() {
     setShowNotifications(false);
   };
 
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target)
+      ) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
   return (
     <header className="vendor-dashboard-topbar">
       <div className="vendor-navbar-inner">
@@ -195,7 +243,10 @@ function VendorNavbar() {
         <div className="vendor-topbar-actions">
 
           {/* Notifications */}
-          <div className="vendor-notification-wrapper">
+          <div
+            className="vendor-notification-wrapper"
+            ref={notificationWrapperRef}
+          >
             <button
               type="button"
               className={`vendor-notification-button ${
@@ -286,7 +337,10 @@ function VendorNavbar() {
           </div>
 
           {/* Vendor Account Dropdown */}
-          <div className="vendor-account-wrapper">
+          <div
+            className="vendor-account-wrapper"
+            ref={accountMenuRef}
+          >
             <button
               type="button"
               className="vendor-account-button"
