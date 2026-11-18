@@ -95,47 +95,39 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
     },
 
     // =================================
-    // DIY PORTAL
+    // DIY PORTAL - ADMIN ONLY
     // =================================
-    { type: "section", name: "DIY PORTAL" },
+    ...(isSuperuser
+      ? [
+          { type: "section", name: "DIY PORTAL" },
 
-    // DIY CLIENTS
-    {
-      name: "DIY Clients",
-      path: "/clients/registered",
-      icon: ClipboardList,
-      color: "icon-teal",
-      children: [
-        ...(isSuperuser
-          ? [
+          {
+            name: "DIY Clients",
+            path: "/clients/registered",
+            icon: ClipboardList,
+            color: "icon-teal",
+            children: [
               {
                 name: "Registered Clients",
                 path: "/clients/registered",
                 icon: UserRound,
                 color: "icon-purple",
               },
-            ]
-          : []),
+              {
+                name: "All Studies",
+                path: "/diy/studies",
+                icon: BookOpen,
+                color: "icon-teal",
+              },
+              {
+                name: "Pending Reviews",
+                path: "/diy/reviews",
+                icon: ClipboardCheck,
+                color: "icon-orange",
+              },
+            ],
+          },
 
-        {
-          name: "All Studies",
-          path: "/diy/studies",
-          icon: BookOpen,
-          color: "icon-teal",
-        },
-
-        {
-          name: "Pending Reviews",
-          path: "/diy/reviews",
-          icon: ClipboardCheck,
-          color: "icon-orange",
-        },
-      ],
-    },
-
-    // DIY VENDORS
-    ...(isSuperuser
-      ? [
           {
             name: "DIY Vendors",
             path: "/vendors/registered",
