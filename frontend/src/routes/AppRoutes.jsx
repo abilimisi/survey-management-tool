@@ -68,6 +68,10 @@ import ClientAllStudies from "../pages/clientPortal/ClientAllStudies";
 import ClientCompanyProfile from "../pages/clientPortal/ClientCompanyProfile";
 import ClientStudyResponses from "../pages/clientPortal/ClientStudyResponses";
 
+import ClientVerifyEmail from "../pages/clientPortal/ClientVerifyEmail";
+import ClientForgotPassword from "../pages/clientPortal/ClientForgotPassword";
+import ClientResetPassword from "../pages/clientPortal/ClientResetPassword";
+
 import DIYStudyReview from "../pages/diy/DIYStudyReview";
 import DIYAllStudies from "../pages/diy/DIYAllStudies";
 import DIYStudyDetails from "../pages/diy/DIYStudyDetails";
@@ -82,6 +86,9 @@ import VendorProfile from "../pages/vendorPortal/VendorProfile";
 import VendorApplications from "../pages/vendors/VendorApplications";
 import CompanyProfileView from "../pages/vendorPortal/CompanyProfileView";
 import VendorMyProjects from "../pages/vendorPortal/VendorMyProjects";
+import VendorVerifyEmail from "../pages/vendorPortal/VendorVerifyEmail";
+import VendorForgotPassword from "../pages/vendorPortal/VendorForgotPassword";
+import VendorResetPassword from "../pages/vendorPortal/VendorResetPassword";
 
 import SessionHeartbeat from "../components/SessionHeartbeat";
 
@@ -382,6 +389,21 @@ function AppRoutes() {
       <Route path="/client-portal/login" element={<ClientLogin />} />
       <Route path="/client-portal/register" element={<ClientRegister />} />
 
+      <Route
+        path="/client-portal/verify-email"
+        element={<ClientVerifyEmail />}
+      />
+
+      <Route
+        path="/client-portal/forgot-password"
+        element={<ClientForgotPassword />}
+      />
+
+      <Route
+        path="/client-portal/reset-password"
+        element={<ClientResetPassword />}
+      />
+
       <Route element={<ClientPortalLayout />}>
        <Route
           path="/client-portal/dashboard"
@@ -464,6 +486,21 @@ function AppRoutes() {
       <Route
         path="/vendor/login"
         element={<VendorLogin />}
+      />
+
+      <Route
+        path="/vendor/verify-email"
+        element={<VendorVerifyEmail />}
+      />
+
+      <Route
+        path="/vendor/forgot-password"
+        element={<VendorForgotPassword />}
+      />
+
+      <Route
+        path="/vendor/reset-password"
+        element={<VendorResetPassword />}
       />
 
       <Route path="/vendor" element={<VendorLayout />}>

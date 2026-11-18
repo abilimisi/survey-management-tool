@@ -17,6 +17,10 @@ from .vendor_portal_views import (
     VendorPortalAdminNotificationsView,
     VendorPortalAdminNotificationReadView,
     VendorPortalAdminMarkAllNotificationsReadView,
+    VendorPortalVerifyEmailView,
+    VendorPortalResendVerificationView,
+    VendorPortalPasswordResetRequestView,
+    VendorPortalPasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -83,5 +87,27 @@ urlpatterns = [
         VendorPortalAdminMarkAllNotificationsReadView.as_view(),
         name="vendor-portal-admin-notifications-read-all",
     ),
+
+    path(
+        "verify-email/",
+        VendorPortalVerifyEmailView.as_view(),
+        name="vendor-portal-verify-email",
+    ),
+    path(
+        "resend-verification/",
+        VendorPortalResendVerificationView.as_view(),
+        name="vendor-portal-resend-verification",
+    ),
+    path(
+        "password-reset/request/",
+        VendorPortalPasswordResetRequestView.as_view(),
+        name="vendor-portal-password-reset-request",
+    ),
+    path(
+        "password-reset/confirm/",
+        VendorPortalPasswordResetConfirmView.as_view(),
+        name="vendor-portal-password-reset-confirm",
+    ),
+
 
 ]

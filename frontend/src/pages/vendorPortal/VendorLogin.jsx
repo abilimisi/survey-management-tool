@@ -1,20 +1,31 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { toast } from "react-toastify";
 import { loginVendor } from "../../api/vendorPortalApi";
 import "./VendorAuth.css";
 
 function VendorLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
-    email: "",
+    email:
+      location.state?.verificationEmail ||
+      location.state?.email ||
+      "",
     password: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const verificationPending =
+    location.state?.verificationPending === true;
 
   const handleChange = (event) => {
     setForm((current) => ({
@@ -25,13 +36,18 @@ function VendorLogin() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
 
     try {
       const response = await loginVendor(form);
 
       if (!response.data.access) {
-        throw new Error("The server did not return an access token.");
+        throw new Error(
+          "The server did not return an access token."
+        );
       }
 
       localStorage.setItem(
@@ -40,16 +56,38 @@ function VendorLogin() {
       );
 
       toast.success("Login successful!");
-      navigate("/vendor/dashboard", { replace: true });
+
+      navigate("/vendor/dashboard", {
+        replace: true,
+      });
     } catch (error) {
       const data = error.response?.data;
 
+      if (
+        error.response?.status === 403 &&
+        data?.email_verified === false
+      ) {
+        toast.error(
+          data?.error ||
+            "Please verify your email before signing in."
+        );
+
+        navigate("/vendor/verify-email", {
+          replace: true,
+          state: {
+            email: data?.email || form.email,
+          },
+        });
+
+        return;
+      }
+
       toast.error(
         data?.non_field_errors?.[0] ||
-        data?.detail ||
-        data?.error ||
-        error.message ||
-        "Invalid email or password."
+          data?.detail ||
+          data?.error ||
+          error.message ||
+          "Invalid email or password."
       );
     } finally {
       setLoading(false);
@@ -122,6 +160,16 @@ function VendorLogin() {
             </p>
           </div>
 
+          {verificationPending && (
+            <div
+              className="vendor-auth-notice"
+              role="status"
+            >
+              Your Vendor account has been created. Please check
+              your email and verify your email address before signing in.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="vendor-auth-form">
             <div className="vendor-auth-field">
               <label htmlFor="vendor-login-email">
@@ -141,9 +189,15 @@ function VendorLogin() {
             </div>
 
             <div className="vendor-auth-field">
-              <label htmlFor="vendor-login-password">
-                Password
-              </label>
+              <div className="vendor-auth-label-row">
+                <label htmlFor="vendor-login-password">
+                  Password
+                </label>
+
+                <Link to="/vendor/forgot-password">
+                  Forgot password?
+                </Link>
+              </div>
 
               <div className="vendor-auth-password">
                 <input
@@ -177,14 +231,21 @@ function VendorLogin() {
               className="vendor-auth-submit"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign in to your account"}
-              {!loading && <span aria-hidden="true">→</span>}
+              {loading
+                ? "Signing in..."
+                : "Sign in to your account"}
+
+              {!loading && (
+                <span aria-hidden="true">→</span>
+              )}
             </button>
           </form>
 
           <div className="vendor-auth-switch">
             New vendor?
-            <Link to="/vendor/register">Create an account</Link>
+            <Link to="/vendor/register">
+              Create an account
+            </Link>
           </div>
 
           <div className="vendor-auth-bottom">

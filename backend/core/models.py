@@ -1188,6 +1188,12 @@ class ClientPortalUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    token_version = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     class Meta:
         ordering = ["email"]
         verbose_name = "Client Portal User"
@@ -1204,6 +1210,35 @@ class ClientPortalUser(models.Model):
     def is_anonymous(self):
         return False
 
+class ClientPortalAuthToken(models.Model):
+    PURPOSE_CHOICES = [
+        ("email_verification", "Email Verification"),
+        ("password_reset", "Password Reset"),
+    ]
+
+    user = models.ForeignKey(
+        ClientPortalUser,
+        on_delete=models.CASCADE,
+        related_name="auth_tokens",
+    )
+    purpose = models.CharField(
+        max_length=30,
+        choices=PURPOSE_CHOICES,
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "purpose"]),
+            models.Index(fields=["expires_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.purpose}"
 
 
 class DIYCompany(models.Model):
@@ -1821,6 +1856,14 @@ class VendorPortalUser(models.Model):
 
     admin_note = models.TextField(blank=True, default="")
 
+    is_email_verified = models.BooleanField(default=False)
+
+    token_version = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
 
     class Meta:
         ordering = ["email"]
@@ -1835,6 +1878,44 @@ class VendorPortalUser(models.Model):
     @property
     def is_anonymous(self):
         return False
+
+
+
+class VendorPortalAuthToken(models.Model):
+    PURPOSE_CHOICES = [
+        ("email_verification", "Email Verification"),
+        ("password_reset", "Password Reset"),
+    ]
+
+    user = models.ForeignKey(
+        VendorPortalUser,
+        on_delete=models.CASCADE,
+        related_name="auth_tokens",
+    )
+
+    purpose = models.CharField(
+        max_length=30,
+        choices=PURPOSE_CHOICES,
+    )
+
+    token_hash = models.CharField(
+        max_length=64,
+        unique=True,
+    )
+
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "purpose"]),
+            models.Index(fields=["expires_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.purpose}"
 
 
 class VendorApplication(models.Model):

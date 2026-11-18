@@ -1,3 +1,4 @@
+import uuid
 
 from django.db import IntegrityError, transaction
 from django.db import transaction
@@ -18,6 +19,18 @@ from .vendor_portal_serializers import (
     VendorPortalProjectAssignmentSerializer,
 )
 
+import uuid
+
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+
+from .vendor_portal_email import (
+    create_vendor_auth_token,
+    send_vendor_auth_email,
+    validate_vendor_auth_token,
+)
+
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
@@ -31,6 +44,7 @@ from ...models import (
     ProjectVendor,
     ProjectVendorMessage,
     VendorPortalNotification,
+    VendorPortalAuthToken
 )
 from .vendor_portal_notifications import notify_admins, notify_vendor
 
@@ -53,6 +67,7 @@ def vendor_token_response(vendor_user):
 
 
 
+
 class VendorPortalRegisterView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -71,17 +86,40 @@ class VendorPortalRegisterView(APIView):
         try:
             with transaction.atomic():
                 vendor_user = serializer.save()
+
+                raw_token = create_vendor_auth_token(
+                    vendor_user,
+                    "email_verification",
+                )
+
+                transaction.on_commit(
+                    lambda: send_vendor_auth_email(
+                        vendor_user,
+                        "email_verification",
+                        raw_token,
+                    ),
+                    robust=True,
+                )
+
         except IntegrityError:
             return Response(
-                {"error": "An account with this email may already exist."},
+                {
+                    "error": (
+                        "An account with this email may already exist."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(
             {
-                "message": "Vendor account created. Complete your profile "
-                           "and submit it for admin approval.",
-                **vendor_token_response(vendor_user),
+                "message": (
+                    "Vendor account created successfully. "
+                    "Please verify your email address before signing in."
+                ),
+                "email": vendor_user.email,
+                "email_verified": False,
+                "application_status": vendor_user.application_status,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -92,7 +130,9 @@ class VendorPortalLoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = VendorPortalLoginSerializer(data=request.data)
+        serializer = VendorPortalLoginSerializer(
+            data=request.data
+        )
 
         if not serializer.is_valid():
             return Response(
@@ -102,10 +142,232 @@ class VendorPortalLoginView(APIView):
 
         vendor_user = serializer.validated_data["vendor_user"]
 
+        if not vendor_user.is_email_verified:
+            return Response(
+                {
+                    "error": (
+                        "Please verify your email address "
+                        "before signing in."
+                    ),
+                    "email_verified": False,
+                    "email": vendor_user.email,
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         return Response(
             vendor_token_response(vendor_user),
             status=status.HTTP_200_OK,
         )
+
+class VendorPortalVerifyEmailView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        raw_token = request.data.get("token", "")
+
+        auth_token = validate_vendor_auth_token(
+            raw_token,
+            "email_verification",
+        )
+
+        if auth_token is None:
+            return Response(
+                {
+                    "error": (
+                        "This verification link is invalid or expired. "
+                        "Please request a new verification email."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        vendor_user = auth_token.user
+
+        vendor_user.is_email_verified = True
+        vendor_user.save(
+            update_fields=["is_email_verified", "updated_at"]
+        )
+
+        auth_token.used_at = timezone.now()
+        auth_token.save(update_fields=["used_at"])
+
+        return Response(
+            {
+                "message": "Your email has been verified successfully.",
+                "email_verified": True,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalResendVerificationView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email", "").strip().lower()
+
+        if not email:
+            return Response(
+                {"error": "Email address is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        vendor_user = VendorPortalUser.objects.filter(
+            email__iexact=email,
+            is_active=True,
+        ).first()
+
+        if vendor_user and not vendor_user.is_email_verified:
+            raw_token = create_vendor_auth_token(
+                vendor_user,
+                "email_verification",
+            )
+
+            transaction.on_commit(
+                lambda: send_vendor_auth_email(
+                    vendor_user,
+                    "email_verification",
+                    raw_token,
+                ),
+                robust=True,
+            )
+
+        return Response(
+            {
+                "message": (
+                    "If an unverified account exists for that email, "
+                    "a verification link will be sent."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalPasswordResetRequestView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email", "").strip().lower()
+
+        if not email:
+            return Response(
+                {"error": "Email address is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        vendor_user = VendorPortalUser.objects.filter(
+            email__iexact=email,
+            is_active=True,
+            is_email_verified=True,
+        ).first()
+
+        if vendor_user:
+            raw_token = create_vendor_auth_token(
+                vendor_user,
+                "password_reset",
+            )
+
+            transaction.on_commit(
+                lambda: send_vendor_auth_email(
+                    vendor_user,
+                    "password_reset",
+                    raw_token,
+                ),
+                robust=True,
+            )
+
+        return Response(
+            {
+                "message": (
+                    "If an eligible account exists for that email, "
+                    "a password reset link will be sent."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class VendorPortalPasswordResetConfirmView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        raw_token = request.data.get("token", "")
+        new_password = request.data.get("password", "")
+
+        if not raw_token or not new_password:
+            return Response(
+                {
+                    "error": (
+                        "Token and new password are required."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        auth_token = validate_vendor_auth_token(
+            raw_token,
+            "password_reset",
+        )
+
+        if auth_token is None:
+            return Response(
+                {
+                    "error": (
+                        "This password reset link is invalid or expired. "
+                        "Please request another link."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        vendor_user = auth_token.user
+
+        try:
+            validate_password(
+                new_password,
+                user=vendor_user,
+            )
+        except DjangoValidationError as exc:
+            return Response(
+                {"password": list(exc.messages)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            vendor_user.password = make_password(new_password)
+
+            # Invalidate all previously issued Vendor JWTs.
+            vendor_user.token_version = uuid.uuid4()
+
+            vendor_user.save(
+                update_fields=[
+                    "password",
+                    "token_version",
+                    "updated_at",
+                ]
+            )
+
+            VendorPortalAuthToken.objects.filter(
+                user=vendor_user,
+                purpose="password_reset",
+                used_at__isnull=True,
+            ).update(used_at=timezone.now())
+
+        return Response(
+            {
+                "message": (
+                    "Your password has been reset successfully. "
+                    "Please sign in with your new password."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class VendorPortalMeView(APIView):
     authentication_classes = [VendorPortalJWTAuthentication]

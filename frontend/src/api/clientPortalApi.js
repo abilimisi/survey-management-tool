@@ -117,4 +117,21 @@ export const getClientStudyResponses = (
     { params }
   );
   
+
+
+export const verifyClientEmail = (token) =>
+  clientPortalApi.post("client-portal/verify-email/", { token });
+
+export const resendClientVerification = (email) =>
+  clientPortalApi.post("client-portal/resend-verification/", { email });
+
+export const requestClientPasswordReset = (email) =>
+  clientPortalApi.post("client-portal/password-reset/request/", { email });
+
+export const confirmClientPasswordReset = (token, password) =>
+  clientPortalApi.post("client-portal/password-reset/confirm/", {
+    token,
+    password,
+  });
+
 export default clientPortalApi;

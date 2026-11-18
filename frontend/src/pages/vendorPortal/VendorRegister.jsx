@@ -27,22 +27,29 @@ function VendorRegister() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
 
     try {
       const response = await registerVendor(form);
 
-      if (!response.data.access) {
-        throw new Error("The server did not return an access token.");
-      }
-
-      localStorage.setItem(
-        "vendor_portal_access_token",
-        response.data.access
+      toast.success(
+        response.data.message ||
+          "Account created. Please verify your email."
       );
 
-      toast.success("Vendor account created successfully!");
-      navigate("/vendor/dashboard", { replace: true });
+      // Do not automatically log in an unverified Vendor.
+      localStorage.removeItem("vendor_portal_access_token");
+
+      navigate("/vendor/verify-email", {
+        replace: true,
+        state: {
+          email: form.email.trim().toLowerCase(),
+          verificationPending: true,
+        },
+      });
     } catch (error) {
       const data = error.response?.data;
 
@@ -222,8 +229,13 @@ function VendorRegister() {
               className="vendor-auth-submit"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create vendor account"}
-              {!loading && <span aria-hidden="true">→</span>}
+              {loading
+                ? "Creating account..."
+                : "Create vendor account"}
+
+              {!loading && (
+                <span aria-hidden="true">→</span>
+              )}
             </button>
           </form>
 
