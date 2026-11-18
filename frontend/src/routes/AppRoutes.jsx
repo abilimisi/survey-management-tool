@@ -106,6 +106,18 @@ function ProtectedLayout({ children }) {
   );
 }
 
+function AdminProtectedLayout({ children }) {
+  if (!isAdmin()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <ProtectedLayout>
+      {children}
+    </ProtectedLayout>
+  );
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -274,13 +286,9 @@ function AppRoutes() {
       <Route
         path="/users"
         element={
-          isAdmin() ? (
-            <ProtectedLayout>
-              <UsersList />
-            </ProtectedLayout>
-          ) : (
-            <Navigate to="/dashboard" />
-          )
+          <AdminProtectedLayout>
+            <UsersList />
+          </AdminProtectedLayout>
         }
       />
       <Route
@@ -514,13 +522,9 @@ function AppRoutes() {
       <Route
         path="/vendors/applications"
         element={
-          isAdmin() ? (
-            <ProtectedLayout>
-              <VendorApplications />
-            </ProtectedLayout>
-          ) : (
-            <Navigate to="/dashboard" replace />
-          )
+          <AdminProtectedLayout>
+            <VendorApplications />
+          </AdminProtectedLayout>
         }
       />
 

@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -8,47 +9,46 @@ import {
 import "./DIYStudyReview.css";
 
 function getErrorMessage(error) {
-    const data = error?.response?.data;
+  const data = error?.response?.data;
 
-    if (data?.error) {
-      let message = data.error;
+  if (data?.error) {
+    let message = data.error;
 
-      if (data.matching_project_ids?.length) {
-        message += ` Existing Project IDs: ${
-          data.matching_project_ids.join(", ")
-        }.`;
-      }
-
-      if (data.matching_study_ids?.length) {
-        message += ` Matching Study IDs: ${
-          data.matching_study_ids.join(", ")
-        }.`;
-      }
-
-      if (data.matching_client_ids?.length) {
-        message += ` Matching Client IDs: ${
-          data.matching_client_ids.join(", ")
-        }.`;
-      }
-
-      return message;
+    if (data.matching_project_ids?.length) {
+      message += ` Existing Project IDs: ${
+        data.matching_project_ids.join(", ")
+      }.`;
     }
 
-    if (data?.detail) return data.detail;
-
-    if (data && typeof data === "object") {
-      return Object.values(data).flat().join(" ");
+    if (data.matching_study_ids?.length) {
+      message += ` Matching Study IDs: ${
+        data.matching_study_ids.join(", ")
+      }.`;
     }
 
-    return "Something went wrong. Please try again.";
+    if (data.matching_client_ids?.length) {
+      message += ` Matching Client IDs: ${
+        data.matching_client_ids.join(", ")
+      }.`;
+    }
+
+    return message;
   }
+
+  if (data?.detail) return data.detail;
+
+  if (data && typeof data === "object") {
+    return Object.values(data).flat().join(" ");
+  }
+
+  return "Something went wrong. Please try again.";
+}
 
 function DIYStudyReview() {
   const [studies, setStudies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [selectedStudy, setSelectedStudy] = useState(null);
-  const [action, setAction] = useState("");
   const [reviewNotes, setReviewNotes] = useState("");
 
   const loadStudies = useCallback(async () => {
@@ -72,9 +72,8 @@ function DIYStudyReview() {
     loadStudies();
   }, [loadStudies]);
 
-  const openReview = (study, nextAction) => {
+  const openReview = (study) => {
     setSelectedStudy(study);
-    setAction(nextAction);
     setReviewNotes("");
   };
 
@@ -82,18 +81,17 @@ function DIYStudyReview() {
     if (busyId !== null) return;
 
     setSelectedStudy(null);
-    setAction("");
     setReviewNotes("");
   };
 
   const handleReview = async (event) => {
     event.preventDefault();
 
-    if (!selectedStudy || !action) return;
+    if (!selectedStudy) return;
 
     const notes = reviewNotes.trim();
 
-    if (action === "reject" && !notes) {
+    if (!notes) {
       toast.error("Please provide a reason for rejection.");
       return;
     }
@@ -103,17 +101,16 @@ function DIYStudyReview() {
 
     try {
       const response = await reviewStudy(studyId, {
-        action,
+        action: "reject",
         review_notes: notes,
       });
 
       toast.success(
         response.data.message ||
-          `Study ${action === "approve" ? "approved" : "rejected"} successfully.`
+          "Study rejected successfully."
       );
 
       setSelectedStudy(null);
-      setAction("");
       setReviewNotes("");
 
       await loadStudies();
@@ -130,8 +127,8 @@ function DIYStudyReview() {
         <div>
           <h1>Client Study Reviews</h1>
           <p>
-            Review submitted studies and approve or reject
-            them.
+            Review submitted studies and return them for
+            changes when required.
           </p>
         </div>
 
@@ -183,7 +180,9 @@ function DIYStudyReview() {
               {studies.map((study) => (
                 <tr key={study.id}>
                   <td>
-                    <strong>{study.name || "Untitled study"}</strong>
+                    <strong>
+                      {study.name || "Untitled study"}
+                    </strong>
                     <small>Study #{study.id}</small>
                   </td>
 
@@ -217,22 +216,11 @@ function DIYStudyReview() {
                       >
                         View Details
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          openReview(study, "approve")
-                        }
-                        disabled={busyId !== null}
-                      >
-                        Approve
-                      </button>
 
                       <button
                         type="button"
                         className="diy-review-reject"
-                        onClick={() =>
-                          openReview(study, "reject")
-                        }
+                        onClick={() => openReview(study)}
                         disabled={busyId !== null}
                       >
                         Reject
@@ -255,9 +243,7 @@ function DIYStudyReview() {
             aria-labelledby="diy-review-modal-title"
           >
             <h2 id="diy-review-modal-title">
-              {action === "approve"
-                ? "Approve study"
-                : "Reject study"}
+              Reject study
             </h2>
 
             <p>
@@ -266,21 +252,9 @@ function DIYStudyReview() {
               </strong>
             </p>
 
-            {action === "approve" && (
-              <p>
-                Approval will reuse an existing Client or create a
-                new one if no match exists. The system will check
-                for duplicate studies and Projects before creating
-                a Project with a unique DIY reference, such as OB01.
-                If a possible duplicate or ambiguous Client match is
-                found, approval will be blocked for manual review.
-              </p>
-            )}
-
             <form onSubmit={handleReview}>
               <label htmlFor="diy-review-notes">
-                Review notes
-                {action === "reject" ? " (required)" : " (optional)"}
+                Reason for rejection (required)
               </label>
 
               <textarea
@@ -289,12 +263,8 @@ function DIYStudyReview() {
                 onChange={(event) =>
                   setReviewNotes(event.target.value)
                 }
-                placeholder={
-                  action === "reject"
-                    ? "Explain why the study is being rejected or describe the changes required..."
-                    : "Add any review notes..."
-                }
-                required={action === "reject"}
+                placeholder="Explain why the study is being rejected or describe the changes required..."
+                required
                 rows={4}
               />
 
@@ -310,18 +280,12 @@ function DIYStudyReview() {
 
                 <button
                   type="submit"
-                  className={
-                    action === "reject"
-                      ? "diy-review-confirm-reject"
-                      : "diy-review-confirm"
-                  }
+                  className="diy-review-confirm-reject"
                   disabled={busyId !== null}
                 >
                   {busyId !== null
                     ? "Processing..."
-                    : action === "approve"
-                      ? "Confirm approval"
-                      : "Confirm and return for changes"}
+                    : "Confirm and return for changes"}
                 </button>
               </div>
             </form>
