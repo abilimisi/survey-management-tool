@@ -474,3 +474,52 @@
     transition: none;
   }
 }
+
+.client-auth-notice {
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border: 1px solid #c9e3d5;
+  border-radius: 10px;
+  background: #f0faf4;
+  color: #245b3d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.client-auth-notice a {
+  color: #176b43;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Password label and Forgot Password link */
+.client-auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 9px;
+}
+
+.client-auth-label-row label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.client-auth-label-row a {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2454d9;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.client-auth-label-row a:hover {
+  color: #173ca8;
+  text-decoration: underline;
+}

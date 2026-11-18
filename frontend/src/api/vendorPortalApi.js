@@ -73,5 +73,31 @@ export const markVendorNotificationRead = (notificationId) =>
 
 export const markAllVendorNotificationsRead = () =>
   vendorPortalApi.post("vendor-portal/notifications/read-all/");
+
+
+export const verifyVendorEmail = (token) =>
+  vendorPortalApi.post(
+    "vendor-portal/verify-email/",
+    { token }
+  );
+
+export const resendVendorVerification = (email) =>
+  vendorPortalApi.post(
+    "vendor-portal/resend-verification/",
+    { email }
+  );
+
+export const requestVendorPasswordReset = (email) =>
+  vendorPortalApi.post(
+    "vendor-portal/password-reset/request/",
+    { email }
+  );
+
+export const confirmVendorPasswordReset = (token, password) =>
+  vendorPortalApi.post(
+    "vendor-portal/password-reset/confirm/",
+    { token, password }
+  );
+
   
 export default vendorPortalApi;

@@ -21,26 +21,40 @@ export default function ClientRegister() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
 
     try {
       const response = await registerClient(form);
-      const { access, user } = response.data;
 
-      if (!access) {
-        throw new Error("The server did not return an access token.");
-      }
+      toast.success(
+        response.data.message ||
+          "Your account has been created. Please verify your email."
+      );
 
-      localStorage.setItem("client_portal_access_token", access);
-      localStorage.setItem("client_portal_user", JSON.stringify(user));
+      // Registration no longer logs the client in.
+      // The client must verify their email first.
+      localStorage.removeItem("client_portal_access_token");
+      localStorage.removeItem("client_portal_user");
 
-      toast.success("Your client account has been created.");
-      navigate("/client-portal/dashboard", { replace: true });
+      navigate("/client-portal/verify-email", {
+        replace: true,
+        state: {
+          email: form.email.trim().toLowerCase(),
+          verificationPending: true,
+        },
+      });
     } catch (error) {
       const data = error.response?.data;
 
@@ -48,11 +62,15 @@ export default function ClientRegister() {
         data?.detail ||
         data?.error ||
         Object.entries(data || {})
-          .map(([field, messages]) =>
-            `${field}: ${
-              Array.isArray(messages) ? messages.join(", ") : messages
-            }`
-          )
+          .map(([field, messages]) => {
+            const formattedMessages = Array.isArray(messages)
+              ? messages.join(", ")
+              : typeof messages === "string"
+              ? messages
+              : JSON.stringify(messages);
+
+            return `${field}: ${formattedMessages}`;
+          })
           .join(" | ") ||
         error.message ||
         "Unable to create your account.";
@@ -69,6 +87,7 @@ export default function ClientRegister() {
         <div className="client-auth-brand-content">
           <div className="client-auth-logo">
             <span className="client-auth-logo-symbol">OB</span>
+
             <span>
               <strong>OPINION BUNCH</strong>
               <small>RESEARCH REDEFINED</small>
@@ -98,7 +117,10 @@ export default function ClientRegister() {
             <div className="client-auth-orbit orbit-one" />
             <div className="client-auth-orbit orbit-two" />
             <div className="client-auth-orbit orbit-three" />
-            <div className="client-auth-orbit-center">OB</div>
+
+            <div className="client-auth-orbit-center">
+              OB
+            </div>
           </div>
 
           <div className="client-auth-brand-footer">
@@ -110,6 +132,7 @@ export default function ClientRegister() {
       <main className="client-auth-main">
         <div className="client-auth-mobile-logo">
           <span className="client-auth-logo-symbol">OB</span>
+
           <span>
             <strong>OPINION BUNCH</strong>
             <small>RESEARCH REDEFINED</small>
@@ -121,16 +144,24 @@ export default function ClientRegister() {
             <span className="client-auth-eyebrow">
               CREATE YOUR WORKSPACE
             </span>
+
             <h2>Create your account</h2>
+
             <p>
               Register your company to start creating research studies.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="client-auth-form">
+          <form
+            onSubmit={handleSubmit}
+            className="client-auth-form"
+          >
             <div className="client-auth-name-grid">
               <div className="client-auth-field">
-                <label htmlFor="first_name">First name</label>
+                <label htmlFor="first_name">
+                  First name
+                </label>
+
                 <input
                   id="first_name"
                   name="first_name"
@@ -143,7 +174,10 @@ export default function ClientRegister() {
               </div>
 
               <div className="client-auth-field">
-                <label htmlFor="last_name">Last name</label>
+                <label htmlFor="last_name">
+                  Last name
+                </label>
+
                 <input
                   id="last_name"
                   name="last_name"
@@ -156,7 +190,10 @@ export default function ClientRegister() {
             </div>
 
             <div className="client-auth-field">
-              <label htmlFor="register-email">Work email address</label>
+              <label htmlFor="register-email">
+                Work email address
+              </label>
+
               <input
                 id="register-email"
                 name="email"
@@ -170,7 +207,9 @@ export default function ClientRegister() {
             </div>
 
             <div className="client-auth-field">
-              <label htmlFor="register-password">Create password</label>
+              <label htmlFor="register-password">
+                Create password
+              </label>
 
               <div className="client-auth-password">
                 <input
@@ -188,19 +227,27 @@ export default function ClientRegister() {
                 <button
                   type="button"
                   className="client-auth-password-toggle"
-                  onClick={() => setShowPassword((value) => !value)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() =>
+                    setShowPassword((value) => !value)
+                  }
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
+
               <small className="client-auth-hint">
                 Use at least 8 characters.
               </small>
             </div>
 
             <div className="client-auth-field">
-              <label htmlFor="company_name">Company name</label>
+              <label htmlFor="company_name">
+                Company name
+              </label>
+
               <input
                 id="company_name"
                 name="company_name"
@@ -217,14 +264,21 @@ export default function ClientRegister() {
               className="client-auth-submit"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create your account"}
-              {!loading && <span aria-hidden="true">→</span>}
+              {loading
+                ? "Creating account..."
+                : "Create your account"}
+
+              {!loading && (
+                <span aria-hidden="true">→</span>
+              )}
             </button>
           </form>
 
           <div className="client-auth-switch">
             Already have an account?
-            <Link to="/client-portal/login">Sign in</Link>
+            <Link to="/client-portal/login">
+              Sign in
+            </Link>
           </div>
 
           <div className="client-auth-bottom">

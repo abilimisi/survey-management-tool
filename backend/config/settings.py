@@ -203,6 +203,18 @@ RESEND_FROM_EMAIL = os.getenv(
     "onboarding@resend.dev"
 )
 
+
+# Client portal frontend URL
+CLIENT_PORTAL_FRONTEND_URL = config(
+    "CLIENT_PORTAL_FRONTEND_URL",
+    default="http://localhost:5173",
+)
+
+VENDOR_PORTAL_FRONTEND_URL = config(
+    "VENDOR_PORTAL_FRONTEND_URL",
+    default="http://localhost:5173",
+)
+
 # Django Axes - Login Brute Force Protection
 
 AUTHENTICATION_BACKENDS = [
