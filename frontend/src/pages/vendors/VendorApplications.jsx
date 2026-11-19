@@ -223,14 +223,18 @@ function VendorApplications() {
           </p>
         </div>
 
-        <button
+       <button
           type="button"
           className="va-refresh-button"
           onClick={loadApplications}
           disabled={loading}
+          title="Refresh applications"
         >
-          <RefreshCw size={17} />
-          <span>{loading ? "Loading..." : "Refresh"}</span>
+          <RefreshCw
+            size={16}
+            className={loading ? "va-refresh-spin" : ""}
+          />
+          <span>{loading ? "Refreshing..." : "Refresh"}</span>
         </button>
       </div>
 

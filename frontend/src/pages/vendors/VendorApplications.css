@@ -913,3 +913,18 @@
   border-color: #1d4ed8;
   font-weight: 600;
 }
+
+/* Refresh icon loading animation */
+.vendor-applications-page .va-refresh-spin {
+  animation: va-refresh-rotation 2s linear infinite;
+}
+
+@keyframes va-refresh-rotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
