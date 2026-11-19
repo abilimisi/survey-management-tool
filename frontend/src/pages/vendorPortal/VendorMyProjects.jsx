@@ -805,15 +805,6 @@ function VendorMyProjects() {
                 </div>
               )}
             </section>
-
-            {/* Footer */}
-            <footer className="vendor-my-projects-footer">
-              <span>PanelSphere Vendor Portal</span>
-
-              <Link to="/vendor/company-profile">
-                Company Profile
-              </Link>
-            </footer>
           </main>
         </div>
       </div>

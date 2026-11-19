@@ -6,6 +6,8 @@ import {
   reviewVendorApplication,
 } from "../../api/vendorAdminApi";
 import "./VendorApplications.css";
+import { Eye } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 function VendorApplications() {
   const [applications, setApplications] = useState([]);
@@ -13,7 +15,8 @@ function VendorApplications() {
   const [processingId, setProcessingId] = useState(null);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const loadApplications = useCallback(async () => {
     setLoading(true);
 
@@ -162,6 +165,36 @@ function VendorApplications() {
           return status === statusFilter;
         });
 
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredApplications.length / pageSize)
+  );
+
+  const paginatedApplications = filteredApplications.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const startEntry =
+    filteredApplications.length === 0
+      ? 0
+      : (currentPage - 1) * pageSize + 1;
+
+  const endEntry = Math.min(
+    currentPage * pageSize,
+    filteredApplications.length
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
   const reviewHistory = selectedApplication?.reviews || [];
 
   const renderLink = (value) => {
@@ -190,13 +223,18 @@ function VendorApplications() {
           </p>
         </div>
 
-        <button
+       <button
           type="button"
           className="va-refresh-button"
           onClick={loadApplications}
           disabled={loading}
+          title="Refresh applications"
         >
-          {loading ? "Loading..." : "Refresh"}
+          <RefreshCw
+            size={16}
+            className={loading ? "va-refresh-spin" : ""}
+          />
+          <span>{loading ? "Refreshing..." : "Refresh"}</span>
         </button>
       </div>
 
@@ -293,7 +331,7 @@ function VendorApplications() {
             </thead>
 
             <tbody>
-              {filteredApplications.map((application) => {
+              {paginatedApplications.map((application) => {
                 const status = getStatus(application);
                 const canReview = ["submitted", "under_review"].includes(
                   status
@@ -326,12 +364,15 @@ function VendorApplications() {
 
                     <td>
                       <div className="va-actions">
+
                         <button
                           type="button"
-                          className="va-view-button"
+                          className="va-view-icon-button"
                           onClick={() => setSelectedApplication(application)}
+                          title="View application"
+                          aria-label="View application"
                         >
-                          View
+                          <Eye size={22} strokeWidth={2.2} />
                         </button>
 
                         {canReview && (
@@ -381,6 +422,55 @@ function VendorApplications() {
           </table>
         </div>
       )}
+
+              {/* PAGINATION SECTION */}
+        <div className="pagination-container">
+          <div className="pagination-info">
+            Showing {startEntry} to {endEntry} of{" "}
+            {filteredApplications.length} entries
+          </div>
+
+          <div className="pagination-controls">
+            <button
+              type="button"
+              disabled={currentPage === 1 || loading}
+              onClick={() =>
+                setCurrentPage((current) => Math.max(1, current - 1))
+              }
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                type="button"
+                key={index}
+                className={
+                  currentPage === index + 1 ? "active-page" : ""
+                }
+                disabled={loading}
+                aria-current={
+                  currentPage === index + 1 ? "page" : undefined
+                }
+                onClick={() => setCurrentPage(index + 1)}
+              >
+                {index + 1}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              disabled={currentPage === totalPages || loading}
+              onClick={() =>
+                setCurrentPage((current) =>
+                  Math.min(totalPages, current + 1)
+                )
+              }
+            >
+              Next
+            </button>
+          </div>
+        </div>
 
       {selectedApplication && (
         <div

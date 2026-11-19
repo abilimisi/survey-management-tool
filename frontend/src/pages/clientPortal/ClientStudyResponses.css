@@ -15,21 +15,14 @@
 .client-responses-header h1 {
   margin: 5px 0 7px;
   color: #17243a;
-  font-size: 26px;
-  font-weight: 750;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .client-responses-header p {
   margin: 0;
   color: #64748b;
-  font-size: 13px;
-}
-
-.client-responses-eyebrow {
-  color: #08733c !important;
-  font-size: 10px !important;
-  font-weight: 800;
-  letter-spacing: 1.4px;
+  font-size: 12px;
 }
 
 .client-responses-back {
