@@ -1,113 +1,212 @@
-/* Aligned to the app's shared design system — mirrors ProjectAnalytics.css
-   so Dashboard / Project Analytics / Vendor Analytics all match. No extra
-   outer padding (relies on .page-content, same as every other module). */
+/* =========================================================
+   VENDOR ANALYTICS — ENTERPRISE BI DESIGN
+   Purple identity; aligned with Project Analytics
+========================================================= */
 
-.vendor-analytics{
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
+.vendor-analytics {
+  --va-ink: #17243a;
+  --va-muted: #77859a;
+  --va-border: #e6ebf2;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  padding: 3px 2px 18px;
+  color: var(--va-ink);
+  position: relative;
+  box-sizing: border-box;
 }
+.vendor-analytics *, .vendor-analytics *::before, .vendor-analytics *::after { box-sizing: border-box; }
 
-.analytics-page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+/* Header */
+.va-header { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.va-eyebrow { display:flex; align-items:center; gap:8px; color:#8290a4; font-size:10px; font-weight:850; letter-spacing:.15em; }
+.va-eyebrow span { width:7px; height:7px; border-radius:50%; background:#8b5cf6; box-shadow:0 0 0 4px #8b5cf61a; }
+.va-header h1 { margin:8px 0 6px; color:#17243a; font-size:clamp(23px,2vw,29px); line-height:1.2; font-weight:800; letter-spacing:-.045em; }
+.va-header p { margin:0; color:#77859a; font-size:13px; line-height:1.6; }
+.va-header-actions { display:flex; gap:9px; flex-wrap:wrap; }
+.va-button { height:41px; padding:0 15px; border:1px solid transparent; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; gap:8px; font-size:12px; font-weight:750; cursor:pointer; transition:transform .2s,box-shadow .2s,background .2s; }
+.va-button:disabled { opacity:.48; cursor:not-allowed; }
+.va-button:not(:disabled):hover { transform:translateY(-2px); }
+.va-button-light { color:#475873; background:#fff; border-color:#e1e8f1; }
+.va-button-light:hover:not(:disabled) { background:#faf8ff; box-shadow:0 5px 14px #243b5b12; }
+.va-button-primary { color:#fff; background:linear-gradient(135deg,#8b5cf6,#7042d4); box-shadow:0 5px 13px #8b5cf635; }
+.va-button-primary:hover:not(:disabled) { box-shadow:0 8px 19px #8b5cf645; }
+
+/* Filters */
+.va-filterbar { display:grid; grid-template-columns:205px minmax(0,1fr) auto; align-items:center; gap:17px; padding:14px 16px; background:#fff; border:1px solid var(--va-border); border-radius:14px; box-shadow:0 4px 16px #24364b08; }
+.va-filter-title { display:flex; align-items:center; gap:11px; }
+.va-filter-icon { width:39px; height:39px; display:grid; place-items:center; flex:none; border-radius:11px; color:#8b5cf6; background:#f3edff; }
+.va-filter-title > div:last-child { display:flex; flex-direction:column; gap:3px; }
+.va-filter-title strong { color:#293951; font-size:12px; }
+.va-filter-title span { color:#98a3b2; font-size:10px; }
+.va-filter-controls { display:grid; grid-template-columns:minmax(160px,1fr) minmax(190px,.85fr); gap:10px; min-width:0; }
+.va-search { height:39px; display:flex; align-items:center; gap:9px; padding:0 11px; min-width:0; color:#8492a6; background:#fbfcfe; border:1px solid #e4eaf2; border-radius:9px; }
+.va-search:focus-within { border-color:#b69aff; box-shadow:0 0 0 3px #8b5cf612; }
+.va-search input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#34445c; font-size:11px; }
+.va-search input::placeholder { color:#a0aaba; }
+.va-filter-controls select { width:100%; min-width:0; height:39px; padding:0 11px; border:1px solid #e4eaf2; border-radius:9px; outline:0; background:#fbfcfe; color:#34445c; font-size:11px; cursor:pointer; }
+.va-filter-controls select:focus { border-color:#b69aff; box-shadow:0 0 0 3px #8b5cf612; }
+.va-updated { display:flex; align-items:center; gap:7px; color:#8b98aa; font-size:10px; white-space:nowrap; }
+.va-updated i { width:7px; height:7px; border-radius:50%; background:#16a36a; box-shadow:0 0 0 4px #16a36a16; }
+
+/* Section headings */
+.va-section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:2px 1px -8px; }
+.va-section-heading > div { display:flex; flex-direction:column; gap:4px; }
+.va-section-heading span { color:#8b5cf6; font-size:9px; font-weight:850; letter-spacing:.15em; }
+.va-section-heading h2 { margin:0; color:#24344b; font-size:16px; font-weight:780; letter-spacing:-.025em; }
+.va-section-heading small { color:#99a5b5; font-size:10px; }
+
+/* Content / vendor banner */
+.va-content { display:flex; flex-direction:column; gap:18px; transition:opacity .2s; }
+.va-content.is-loading { opacity:.48; pointer-events:none; }
+.va-vendor-banner { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; gap:20px; padding:21px 23px; color:#fff; border:1px solid #ffffff12; border-radius:16px; background:radial-gradient(circle at 90% 15%,rgba(183,145,255,.25),transparent 29%),linear-gradient(112deg,#261747 0%,#493078 58%,#6845a8 100%); box-shadow:0 9px 25px #3c28651f; }
+.va-vendor-banner::after { content:""; position:absolute; width:210px; height:210px; right:11%; top:-135px; border:1px solid #ffffff0d; border-radius:50%; pointer-events:none; }
+.va-vendor-main { position:relative; z-index:1; display:flex; align-items:center; gap:15px; min-width:0; }
+.va-vendor-mark { width:49px; height:49px; display:grid; place-items:center; flex:none; color:#e0d1ff; background:#ffffff16; border:1px solid #ffffff25; border-radius:14px; }
+.va-vendor-copy { min-width:0; }
+.va-overline { color:#cbb9ec; font-size:9px; font-weight:800; letter-spacing:.14em; }
+.va-vendor-banner h2 { margin:5px 0 9px; color:#fff; font-size:20px; font-weight:780; letter-spacing:-.03em; overflow-wrap:anywhere; }
+.va-vendor-meta { display:flex; flex-wrap:wrap; gap:10px 15px; }
+.va-vendor-meta span { display:flex; align-items:center; gap:6px; color:#e0d8ef; font-size:10px; }
+.va-vendor-meta svg { color:#c4a9f5; }
+.va-vendor-status { position:relative; z-index:1; display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex:none; }
+.va-status-pill { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border:1px solid #ffffff2b; border-radius:30px; color:#fff; background:#ffffff18; font-size:10px; font-weight:800; text-transform:capitalize; }
+.va-status-pill.active { background:#159b6b; border-color:#159b6b; }
+.va-status-pill.inactive { background:#69778c; border-color:#69778c; }
+.va-vendor-id { color:#d2c6e7; font-size:9px; letter-spacing:.06em; }
+
+/* KPI cards */
+.va-kpi-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; }
+.va-kpi-card { --kpi-color:#8b5cf6; --kpi-soft:#f3edff; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; min-width:0; min-height:145px; padding:15px; background:linear-gradient(145deg,#fff,#fcfbff); border:1px solid #e7edf5; border-radius:14px; box-shadow:0 4px 13px #1b355509; transition:transform .22s,box-shadow .22s,border-color .22s; }
+.va-kpi-card::before { content:""; position:absolute; top:0; left:0; width:100%; height:3px; background:var(--kpi-color); }
+.va-kpi-card::after { content:""; position:absolute; right:-44px; bottom:-53px; width:95px; height:95px; border-radius:50%; background:var(--kpi-soft); opacity:.8; pointer-events:none; }
+.va-kpi-card:hover { transform:translateY(-4px); border-color:color-mix(in srgb,var(--kpi-color) 30%,white); box-shadow:0 12px 25px #1b355511; }
+.va-kpi-blue { --kpi-color:#3478f6; --kpi-soft:#eaf2ff; }
+.va-kpi-green { --kpi-color:#16a36a; --kpi-soft:#e8f8f0; }
+.va-kpi-violet { --kpi-color:#8663df; --kpi-soft:#f1ecff; }
+.va-kpi-red { --kpi-color:#df5c68; --kpi-soft:#fff0f1; }
+.va-kpi-amber { --kpi-color:#d9922d; --kpi-soft:#fff5e7; }
+.va-kpi-slate { --kpi-color:#65758c; --kpi-soft:#eef1f5; }
+.va-kpi-top { position:relative; z-index:1; display:flex; align-items:center; gap:10px; min-width:0; }
+.va-kpi-icon { width:37px; height:37px; display:grid; place-items:center; flex:none; color:var(--kpi-color); background:var(--kpi-soft); border-radius:11px; }
+.va-kpi-top > span { color:#738198; font-size:11px; font-weight:700; }
+.va-kpi-value { position:relative; z-index:1; margin:10px 0 5px; color:#1d2c43; font-size:clamp(22px,2vw,28px); line-height:1.15; font-weight:820; letter-spacing:-.055em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.va-kpi-note { position:relative; z-index:1; color:#9aa5b4; font-size:9px; }
+
+/* Started strip */
+.va-started-strip { display:flex; align-items:center; gap:11px; padding:12px 15px; background:linear-gradient(100deg,#f7f3ff,#fff); border:1px solid #e9e0fb; border-radius:12px; }
+.va-started-icon { width:35px; height:35px; display:grid; place-items:center; flex:none; color:#8b5cf6; background:#eee6ff; border-radius:10px; }
+.va-started-strip > div:nth-child(2) { display:flex; flex-direction:column; gap:2px; }
+.va-started-strip span { color:#78869a; font-size:10px; }
+.va-started-strip strong { color:#37265a; font-size:17px; font-weight:820; }
+.va-started-strip small { margin-left:auto; color:#9a8caf; font-size:9px; }
+
+/* Panels and charts */
+.va-chart-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(340px,1fr); gap:14px; }
+.va-panel { min-width:0; padding:17px 18px; background:#fff; border:1px solid var(--va-border); border-radius:15px; box-shadow:0 4px 14px #1b355507; transition:box-shadow .2s; }
+.va-panel:hover { box-shadow:0 8px 22px #1b35550c; }
+.va-panel-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:13px; }
+.va-panel-heading h3 { margin:0 0 5px; color:#26364d; font-size:13px; font-weight:790; }
+.va-panel-heading p { margin:0; color:#929eae; font-size:10px; }
+.va-panel-action { flex:none; color:#78869a; font-size:10px; }
+.va-chart-tag,.va-count-pill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; color:#70599a; background:#f7f3ff; border:1px solid #ece4fb; border-radius:20px; font-size:9px; font-weight:750; }
+.va-chart-area { width:100%; height:270px; }
+.va-tooltip { min-width:130px; padding:10px 12px; background:#fff; border:1px solid #e4eaf2; border-radius:11px; box-shadow:0 10px 30px #1c2e481a; }
+.va-tooltip-label { display:block; margin-bottom:8px; color:#8a97a9; font-size:10px; }
+.va-tooltip-row { display:flex; align-items:center; justify-content:space-between; gap:15px; font-size:11px; }
+.va-tooltip-row span { display:flex; align-items:center; gap:6px; color:#65748a; }
+.va-tooltip-row i { width:7px; height:7px; border-radius:50%; }
+.va-tooltip-row strong { color:#24344b; font-weight:800; }
+
+/* Donut and legend */
+.va-donut-layout { display:flex; align-items:center; gap:15px; min-height:265px; }
+.va-donut { position:relative; width:52%; height:235px; flex:none; }
+.va-donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+.va-donut-center strong { color:#24344b; font-size:25px; font-weight:850; letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+.va-donut-center span { margin-top:3px; color:#98a3b2; font-size:9px; }
+.va-legend { display:flex; flex:1; flex-direction:column; gap:12px; min-width:0; }
+.va-legend-item { display:flex; flex-direction:column; gap:5px; }
+.va-legend-head { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:10px; }
+.va-legend-head span { display:flex; align-items:center; gap:7px; min-width:0; color:#6b798e; }
+.va-legend-head i,.va-table-label i { width:8px; height:8px; flex:none; display:inline-block; border-radius:50%; }
+.va-legend-head strong { color:#293951; font-size:10px; font-weight:800; font-variant-numeric:tabular-nums; }
+.va-legend-item small { color:#9aa5b4; font-size:9px; }
+.va-legend-track { width:100%; height:5px; overflow:hidden; background:#f0f3f7; border-radius:20px; }
+.va-legend-track div { height:100%; border-radius:inherit; transition:width .4s; }
+
+/* Project chart and tables */
+.va-project-chart { width:100%; min-height:220px; padding-top:4px; }
+.va-detail-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; }
+.va-table-wrap { width:100%; overflow-x:auto; }
+.va-table { width:100%; border-collapse:separate; border-spacing:0; font-size:11px; }
+.va-table th { padding:11px 9px; color:#91a0b3; border-bottom:1px solid #e9eef5; text-align:left; font-size:9px; font-weight:800; letter-spacing:.045em; text-transform:uppercase; white-space:nowrap; }
+.va-table td { padding:12px 9px; color:#53627a; border-bottom:1px solid #f0f3f7; white-space:nowrap; }
+.va-table tbody tr:hover { background:#faf8ff; }
+.va-table tbody tr:last-child td { border-bottom:0; }
+.va-table td:nth-child(2),.va-table td:nth-child(3) { color:#293951; font-weight:750; font-variant-numeric:tabular-nums; }
+.va-table-label { display:flex; align-items:center; gap:8px; font-weight:650; }
+
+/* Empty/error/loading */
+.va-empty-chart { min-height:225px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:15px; color:#a2adbc; font-size:11px; text-align:center; }
+.va-empty-chart svg { color:#bdc8d7; }
+.va-empty-state,.va-loading { min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:20px; color:#7b899d; background:#fff; border:1px dashed #dce3ed; border-radius:15px; text-align:center; }
+.va-empty-state h2 { margin:0; color:#35445b; font-size:16px; }
+.va-empty-state p { margin:0; color:#8d99aa; font-size:12px; }
+.va-loading { flex-direction:row; font-size:13px; }
+.va-alert { display:flex; align-items:center; gap:9px; padding:12px 14px; color:#a83c45; background:#fff6f6; border:1px solid #f3caca; border-radius:11px; font-size:12px; }
+.va-alert span { flex:1; }
+.va-alert button { border:0; color:#a83c45; background:transparent; font-weight:800; cursor:pointer; }
+.va-loading-overlay { position:fixed; right:25px; bottom:22px; z-index:20; display:flex; align-items:center; gap:9px; padding:11px 15px; color:#fff; background:#342254; border-radius:11px; box-shadow:0 8px 25px #34225430; font-size:11px; }
+.va-spin { animation:va-rotate 1s linear infinite; }
+@keyframes va-rotate { to { transform:rotate(360deg); } }
+.va-footnote { display:flex; align-items:center; gap:8px; padding:0 2px; color:#98a3b2; font-size:9px; line-height:1.5; }
+.va-footnote svg { flex:none; }
+
+/* Responsive */
+@media (max-width:1250px) {
+  .va-kpi-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .va-filterbar { grid-template-columns:180px minmax(0,1fr); }
+  .va-updated { grid-column:2; justify-self:end; }
 }
-
-.analytics-page-header h2{
-    font-size:20px;
-    font-weight:700;
-    color:#111827;
+@media (max-width:1000px) {
+  .va-chart-grid { grid-template-columns:1fr; }
+  .va-donut-layout { max-width:650px; }
+  .va-detail-grid { grid-template-columns:1fr; }
 }
-
-.analytics-page-header p{
-    color:#6b7280;
-    font-size:13px;
-    margin-top:2px;
+@media (max-width:700px) {
+  .vendor-analytics { gap:15px; padding:2px 0 14px; }
+  .va-header { align-items:flex-start; flex-direction:column; gap:13px; }
+  .va-header h1 { font-size:23px; }
+  .va-header-actions { width:100%; }
+  .va-button { flex:1; padding:0 10px; }
+  .va-filterbar { display:flex; flex-direction:column; align-items:stretch; gap:12px; padding:13px; }
+  .va-filter-controls { display:flex; flex-direction:column; }
+  .va-filter-controls select { width:100%; }
+  .va-updated { align-self:flex-end; }
+  .va-vendor-banner { align-items:flex-start; flex-direction:column; padding:17px; }
+  .va-vendor-main { align-items:flex-start; }
+  .va-vendor-banner h2 { font-size:17px; }
+  .va-vendor-status { align-items:flex-start; }
+  .va-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  .va-kpi-card { min-height:133px; padding:12px; }
+  .va-kpi-icon { width:33px; height:33px; }
+  .va-kpi-top > span { font-size:10px; }
+  .va-kpi-value { font-size:22px; }
+  .va-section-heading { align-items:flex-start; flex-direction:column; gap:4px; }
+  .va-section-heading h2 { font-size:15px; }
+  .va-started-strip { flex-wrap:wrap; }
+  .va-started-strip small { width:100%; margin-left:46px; }
+  .va-panel { padding:14px; }
+  .va-chart-area { height:230px; }
+  .va-donut-layout { flex-direction:column; gap:5px; }
+  .va-donut { width:100%; max-width:270px; height:220px; }
+  .va-legend { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .va-table { min-width:420px; }
 }
-
-.project-filter-card{
-    background:#fff;
-    padding:14px 16px;
-    border-radius:12px;
-    border:1px solid #e5e7eb;
-    box-shadow:0 4px 14px rgba(15,23,42,.05);
-}
-
-.project-filter-card label{
-    display:block;
-    margin-bottom:6px;
-    font-weight:600;
-    font-size:13px;
-    color:#374151;
-}
-
-.project-filter-card select{
-    width:320px;
-    max-width:100%;
-    padding:9px 12px;
-    border-radius:8px;
-    border:1px solid #d1d5db;
-    font-size:13.5px;
-}
-
-.project-summary-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:14px;
-}
-
-.summary-card{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    background:#fff;
-    padding:16px 18px;
-    border-radius:12px;
-    border:1px solid #e5e7eb;
-    box-shadow:0 4px 14px rgba(15,23,42,.05);
-}
-
-/* Vendor Analytics uses a purple accent instead of Project Analytics'
-   blue, so the two modules stay visually distinguishable at a glance */
-.summary-card svg{
-    width:36px;
-    height:36px;
-    padding:8px;
-    box-sizing:content-box;
-    border-radius:9px;
-    background:#faf5ff;
-    color:#8b5cf6;
-}
-
-.summary-card span{
-    display:block;
-    font-size:12.5px;
-    color:#6b7280;
-}
-
-.summary-card h2{
-    margin-top:4px;
-    font-size:22px;
-    font-weight:700;
-    color:#111827;
-}
-
-/* ===========================================
-   CHARTS (Status donut + Hits trend)
-=========================================== */
-
-.vendor-analytics-chart-grid{
-    display:grid;
-    grid-template-columns:1fr 1.6fr;
-    gap:14px;
-}
-
-@media (max-width: 900px){
-
-.vendor-analytics-chart-grid{
-    grid-template-columns:1fr;
-}
-
+@media (max-width:390px) {
+  .va-kpi-grid { grid-template-columns:1fr; }
+  .va-legend { grid-template-columns:1fr; }
+  .va-vendor-meta { flex-direction:column; align-items:flex-start; }
 }
