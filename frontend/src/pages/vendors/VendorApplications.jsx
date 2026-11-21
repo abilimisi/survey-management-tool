@@ -136,9 +136,13 @@ function VendorApplications() {
     }
   };
 
+  const nonDraftApplications = applications.filter(
+    (application) => getStatus(application) !== "draft"
+  );
+
   const counts = {
-    all: applications.length,
-    submitted: applications.filter((application) =>
+    all: nonDraftApplications.length,
+    submitted: nonDraftApplications.filter((application) =>
       ["submitted", "under_review"].includes(getStatus(application))
     ).length,
     approved: applications.filter(
@@ -151,11 +155,11 @@ function VendorApplications() {
       (application) => getStatus(application) === "rejected"
     ).length,
   };
-
+  
   const filteredApplications =
     statusFilter === "all"
-      ? applications
-      : applications.filter((application) => {
+      ? nonDraftApplications
+      : nonDraftApplications.filter((application) => {
           const status = getStatus(application);
 
           if (statusFilter === "submitted") {
@@ -164,7 +168,6 @@ function VendorApplications() {
 
           return status === statusFilter;
         });
-
 
   const totalPages = Math.max(
     1,

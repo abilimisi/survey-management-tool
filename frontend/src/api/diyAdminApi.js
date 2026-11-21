@@ -37,3 +37,52 @@ export const getRegisteredVendors = async ({
 
   return response.data;
 };
+
+export const checkDIYAdminAccess = async () => {
+  const response = await axiosInstance.get("admin/diy/access-check/");
+  return response.data;
+};
+
+// ============================================================
+// DIY ADMIN ACCESS MANAGEMENT
+// Super Admin only
+// ============================================================
+
+export const getDIYAccessGrants = async ({
+  active = "",
+} = {}) => {
+  const response = await axiosInstance.get("admin/diy/access-grants/", {
+    params: {
+      active: active || undefined,
+    },
+  });
+
+  return response.data;
+};
+
+
+export const grantDIYAdminAccess = async ({
+  userId,
+  expiresAt = null,
+  notes = "",
+}) => {
+  const response = await axiosInstance.post(
+    "admin/diy/access-grants/",
+    {
+      user_id: userId,
+      expires_at: expiresAt || null,
+      notes: notes || "",
+    }
+  );
+
+  return response.data;
+};
+
+
+export const revokeDIYAdminAccess = async (grantId) => {
+  const response = await axiosInstance.post(
+    `admin/diy/access-grants/${grantId}/revoke/`
+  );
+
+  return response.data;
+};

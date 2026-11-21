@@ -56,12 +56,13 @@ from .views import (
     recent_responses,
     
 )
-
 from .diy_admin_views import (
     RegisteredClientListView,
     RegisteredVendorListView,
+    DIYAdminAccessCheckView,
+    DIYAdminAccessGrantListCreateView,
+    DIYAdminAccessGrantRevokeView,
 )
-
 from core.analytics_views import *
 
 from .ai_analytics_views import ai_analytics
@@ -260,16 +261,40 @@ path(
 
 urlpatterns += [
     path("diy/", include(diy_urlpatterns)),
+    
+    # DIY Admin permission check
+    path(
+        "admin/diy/access-check/",
+        DIYAdminAccessCheckView.as_view(),
+        name="admin-diy-access-check",
+    ),
 
+    # DIY Admin registered clients
     path(
         "admin/diy/clients/",
         RegisteredClientListView.as_view(),
         name="admin-diy-registered-clients",
     ),
+
+    # DIY Admin registered vendors
     path(
         "admin/diy/vendors/",
         RegisteredVendorListView.as_view(),
         name="admin-diy-registered-vendors",
+    ),
+
+    # DIY Admin access grant list and creation
+    path(
+        "admin/diy/access-grants/",
+        DIYAdminAccessGrantListCreateView.as_view(),
+        name="admin-diy-access-grants",
+    ),
+
+    # DIY Admin access grant revocation
+    path(
+        "admin/diy/access-grants/<int:grant_id>/revoke/",
+        DIYAdminAccessGrantRevokeView.as_view(),
+        name="admin-diy-access-grant-revoke",
     ),
 ]
 

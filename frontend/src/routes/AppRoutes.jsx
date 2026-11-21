@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import MainLayout from "../components/layout/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
 import { isAdmin } from "../pages/utils/auth";
+import { checkDIYAdminAccess } from "../api/diyAdminApi";
 
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
@@ -54,7 +56,6 @@ import VendorAnalytics from "../pages/analytics/vendorAnalytics/VendorAnalytics"
 
 // DIY
 import DIYDashboard from "../pages/diy/DIYDashboard";
-// DIY
 import DIYCreateStudy from "../pages/diy/CreateStudy";
 
 // Client portal
@@ -108,6 +109,67 @@ function ProtectedLayout({ children }) {
 
 function AdminProtectedLayout({ children }) {
   if (!isAdmin()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return (
+    <ProtectedLayout>
+      {children}
+    </ProtectedLayout>
+  );
+}
+
+function DIYAdminProtectedLayout({ children }) {
+  const [accessStatus, setAccessStatus] = useState("checking");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const verifyAccess = async () => {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        if (isMounted) {
+          setAccessStatus("unauthenticated");
+        }
+        return;
+      }
+
+      try {
+        const result = await checkDIYAdminAccess();
+
+        if (isMounted) {
+          setAccessStatus(
+            result?.has_access === true ? "granted" : "denied"
+          );
+        }
+      } catch (error) {
+        if (isMounted) {
+          setAccessStatus("denied");
+        }
+      }
+    };
+
+    verifyAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (accessStatus === "checking") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Verifying DIY Admin access...</p>
+      </div>
+    );
+  }
+
+  if (accessStatus === "unauthenticated") {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (accessStatus === "denied") {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -259,6 +321,7 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
+
       <Route
         path="/company-contacts"
         element={
@@ -267,6 +330,7 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
+
       <Route
         path="/company-contacts/add"
         element={
@@ -275,6 +339,7 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
+
       <Route
         path="/company-contacts/edit/:id"
         element={
@@ -283,6 +348,8 @@ function AppRoutes() {
           </ProtectedLayout>
         }
       />
+
+      {/* Permanent Super Admin only */}
       <Route
         path="/users"
         element={
@@ -291,110 +358,150 @@ function AppRoutes() {
           </AdminProtectedLayout>
         }
       />
-      <Route
-          path="/projects/:projectId/questions"
-          element={
-            <ProtectedLayout>
-              <ScreeningQuestions />
-            </ProtectedLayout>
-          }
-      />
-      <Route
-          path="/screening/:respondentId"
-          element={
-              <ScreeningSurvey />
-          }
-      />
 
       <Route
-          path="/panel-campaigns"
-          element={ <ProtectedLayout><CampaignList /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/create"
-          element={<ProtectedLayout><CreateCampaign /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id/edit"
-          element={<ProtectedLayout><EditCampaign /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id/recipients"
-          element={<ProtectedLayout><CampaignRecipients /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id/stats"
-          element={<ProtectedLayout><CampaignStats /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id/survey-links"
-          element={<ProtectedLayout><CampaignSurveyLinks /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id"
-          element={<ProtectedLayout><CampaignDashboard /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/panel-campaigns/:id/respondents"
-          element={
-              <ProtectedLayout>
-                  <CampaignRespondents/>
-              </ProtectedLayout>
-          }
-      />
-
-      <Route
-          path="/analytics"
-          element={<ProtectedLayout><AnalyticsDashboard /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/analytics/projects"
-          element={<ProtectedLayout><ProjectAnalytics /></ProtectedLayout>}
-      />
-
-      <Route
-          path="/analytics/vendors"
-          element={<ProtectedLayout><VendorAnalytics /></ProtectedLayout>}
-      />
-
-
-     <Route
-        path="/panel-campaigns/:id/email-template"
-        element={
-            <ProtectedLayout>
-                <EmailTemplate />
-            </ProtectedLayout>
-        }
-    />
-
-    {/* DIY Routes */}
-    <Route
-        path="/diy"
+        path="/projects/:projectId/questions"
         element={
           <ProtectedLayout>
-            <DIYDashboard />
+            <ScreeningQuestions />
           </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/screening/:respondentId"
+        element={<ScreeningSurvey />}
+      />
+
+      <Route
+        path="/panel-campaigns"
+        element={
+          <ProtectedLayout>
+            <CampaignList />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/create"
+        element={
+          <ProtectedLayout>
+            <CreateCampaign />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/edit"
+        element={
+          <ProtectedLayout>
+            <EditCampaign />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/recipients"
+        element={
+          <ProtectedLayout>
+            <CampaignRecipients />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/stats"
+        element={
+          <ProtectedLayout>
+            <CampaignStats />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/survey-links"
+        element={
+          <ProtectedLayout>
+            <CampaignSurveyLinks />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id"
+        element={
+          <ProtectedLayout>
+            <CampaignDashboard />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/respondents"
+        element={
+          <ProtectedLayout>
+            <CampaignRespondents />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedLayout>
+            <AnalyticsDashboard />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/analytics/projects"
+        element={
+          <ProtectedLayout>
+            <ProjectAnalytics />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/analytics/vendors"
+        element={
+          <ProtectedLayout>
+            <VendorAnalytics />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route
+        path="/panel-campaigns/:id/email-template"
+        element={
+          <ProtectedLayout>
+            <EmailTemplate />
+          </ProtectedLayout>
+        }
+      />
+
+      {/* DIY Admin routes */}
+      <Route
+        path="/diy"
+        element={
+          <DIYAdminProtectedLayout>
+            <DIYDashboard />
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/diy/studies/create"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYCreateStudy />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route path="/client-portal/login" element={<ClientLogin />} />
+
       <Route path="/client-portal/register" element={<ClientRegister />} />
 
       <Route
@@ -413,79 +520,82 @@ function AppRoutes() {
       />
 
       <Route element={<ClientPortalLayout />}>
-       <Route
+        <Route
           path="/client-portal/dashboard"
           element={<ClientDashboard />}
         />
+
         <Route
           path="/client-portal/company-profile"
           element={<ClientCompanyProfile />}
         />
+
         <Route
           path="/client-portal/studies"
-          element={<ClientAllStudies  />}
+          element={<ClientAllStudies />}
         />
+
         <Route
           path="/client-portal/studies/:studyId"
           element={<ClientStudyDetails />}
         />
+
         <Route
           path="/client-portal/studies/:studyId/responses"
           element={<ClientStudyResponses />}
         />
+
         <Route
           path="/client-portal/create-study"
           element={<ClientCreateStudy />}
         />
-      
       </Route>
 
       <Route
         path="/diy/reviews"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYStudyReview />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/diy/studies"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYAllStudies />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/diy/studies/:studyId"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYStudyDetails />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/diy/studies/:studyId/assessment"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYStudyAssessment />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/diy/studies/:studyId/quotation"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <DIYStudyQuotation />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
-      
       <Route
         path="/vendor/register"
         element={<VendorRegister />}
@@ -518,42 +628,33 @@ function AppRoutes() {
         <Route path="company-profile" element={<CompanyProfileView />} />
       </Route>
 
-      
       <Route
         path="/vendors/applications"
         element={
-          <AdminProtectedLayout>
+          <DIYAdminProtectedLayout>
             <VendorApplications />
-          </AdminProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/clients/registered"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <RegisteredClients />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
 
       <Route
         path="/vendors/registered"
         element={
-          <ProtectedLayout>
+          <DIYAdminProtectedLayout>
             <RegisteredVendors />
-          </ProtectedLayout>
+          </DIYAdminProtectedLayout>
         }
       />
-
-
-
     </Routes>
-
-    
-
-    
-
   );
 }
 

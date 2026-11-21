@@ -3,6 +3,7 @@ import uuid
 from django.db import IntegrityError, transaction
 from django.db import transaction
 from rest_framework.permissions import IsAdminUser
+from ...permissions import HasDIYAdminAccess
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -559,12 +560,15 @@ class VendorPortalSubmitView(APIView):
 
 
 class VendorPortalAdminApplicationsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, HasDIYAdminAccess]
 
     def check_superuser(self, request):
-        if not request.user.is_superuser:
+        if not (
+            request.user.is_superuser
+            or HasDIYAdminAccess().has_permission(request, self)
+        ):
             return Response(
-                {"error": "Only superusers can review vendor applications."},
+                {"error": "You do not have permission to review vendor applications."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         return None

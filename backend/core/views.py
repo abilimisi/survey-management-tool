@@ -53,7 +53,7 @@ from .serializers import (
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
-from rest_framework.permissions import IsAdminUser
+from core.permissions import IsAdminUser
 from rest_framework.decorators import permission_classes
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
@@ -2484,6 +2484,7 @@ def update_question(request, question_id):
     )
 
 @api_view(["DELETE"])
+@permission_classes([IsAdminUser])
 def delete_question(request, question_id):
 
     question = get_object_or_404(
@@ -2546,6 +2547,7 @@ def update_option(request, option_id):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAdminUser])
 def delete_option(request, option_id):
 
     option = get_object_or_404(

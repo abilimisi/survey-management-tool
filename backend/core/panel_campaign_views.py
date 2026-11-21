@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from core.views import get_client_ip
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from core.permissions import IsAdminUser
 from django.db import transaction
 from core.services.email_sender import send_campaign_emails
 from django.db.models import Max
@@ -100,6 +101,7 @@ def update_panel_campaign(request, pk):
     )
 
 @api_view(["DELETE"])
+@permission_classes([IsAdminUser])
 def delete_panel_campaign(request, pk):
 
     campaign = get_object_or_404(

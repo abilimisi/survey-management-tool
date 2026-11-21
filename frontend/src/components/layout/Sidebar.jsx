@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -17,11 +17,36 @@ import {
 
 import { NavLink } from "react-router-dom";
 import { isAdmin } from "../../pages/utils/auth";
-
+import { checkDIYAdminAccess } from "../../api/diyAdminApi";
 import "./Sidebar.css";
 
 function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
   const isSuperuser = isAdmin();
+
+  const [hasDIYAdminAccess, setHasDIYAdminAccess] = useState(isSuperuser);
+  const [checkingDIYAccess, setCheckingDIYAccess] = useState(!isSuperuser);
+
+  useEffect(() => {
+    if (isSuperuser) {
+      setHasDIYAdminAccess(true);
+      setCheckingDIYAccess(false);
+      return;
+    }
+
+    const checkAccess = async () => {
+      try {
+       const response = await checkDIYAdminAccess();
+
+        setHasDIYAdminAccess(response?.has_access === true);
+      } catch (error) {
+        setHasDIYAdminAccess(false);
+      } finally {
+        setCheckingDIYAccess(false);
+      }
+    };
+
+    checkAccess();
+  }, [isSuperuser]);
 
   // Each dropdown has its own open/close state.
   const [openMenus, setOpenMenus] = useState({
@@ -97,7 +122,7 @@ function Sidebar({ isCollapsed, toggleSidebar, onNavigate }) {
     // =================================
     // DIY PORTAL - ADMIN ONLY
     // =================================
-    ...(isSuperuser
+    ...(hasDIYAdminAccess && !checkingDIYAccess
       ? [
           { type: "section", name: "DIY PORTAL" },
 

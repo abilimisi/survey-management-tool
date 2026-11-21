@@ -2276,3 +2276,77 @@ class ActiveLoginSession(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.session_id}"
+    
+    
+class DIYAdminAccessGrant(models.Model):
+    """
+    Separate access grant for Internal Panel users who need
+    administration access to the DIY Portal.
+
+    This does NOT change Django superuser status or UserProfile role.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="diy_admin_access_grants"
+    )
+
+    granted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diy_admin_grants_given"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Optional expiry date/time for DIY Admin access."
+    )
+
+    revoked_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    revoked_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diy_admin_grants_revoked"
+    )
+
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional reason for granting DIY Admin access."
+    )
+
+    class Meta:
+        ordering = ["-granted_at"]
+        verbose_name = "DIY Admin Access Grant"
+        verbose_name_plural = "DIY Admin Access Grants"
+
+    def __str__(self):
+        return f"DIY Admin Access - {self.user.username}"
+
+    def has_access(self):
+        from django.utils import timezone
+
+        if not self.is_active:
+            return False
+
+        if self.revoked_at is not None:
+            return False
+
+        if self.expires_at is not None and self.expires_at <= timezone.now():
+            return False
+
+        return True

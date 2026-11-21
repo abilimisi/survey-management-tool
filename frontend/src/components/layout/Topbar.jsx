@@ -20,6 +20,7 @@ import {
   markVendorAdminNotificationAsRead,
   markAllVendorAdminNotificationsAsRead,
 } from "../../api/authApi";
+import DIYAccessExpiryBadge from "../../components/DIYAccessExpiryBadge";
 
 function Topbar({ toggleSidebar }) {
   const navigate = useNavigate();
@@ -354,7 +355,7 @@ function Topbar({ toggleSidebar }) {
             </div>
           )}
         </div>
-
+        <DIYAccessExpiryBadge />
         <div className="profile-dropdown" ref={dropdownRef}>
           <button
             type="button"

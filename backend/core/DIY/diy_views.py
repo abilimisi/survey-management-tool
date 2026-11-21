@@ -25,7 +25,7 @@ from .diy_serializers import DIYStudySerializer,DIYStudyQuotationSerializer
 from django.db import transaction
 
 from django.utils import timezone
-from rest_framework.permissions import IsAdminUser
+from core.permissions import HasDIYAdminAccess
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -299,7 +299,7 @@ class DIYStudySubmitView(APIView):
 
 
 class DIYStudyReviewListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def get(self, request):
         studies = (
@@ -326,7 +326,7 @@ class DIYStudyReviewListView(APIView):
 
 
 class DIYAllStudiesAdminView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def get(self, request):
         studies = (
@@ -353,7 +353,7 @@ def normalize_name(value):
 
 
 class DIYStudyReviewActionView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id):
@@ -453,7 +453,7 @@ class DIYStudyReviewActionView(APIView):
 
 
 class DIYStudyAssessmentView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id):
@@ -601,7 +601,7 @@ class DIYStudyAssessmentView(APIView):
         )
 
 class DIYStudySurveyLinkReviewView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id):
@@ -721,7 +721,7 @@ class DIYStudySurveyLinkReviewView(APIView):
 
 
 class DIYStudyQuotationCreateView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id):
@@ -861,7 +861,7 @@ class DIYStudyQuotationCreateView(APIView):
 
 
 class DIYStudyQuotationSendView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id, quotation_id):
@@ -1526,7 +1526,7 @@ class DIYClientSurveyLinkSubmitView(APIView):
         )
     
 class DIYStudyProjectConversionView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     @transaction.atomic
     def post(self, request, study_id):
@@ -1759,7 +1759,7 @@ class DIYStudyProjectConversionView(APIView):
         )
 
 class DIYStudyQuotationListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def get(self, request, study_id):
 
@@ -1830,7 +1830,7 @@ class DIYClientNotificationListView(APIView):
         )
 
 class DIYAdminNotificationListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def get(self, request):
         notifications = DIYNotification.objects.filter(
@@ -1906,7 +1906,7 @@ class DIYClientNotificationMarkReadView(APIView):
         )
 
 class DIYAdminNotificationMarkReadView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def post(self, request, notification_id):
         notification = DIYNotification.objects.filter(
@@ -1934,7 +1934,7 @@ class DIYAdminNotificationMarkReadView(APIView):
         )
 
 class DIYAdminNotificationMarkAllReadView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasDIYAdminAccess]
 
     def post(self, request):
         updated_count = DIYNotification.objects.filter(
